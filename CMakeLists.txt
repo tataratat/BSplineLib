@@ -21,7 +21,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(namespace "${PROJECT_NAME}::")
 set(targets_export_name "${PROJECT_NAME}Targets")
 option(SHARED "Build shared library" ON)
-option(GOOGLETEST "Build with GoogleTest" ON)
 
 # Setup
 set(include_install_directory "include")
@@ -41,8 +40,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(PARALLELIZATION_FLAGS)
     set(RUNTIME_CHECKS_DEBUG)
     set(WARNING_FLAGS -Wall -Wextra -Wmost -Wextra -Wpedantic -Wunreachable-code -Wshadow -Wfloat-equal -Weffc++
-                       $<$<NOT:$<CONFIG:Debug>>:-Wno-unused-parameter -Wno-unused-variable>
-                       $<$<BOOL:${GOOGLETEST}>:-Wno-gnu-zero-variadic-macro-arguments>)
+                       $<$<NOT:$<CONFIG:Debug>>:-Wno-unused-parameter -Wno-unused-variable>)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     set(OPTIMIZATION_FLAGS $<$<NOT:$<CONFIG:Debug>>:-O3 -march=native>)
     set(PARALLELIZATION_FLAGS)
@@ -56,7 +54,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Intel")
 else()
     message(ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
-set(COMPILE_DEFINITIONS $<$<BOOL:${SHARED}>:SPLINELIB_SHARED> $<$<BOOL:${GOOGLETEST}>:SPLINELIB_GOOGLETEST>)
+set(COMPILE_DEFINITIONS $<$<BOOL:${SHARED}>:SPLINELIB_SHARED>)
 set(COMPILE_OPTIONS ${OPTIMIZATION_FLAGS} 
                     $<IF:$<CONFIG:Release>,${PARALLELIZATION_FLAGS},${RUNTIME_CHECKS_DEBUG}> ${WARNING_FLAGS})
 message(STATUS "Compile using ${CMAKE_CXX_COMPILER_ID} compiler!")
@@ -76,16 +74,7 @@ else()
 endif()
 
 # Content
-find_package(PkgConfig REQUIRED QUIET)
 add_subdirectory(Sources)
-if(GOOGLETEST)
-    message(STATUS "Build tests!")
-    enable_testing()
-    add_subdirectory(Tests)
-else()
-    message(STATUS "No tests!")
-endif()
-add_subdirectory(Tools)
 
 # Packaging
 set(generated_directory ${CMAKE_CURRENT_BINARY_DIR}/Generated)
