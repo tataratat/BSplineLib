@@ -102,10 +102,10 @@ else()
 endif()
 if(SPLINELIB_SHARED)
     message(STATUS "Build shared!")
-    set (BUILD_SPLINELIB_SHARED_LIBS ON)
+    set (BUILD_SHARED_LIBS ON)
 else()
     message(STATUS "Build static!")
-    set (BUILD_SPLINELIB_SHARED_LIBS OFF)
+    set (BUILD_SHARED_LIBS OFF)
 endif()
 
 # Content
