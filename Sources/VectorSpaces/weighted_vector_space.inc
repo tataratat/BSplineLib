@@ -94,6 +94,32 @@ WeightedVectorSpace<dimensionality>::WriteProjected(Precision const &precision) 
 }
 
 template<int dimensionality>
+typename WeightedVectorSpace<dimensionality>::OutputInformation_
+WeightedVectorSpace<dimensionality>::WriteWeighted(Precision const &precision) const {
+  using std::tuple_element_t;
+  using ProjectedCoordinatesOutput = tuple_element_t<0, OutputInformation_>;
+  using utilities::string_operations::Write;
+
+  HomogeneousCoordinates_ const &homogeneous_coordinates = Base_::coordinates_;
+  int const &number_of_homogeneous_coordinates = homogeneous_coordinates.size();
+  ProjectedCoordinatesOutput coordinates;
+  coordinates.reserve(number_of_homogeneous_coordinates);
+  tuple_element_t<1, OutputInformation_> weights;
+  weights.reserve(number_of_homogeneous_coordinates);
+  std::for_each(homogeneous_coordinates.begin(), homogeneous_coordinates.end(),
+      [&] (HomogeneousCoordinate_ const &homogeneous_coordinate) {
+          coordinates.emplace_back(Write<typename ProjectedCoordinatesOutput::value_type>(
+                [&](){
+                Coordinate_ coordinate{};
+                Index::ForEach(0, coordinate.size(), 
+                [&](Index const& i){coordinate[i] = homogeneous_coordinate[i];});
+                return coordinate;
+                }(), precision));
+          weights.emplace_back(Write(homogeneous_coordinate[dimensionality], precision)); });
+  return OutputInformation_{coordinates, weights};
+}
+
+template<int dimensionality>
 typename WeightedVectorSpace<dimensionality>::HomogeneousCoordinates_
 WeightedVectorSpace<dimensionality>::HomogenizeCoordinates(Coordinates_ const &coordinates, Weights_ const &weights)
     const {

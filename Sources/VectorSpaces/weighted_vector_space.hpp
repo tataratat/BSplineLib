@@ -62,6 +62,9 @@ class WeightedVectorSpace : public VectorSpace<dimensionality + 1> {
   using OutputInformation_ = Tuple<Vector<StringArray<dimensionality>>, StringVector>;
   using Weights_ = Vector<Weight>;
 
+  // Make Base Constructor public
+  using Base_::Base_;
+
   WeightedVectorSpace() = default;
   WeightedVectorSpace(Coordinates_ const &coordinates, Weights_ const &weights);
   WeightedVectorSpace(WeightedVectorSpace const &other) = default;
@@ -81,6 +84,7 @@ class WeightedVectorSpace : public VectorSpace<dimensionality + 1> {
       Tolerance const &tolerance = kEpsilon) const;
 
   virtual OutputInformation_ WriteProjected(Precision const &precision = kPrecision) const;
+  virtual OutputInformation_ WriteWeighted(Precision const &precision = kPrecision) const;
 
  private:
   using HomogeneousCoordinates_ = typename Base_::Coordinates_;

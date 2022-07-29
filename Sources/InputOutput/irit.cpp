@@ -205,19 +205,16 @@ SplineEntry CreateSpline(SharedPointer<ParameterSpace<parametric_dimensionality>
     using Nurbs = Nurbs<parametric_dimensionality, dimensionality>;
     using WeightedVectorSpace = typename Nurbs::WeightedVectorSpace_;
 
-    typename WeightedVectorSpace::Weights_ weights{};
-    weights.reserve(total_number_of_coordinates);
-    typename WeightedVectorSpace::Coordinates_ coordinates{};
+    typename WeightedVectorSpace::Base_::Coordinates_ coordinates{};
     coordinates.reserve(total_number_of_coordinates);
     Index::ForEach(0, total_number_of_coordinates, [&] (Index const &) {
-        weights.emplace_back(ConvertToNumber<Weight>(TrimCharacter(*(entry++), '[')));
-        typename WeightedVectorSpace::Coordinate_ scalar_coordinates;
+        typename WeightedVectorSpace::Base_::Coordinate_ scalar_coordinates;
+        scalar_coordinates[maximum_dimension + 1] = ConvertToNumber<Coordinate>(TrimCharacter(*(entry++), '['));
         Dimension::ForEach(0, maximum_dimension, [&] (Dimension const &dimension) {
             scalar_coordinates[dimension.Get()] = ConvertToNumber<Coordinate>(*(entry++)); });
         scalar_coordinates[maximum_dimension] = ConvertToNumber<Coordinate>(TrimCharacter(*(entry++), ']'));
         coordinates.emplace_back(scalar_coordinates); });
-    return make_shared<Nurbs>(move(parameter_space), make_shared<WeightedVectorSpace>(move(coordinates),
-                                                                                      move(weights)));
+    return make_shared<Nurbs>(move(parameter_space), make_shared<WeightedVectorSpace>(move(coordinates)));
   }
 }
 
@@ -266,7 +263,14 @@ void WriteSpline(OutputStream &file, SplineType const &spline, String const &poi
   using VectorSpace = tuple_element_t<1, OutputInformation>;
   using std::get, utilities::string_operations::Append;
 
-  OutputInformation const &spline_written = spline.Write(precision);
+  const OutputInformation &spline_written = [&](){
+    if constexpr (is_rational) {
+      return spline.WriteWeighted(precision);
+    } else {
+      return spline.Write(precision);
+    }
+  }();
+
   ParameterSpace const &parameter_space = get<0>(spline_written);
   String number_of_coordinates_orders_and_point_type{};
   Append(number_of_coordinates_orders_and_point_type, " ", get<2>(parameter_space));
