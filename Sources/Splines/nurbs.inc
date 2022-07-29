@@ -264,3 +264,10 @@ Nurbs<parametric_dimensionality, dimensionality>::Write(Precision const &precisi
   return OutputInformation_{Base_::parameter_space_->Write(precision),
                             weighted_vector_space_->WriteProjected(precision)};
 }
+
+template<int parametric_dimensionality, int dimensionality>
+typename Nurbs<parametric_dimensionality, dimensionality>::OutputInformation_
+Nurbs<parametric_dimensionality, dimensionality>::WriteWeighted(Precision const &precision) const {
+  return OutputInformation_{Base_::parameter_space_->Write(precision),
+                            weighted_vector_space_->WriteWeighted(precision)};
+}

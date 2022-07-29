@@ -91,6 +91,7 @@ class Nurbs : public Spline<parametric_dimensionality, dimensionality> {
 
   Coordinate ComputeUpperBoundForMaximumDistanceFromOrigin(Tolerance const &tolerance = kEpsilon) const final;
   OutputInformation_ Write(Precision const &precision = kPrecision) const;
+  OutputInformation_ WriteWeighted(Precision const &precision = kPrecision) const;
 
  protected:
   using HomogeneousBSpline_ = BSpline<parametric_dimensionality, dimensionality + 1>;
