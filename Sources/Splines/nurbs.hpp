@@ -93,8 +93,6 @@ class Nurbs : public Spline<parametric_dimensionality, dimensionality> {
   OutputInformation_ Write(Precision const &precision = kPrecision) const;
   OutputInformation_ WriteWeighted(Precision const &precision = kPrecision) const;
 
-  
-
  protected:
   using HomogeneousBSpline_ = BSpline<parametric_dimensionality, dimensionality + 1>;
 
