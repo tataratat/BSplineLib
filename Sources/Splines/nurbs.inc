@@ -271,5 +271,3 @@ Nurbs<parametric_dimensionality, dimensionality>::WriteWeighted(Precision const 
   return OutputInformation_{Base_::parameter_space_->Write(precision),
                             weighted_vector_space_->WriteWeighted(precision)};
 }
-
-
