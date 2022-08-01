@@ -26,7 +26,12 @@ set(
 )
 set_source_files_properties(${HEADERS} PROPERTIES LANGUAGE CXX HEADER_FILE_ONLY TRUE)
 
-add_library(models INTERFACE ${SOURCES})
+
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.19")
+    add_library(models INTERFACE ${SOURCES})
+else()
+    add_library(models INTERFACE)
+endif()
 target_include_directories(models INTERFACE ${INCLUDE_DIRECTORIES})
 target_link_libraries(models INTERFACE utilities parameter_spaces splines)
 target_compile_definitions(models INTERFACE ${COMPILE_DEFINITIONS})
