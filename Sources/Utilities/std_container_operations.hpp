@@ -26,6 +26,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 #include <tuple>
 #include <type_traits>
 #include <vector>
+#include <unordered_map>
 
 #include "Sources/Utilities/error_handling.hpp"
 #include "Sources/Utilities/named_type.hpp"
@@ -42,6 +43,8 @@ template<typename ...Types>
 using Tuple = std::tuple<Types...>;
 template<typename Type>
 using Vector = std::vector<Type>;
+template<typename KeyType, typename ValueType>
+using UnorderedMap = std::unordered_map<KeyType, ValueType>;
 
 }  // namespace splinelib
 
