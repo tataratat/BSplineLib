@@ -37,6 +37,43 @@ NonZeroDegreeBSplineBasisFunction::NonZeroDegreeBSplineBasisFunction(KnotVector 
     right_quotient_derivative_ = (degree_value * right_denominator_inverse_);
 }
 
+NonZeroDegreeBSplineBasisFunction::NonZeroDegreeBSplineBasisFunction(
+    KnotVector const &knot_vector,
+    KnotSpan const &start_of_support,
+    Degree degree,
+    UniqueBSplineBasisFunctions &unique_basis_functions,
+    Tolerance const &tolerance)
+        : Base_(knot_vector, /* generates this_hash_ */
+                start_of_support,
+                std::move(degree),
+                tolerance),
+          left_lower_degree_basis_function_{
+              CreateDynamic(knot_vector,
+                            start_of_support,
+                            degree_ - Degree{1},
+                            unique_basis_functions,
+                            tolerance)},
+          right_lower_degree_basis_function_{
+              CreateDynamic(knot_vector,
+                            start_of_support + KnotSpan{1},
+                            degree_ - Degree{1},
+                            unique_basis_functions,
+                            tolerance)}
+{
+    Index const start_index{start_of_support.Get()};
+    Degree::Type_ const &degree_value = degree_.Get();
+    left_denominator_inverse_ = InvertPotentialZero(
+        knot_vector[start_index + Index{degree_value}] - start_knot_,
+        tolerance
+    );
+    right_denominator_inverse_ = InvertPotentialZero(
+        end_knot_ - knot_vector[start_index + Index{1}],
+        tolerance
+    );
+    left_quotient_derivative_ = (degree_value * left_denominator_inverse_);
+    right_quotient_derivative_ = (degree_value * right_denominator_inverse_);
+}
+
 bool IsEqual(NonZeroDegreeBSplineBasisFunction const &lhs, NonZeroDegreeBSplineBasisFunction const &rhs,
              Tolerance const &tolerance) {
   using Base = NonZeroDegreeBSplineBasisFunction::Base_;

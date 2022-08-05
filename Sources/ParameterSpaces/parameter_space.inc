@@ -358,16 +358,44 @@ void ParameterSpace<parametric_dimensionality>::CopyKnotVectors(KnotVectors_ con
 }
 
 template<int parametric_dimensionality>
-void ParameterSpace<parametric_dimensionality>::RecreateBasisFunctions(Tolerance const &tolerance) {
-  Dimension::ForEach(0, parametric_dimensionality, [&] (Dimension const &dimension) {
-      Dimension::Type_ const &current_dimension = dimension.Get();
-      Length::Type_ const number_of_basis_functions{GetNumberOfBasisFunctions(dimension).Get()};
-      typename BSplineBasisFunctions_::value_type &basis_functions = basis_functions_[current_dimension];
-      basis_functions.clear();
-      basis_functions.reserve(number_of_basis_functions);
-      KnotSpan::ForEach(0, number_of_basis_functions, [&] (KnotSpan const &start_of_support) {
-          basis_functions.emplace_back(BSplineBasisFunction::CreateDynamic(*knot_vectors_[current_dimension],
-                                           start_of_support, degrees_[current_dimension], tolerance)); }); });
+void ParameterSpace<parametric_dimensionality>::RecreateBasisFunctions(
+    Tolerance const &tolerance) {
+
+  Dimension::ForEach(
+      0,
+      parametric_dimensionality,
+      [&] (Dimension const &dimension) {
+          Dimension::Type_ const &current_dimension = dimension.Get();
+          Length::Type_ const number_of_basis_functions{
+              GetNumberOfBasisFunctions(dimension).Get()};
+          // basis and unique basis functions of current dimension
+          typename BSplineBasisFunctions_::value_type &basis_functions =
+              basis_functions_[current_dimension];
+          auto &unique_basis_functions =
+              unique_basis_functions_[current_dimension];
+
+          // clear existing
+          basis_functions.clear();
+          basis_functions.reserve(number_of_basis_functions);
+          unique_basis_functions.clear();
+
+          KnotSpan::ForEach(
+              0,
+              number_of_basis_functions,
+              [&] (KnotSpan const &start_of_support) {
+                  basis_functions.emplace_back(
+                      BSplineBasisFunction::CreateDynamic(
+                          *knot_vectors_[current_dimension],
+                          start_of_support,
+                          degrees_[current_dimension],
+                          unique_basis_functions,
+                          tolerance
+                      ) /* BSplineBasisFunction::CreateDynamic() */
+                  ); /* basis_functions.emplace_back() */
+              } /* [&] (KnotSpan&) */
+          ); /* KnotSpan::ForEach() */
+      } /* [&] (Dimension&) */
+  ); /* Dimension::ForEach() */
 }
 
 template<int parametric_dimensionality>
