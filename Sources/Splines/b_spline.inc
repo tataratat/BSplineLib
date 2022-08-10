@@ -63,8 +63,141 @@ bool operator==(BSpline<parametric_dimensionality, dimensionality> const &lhs,
 
 template<int parametric_dimensionality, int dimensionality>
 typename Spline<parametric_dimensionality, dimensionality>::Coordinate_
-BSpline<parametric_dimensionality, dimensionality>::operator()(ParametricCoordinate_ const &parametric_coordinate,
-                                                               Tolerance const &tolerance) const {
+BSpline<parametric_dimensionality, dimensionality>::operator()(
+    ParametricCoordinate_ const &parametric_coordinate,
+    Tolerance const &tolerance) const {
+#ifndef NDEBUG
+  try {
+    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
+  } catch (InvalidArgument const &exception) { Throw(exception, "splinelib::sources::splines::BSpline::operator()"); }
+#endif
+  ParameterSpace_ const &parameter_space = *Base_::parameter_space_;
+  const auto& degrees = parameter_space.GetDegrees();
+  Coordinate_ evaluated_b_spline{};
+
+  // prepare vectors to hold unique evaluation values.
+  typename ParameterSpace_::UniqueEvaluations_ unique_evaluations;
+
+  for (int i{}; i < parametric_dimensionality; ++i) {
+    // For `left->lookup & right->compute` to work, we should visit each
+    // node only once with depth-first method. If it has been visited already,
+    // we have to look it up.
+    // At the next loop, top-level nodes are visited multiple times. Thus,
+    // this should ensure that revisit is always a lookup.
+    //
+    // entry hints:
+    //   0 : zero-th degree evaluations  <- currently not used
+    //   1 : first degree evaluation
+    //   ...
+    //   degree + 0 : top-level evaluation, 0th support
+    //   ...
+    //   degree + degree : top-level evaluation, last support
+    auto& unique_evaluation = unique_evaluations[i];
+    unique_evaluation.assign(degrees[i] * 2 + 1, -1.0);
+  }
+  for (Index_ non_zero_basis_function{parameter_space.First()};
+       non_zero_basis_function != parameter_space.Behind();
+       ++non_zero_basis_function) {
+
+    Index_ const &basis_function =
+        (parameter_space.FindFirstNonZeroBasisFunction(parametric_coordinate)
+         + non_zero_basis_function.GetIndex());
+
+    utilities::std_container_operations::AddAndAssignToFirst(
+        evaluated_b_spline,
+        utilities::std_container_operations::Multiply(
+            (*vector_space_)[basis_function.GetIndex1d()],
+            // non_zero_basis_function will provide entry id (tree_info) for
+            // top-level node evaluations.
+            parameter_space.EvaluateBasisFunction(basis_function,
+                                                  non_zero_basis_function,
+                                                  parametric_coordinate,
+                                                  unique_evaluations)
+        )
+    );
+  }
+  return evaluated_b_spline;
+}
+
+template<int parametric_dimensionality, int dimensionality>
+typename Spline<parametric_dimensionality, dimensionality>::Coordinate_
+BSpline<parametric_dimensionality, dimensionality>::operator()(
+    ParametricCoordinate_ const &parametric_coordinate,
+    Derivative_ const &derivative,
+    Tolerance const &tolerance) const {
+#ifndef NDEBUG
+  try {
+    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
+  } catch (InvalidArgument const &exception) { Throw(exception, "splinelib::sources::splines::BSpline::operator()"); }
+#endif
+  ParameterSpace_ const &parameter_space = *Base_::parameter_space_;
+  const auto& degrees = parameter_space.GetDegrees();
+  Coordinate_ evaluated_b_spline_derivative{};
+
+  // prepare map to hold unique evaluation values.
+  typename ParameterSpace_::UniqueDerivatives_ unique_derivatives;
+  typename ParameterSpace_::UniqueEvaluations_ unique_evaluations;
+  typename ParameterSpace_::IsTopLevelComputed_ top_levels_computed;
+
+  // Assign spaces for lookup. Similar procedure to evaluation.
+  for (int i{}; i < parametric_dimensionality; ++i) {
+    auto const &current_degree = degrees[i].Get();
+
+    // entry hints:
+    //   0 : zero-th degree derivative
+    //   1 : first degree derivative
+    //   ...
+    //   derivative + 0 : top-level derivative, 0th support
+    //   ...
+    //   derivative + degree : top-level derivative, last support
+    auto& unique_derivative = unique_derivatives[i];
+    unique_derivative.assign(derivative[i].Get() + current_degree + 1, 0.0);
+
+    // may not use all the slots, but this guarantees enough space.
+    // (current_degree - derivative[i]) would be an option, but this becomes
+    // negative for allowed but unreasonable derivative queries.
+    // TODO maybe return zero right away?
+    auto& unique_evaluation = unique_evaluations[i];
+    unique_evaluation.assign(current_degree * 2 + 1, -1.0);
+
+    // number of support is degree + 1
+    auto& top_level_computed = top_levels_computed[i];
+    top_level_computed.assign(current_degree + 1, false);
+  }
+
+  for (Index_ non_zero_basis_function{parameter_space.First()};
+       non_zero_basis_function != parameter_space.Behind();
+       ++non_zero_basis_function) {
+    Index_ const &basis_function = 
+        parameter_space.FindFirstNonZeroBasisFunction(parametric_coordinate)
+        + non_zero_basis_function.GetIndex();
+
+    utilities::std_container_operations::AddAndAssignToFirst(
+        evaluated_b_spline_derivative,
+        utilities::std_container_operations::Multiply(
+            ((*vector_space_))[basis_function.GetIndex1d()],
+            parameter_space.EvaluateBasisFunctionDerivative(
+                basis_function,
+                non_zero_basis_function,
+                top_levels_computed,
+                parametric_coordinate,
+                derivative,
+                unique_derivatives,
+                unique_evaluations,
+                tolerance
+            )
+        )
+    );
+  }
+
+  return evaluated_b_spline_derivative;
+}
+
+template<int parametric_dimensionality, int dimensionality>
+typename Spline<parametric_dimensionality, dimensionality>::Coordinate_
+BSpline<parametric_dimensionality, dimensionality>::FullyRecursiveEvaluate(
+    ParametricCoordinate_ const &parametric_coordinate,
+    Tolerance const &tolerance) const {
 #ifndef NDEBUG
   try {
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
@@ -85,7 +218,9 @@ BSpline<parametric_dimensionality, dimensionality>::operator()(ParametricCoordin
 
 template<int parametric_dimensionality, int dimensionality>
 typename Spline<parametric_dimensionality, dimensionality>::Coordinate_
-BSpline<parametric_dimensionality, dimensionality>::operator()(ParametricCoordinate_ const &parametric_coordinate,
+BSpline<parametric_dimensionality,
+        dimensionality>::FullyRecursiveDerivative(
+    ParametricCoordinate_ const &parametric_coordinate,
     Derivative_ const &derivative, Tolerance const &tolerance) const {
 #ifndef NDEBUG
   try {

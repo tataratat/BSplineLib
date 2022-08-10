@@ -35,6 +35,25 @@ template<int parametric_dimensionality>
 using UniqueBSplineBasisFunctionsArray =
     Array<UniqueBSplineBasisFunctions, parametric_dimensionality>;
 
+// it is just a holder to lookup
+using UniqueEvaluations = Vector<ParametricCoordinate::Type_>;
+// turns out they both can have the same type.
+using UniqueDerivatives = UniqueEvaluations;
+
+template<int parametric_dimensionality>
+using UniqueEvaluationsArray =
+    Array<UniqueEvaluations, parametric_dimensionality>;
+
+template<int parametric_dimensionality>
+using UniqueDerivativesArray =
+    Array<UniqueDerivatives, parametric_dimensionality>;
+
+using IsTopLevelComputed = Vector<bool>;
+
+template<int parametric_dimensionality>
+using IsTopLevelComputedArray = Array<IsTopLevelComputed,
+                                      parametric_dimensionality>;
+
 // BSplineBasisFunctions N_{i,p} are non-negative, piecewise polynomial functions of degree p forming a basis of the
 // vector space of all piecewise polynomial functions of degree p corresponding to some knot vector.  The B-spline basis
 // functions have local support only and form a partition of unity.  Actual implementations for evaluating them (as well
@@ -71,9 +90,27 @@ class BSplineBasisFunction {
   friend bool IsEqual(BSplineBasisFunction const &lhs, BSplineBasisFunction const &rhs, Tolerance const &tolerance);
   // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
   friend bool operator==(BSplineBasisFunction const &lhs, BSplineBasisFunction const &rhs);
-  virtual Type_ operator()(ParametricCoordinate const &parametric_coordinate, Tolerance const &tolerance = kEpsilon)
-      const = 0;
-  virtual Type_ operator()(ParametricCoordinate const &parametric_coordinate, Derivative const &derivative,
+  virtual Type_ operator()(ParametricCoordinate const &parametric_coordinate,
+                           Tolerance const &tolerance = kEpsilon) const = 0;
+  // tree_info should tell you if requested basis function is ...
+  //   <tree_info value> : <info>
+  //                  -2 : left branch
+  //                  -1 : right branch
+  //         0 or bigger : top_node id. used to determine entry id for
+  //                       top level evaluations
+  virtual Type_ operator()(ParametricCoordinate const &parametric_coordinate,
+                           UniqueEvaluations& unique_evaluations,
+                           int const &tree_info,
+                           Tolerance const &tolerance = kEpsilon) const = 0;
+  virtual Type_ operator()(ParametricCoordinate const &parametric_coordinate,
+                           Derivative const &derivative,
+                           Tolerance const &tolerance = kEpsilon) const = 0;
+  virtual Type_ operator()(ParametricCoordinate const &parametric_coordinate,
+                           Derivative const &derivative,
+                           UniqueDerivatives& unique_derivatives,
+                           UniqueEvaluations& unique_evaluations,
+                           IsTopLevelComputed& top_level_computed,
+                           int const &tree_info,
                            Tolerance const &tolerance = kEpsilon) const = 0;
 
  protected:
