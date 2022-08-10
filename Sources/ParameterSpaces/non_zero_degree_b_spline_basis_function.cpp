@@ -37,6 +37,43 @@ NonZeroDegreeBSplineBasisFunction::NonZeroDegreeBSplineBasisFunction(KnotVector 
     right_quotient_derivative_ = (degree_value * right_denominator_inverse_);
 }
 
+NonZeroDegreeBSplineBasisFunction::NonZeroDegreeBSplineBasisFunction(
+    KnotVector const &knot_vector,
+    KnotSpan const &start_of_support,
+    Degree degree,
+    UniqueBSplineBasisFunctions &unique_basis_functions,
+    Tolerance const &tolerance)
+        : Base_(knot_vector, /* generates this_hash_ */
+                start_of_support,
+                std::move(degree),
+                tolerance),
+          left_lower_degree_basis_function_{
+              CreateDynamic(knot_vector,
+                            start_of_support,
+                            degree_ - Degree{1},
+                            unique_basis_functions,
+                            tolerance)},
+          right_lower_degree_basis_function_{
+              CreateDynamic(knot_vector,
+                            start_of_support + KnotSpan{1},
+                            degree_ - Degree{1},
+                            unique_basis_functions,
+                            tolerance)}
+{
+    Index const start_index{start_of_support.Get()};
+    Degree::Type_ const &degree_value = degree_.Get();
+    left_denominator_inverse_ = InvertPotentialZero(
+        knot_vector[start_index + Index{degree_value}] - start_knot_,
+        tolerance
+    );
+    right_denominator_inverse_ = InvertPotentialZero(
+        end_knot_ - knot_vector[start_index + Index{1}],
+        tolerance
+    );
+    left_quotient_derivative_ = (degree_value * left_denominator_inverse_);
+    right_quotient_derivative_ = (degree_value * right_denominator_inverse_);
+}
+
 bool IsEqual(NonZeroDegreeBSplineBasisFunction const &lhs, NonZeroDegreeBSplineBasisFunction const &rhs,
              Tolerance const &tolerance) {
   using Base = NonZeroDegreeBSplineBasisFunction::Base_;
@@ -64,8 +101,9 @@ bool operator==(NonZeroDegreeBSplineBasisFunction const &lhs, NonZeroDegreeBSpli
 
 // Recurrence formula due to DeBoor, Cox, and Mansfield (see NURBS book Eq. (2.5)).
 NonZeroDegreeBSplineBasisFunction::Type_
-NonZeroDegreeBSplineBasisFunction::operator()(ParametricCoordinate const &parametric_coordinate,
-                                              Tolerance const &tolerance) const {
+NonZeroDegreeBSplineBasisFunction::operator()(
+    ParametricCoordinate const &parametric_coordinate,
+    Tolerance const &tolerance) const {
 #ifndef NDEBUG
   try {
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
@@ -73,10 +111,70 @@ NonZeroDegreeBSplineBasisFunction::operator()(ParametricCoordinate const &parame
     Throw(exception, "splinelib::sources::parameter_spaces::NonZeroDegreeBSplineBasisFunction::operator()");
   }
 #endif
-  return IsInSupport(parametric_coordinate, tolerance) ? (((parametric_coordinate - start_knot_).Get() *
-      left_denominator_inverse_ * (*left_lower_degree_basis_function_)(parametric_coordinate, tolerance)) +
-          ((end_knot_ - parametric_coordinate).Get() * right_denominator_inverse_ *
-           (*right_lower_degree_basis_function_)(parametric_coordinate, tolerance))) : Type_{};
+  return IsInSupport(parametric_coordinate, tolerance) ? (
+      ((parametric_coordinate - start_knot_).Get()
+        * left_denominator_inverse_
+        * (*left_lower_degree_basis_function_)(parametric_coordinate,
+                                               tolerance))
+       + ((end_knot_
+           - parametric_coordinate).Get()
+           * right_denominator_inverse_
+           * (*right_lower_degree_basis_function_)(parametric_coordinate,
+                                                   tolerance))
+  ) : Type_{};
+}
+
+NonZeroDegreeBSplineBasisFunction::Type_
+NonZeroDegreeBSplineBasisFunction::operator()(
+    ParametricCoordinate const &parametric_coordinate,
+    UniqueEvaluations& unique_evaluations,
+    int const &tree_info,
+    Tolerance const &tolerance) const {
+
+  // First, support check - exit if not
+  if (!IsInSupport(parametric_coordinate, tolerance)) {
+    return Type_{};
+  }
+
+  int entry_offset{};
+  const auto& id = degree_.Get();
+  // evaluation is quite deterministic: it is clear when to lookup
+  if (tree_info == -2) {
+    // lucky, just take a look.
+    // this is valid for all left branches.
+    return unique_evaluations[id];
+
+  } else if (tree_info >= 0) {
+    // indicates this is top-level nodes
+    // check if this has been computed
+    const auto& top_level_evaluation = unique_evaluations[id + tree_info];
+    // values are initialized with negative value and if computed,
+    // it should be non-negative.
+    if (top_level_evaluation >= 0.0) {
+       return top_level_evaluation;
+    }
+
+    entry_offset = tree_info;
+  }
+  // it is your duty to compute.
+  // this means you are either at the top-level node or right branch.
+  auto& computed_basis = unique_evaluations[id + entry_offset];
+  computed_basis =
+      ((parametric_coordinate - start_knot_).Get()
+        * left_denominator_inverse_
+        * (*left_lower_degree_basis_function_)(parametric_coordinate,
+                                               unique_evaluations,
+                                               -2,
+                                               tolerance))
+      + ((end_knot_ - parametric_coordinate).Get()
+          * right_denominator_inverse_
+          * (*right_lower_degree_basis_function_)(parametric_coordinate,
+                                                  unique_evaluations,
+                                                  -1,
+                                                  tolerance));
+
+  return computed_basis;
+
 }
 
 // Based on recurrence formula due to DeBoor, Cox, and Mansfield (see NURBS book Eq. (2.9)).
@@ -93,9 +191,16 @@ NonZeroDegreeBSplineBasisFunction::operator()(ParametricCoordinate const &parame
   if (derivative != Derivative{}) {
     if (IsInSupport(parametric_coordinate, tolerance)) {
       Derivative const lower_derivative = (derivative - Derivative{1});
-      return ((left_quotient_derivative_ * (*left_lower_degree_basis_function_)(parametric_coordinate, lower_derivative,
-                   tolerance)) - (right_quotient_derivative_ *
-                       (*right_lower_degree_basis_function_)(parametric_coordinate, lower_derivative, tolerance)));
+      return (
+          (left_quotient_derivative_
+           * (*left_lower_degree_basis_function_)(parametric_coordinate,
+                                                  lower_derivative,
+                                                  tolerance))
+          - (right_quotient_derivative_ 
+             * (*right_lower_degree_basis_function_)(parametric_coordinate,
+                                                     lower_derivative,
+                                                     tolerance))
+      );
     } else {
       return Type_{};
     }
@@ -103,6 +208,111 @@ NonZeroDegreeBSplineBasisFunction::operator()(ParametricCoordinate const &parame
     return operator()(parametric_coordinate, tolerance);
   }
 }
+
+NonZeroDegreeBSplineBasisFunction::Type_
+NonZeroDegreeBSplineBasisFunction::operator()(
+    ParametricCoordinate const &parametric_coordinate,
+    Derivative const &derivative,
+    UniqueDerivatives& unique_derivatives,
+    UniqueEvaluations& unique_evaluations,
+    IsTopLevelComputed& top_level_computed,
+    int const &tree_info,
+    Tolerance const &tolerance) const {
+#ifndef NDEBUG
+  try {
+    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
+  } catch (InvalidArgument const &exception) {
+    Throw(exception, "splinelib::sources::parameter_spaces::NonZeroDegreeBSplineBasisFunction::operator()");
+  }
+#endif
+
+  int entry_offset{}; /* will be zero, unless it is top-level node */
+  if (tree_info == -2) {
+    return unique_derivatives[derivative.Get()];
+
+  } else if (tree_info >= 0) {
+    // indicates this is top-level nodes.
+    // check if this has been computed
+    //
+    // for derivatives, there are no simple rule that tells us if
+    // it was evaluated.
+    // so, we look at an additional info
+    if (top_level_computed[tree_info]) {
+        // for 0-th derivative, look at evaluations. 
+        if (derivative == Derivative{}) {
+          throw std::runtime_error(
+            String("CRITICAL ISSUE! Please help us by writing an issue at ")
+            + String("github.com/tataratat/SplineLib")
+          );
+        }
+        return unique_derivatives[derivative.Get() + tree_info];
+    }
+
+    // save tree_info to place freshly computed value at the right place.
+    entry_offset = tree_info;
+
+    // we are here, because it wasn't computed and in following parts,
+    // it will be computed.
+    // warning: premature action.
+    // an alternative would be checking if entry_offset is >= 0 then set true.
+    top_level_computed[tree_info] = true;
+  }
+
+  // it is your duty to compute
+  // top-level-degree derivatives and all right_lower ones.
+  if (derivative != Derivative{}) {
+      if (!IsInSupport(parametric_coordinate, tolerance)) {
+        // tschuess
+        return Type_{};
+      }
+
+    Derivative const lower_derivative = (derivative - Derivative{1});
+    // same idea as evaluation.
+    // top-level-derivative and all right ones
+    auto& computed_basis = unique_derivatives[derivative.Get() + entry_offset];
+    computed_basis = 
+        (left_quotient_derivative_
+         * (*left_lower_degree_basis_function_)(parametric_coordinate,
+                                                lower_derivative,
+                                                unique_derivatives,
+                                                unique_evaluations,
+                                                top_level_computed,
+                                                -2,
+                                                tolerance))
+        - (right_quotient_derivative_
+           * (*right_lower_degree_basis_function_)(parametric_coordinate,
+                                                   lower_derivative,
+                                                   unique_derivatives,
+                                                   unique_evaluations,
+                                                   top_level_computed,
+                                                   -1,
+                                                   tolerance));
+
+      // here would be a good alternative place to set top-level computed flag.
+      return computed_basis;
+
+  } else {
+    // zeroth derivative evaluation. same as normal evaluation.
+    // treat it as normal evaluation <- need top level node info.
+    // could use an additional input if this takes too long.
+    int top_level_id{-1};
+    // compiler told me `bool` will be copied anyways. Hence, no auto&
+    for (const auto computed : top_level_computed) {
+      if(!computed) break;
+      ++top_level_id;
+    }
+    const auto evaluation = operator()(parametric_coordinate,
+                                       unique_evaluations,
+                                       top_level_id,
+                                       tolerance);
+
+    // Here's always 0th derivative.
+    unique_derivatives[0] = evaluation;
+
+    return evaluation;
+  }
+}
+
 
 NonZeroDegreeBSplineBasisFunction::Type_
 NonZeroDegreeBSplineBasisFunction::InvertPotentialZero(ParametricCoordinate const &potential_zero,
