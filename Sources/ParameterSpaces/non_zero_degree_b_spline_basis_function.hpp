@@ -66,10 +66,23 @@ class NonZeroDegreeBSplineBasisFunction : public virtual BSplineBasisFunction {
                       NonZeroDegreeBSplineBasisFunction const &rhs,
                       Tolerance const &tolerance);
   // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
-  friend bool operator==(NonZeroDegreeBSplineBasisFunction const &lhs, NonZeroDegreeBSplineBasisFunction const &rhs);
-  Type_ operator()(ParametricCoordinate const &parametric_coordinate, Tolerance const &tolerance = kEpsilon) const
-      override;
-  Type_ operator()(ParametricCoordinate const &parametric_coordinate, Derivative const &derivative,
+  friend bool operator==(NonZeroDegreeBSplineBasisFunction const &lhs,
+                         NonZeroDegreeBSplineBasisFunction const &rhs);
+  Type_ operator()(ParametricCoordinate const &parametric_coordinate,
+                   Tolerance const &tolerance = kEpsilon) const override;
+  Type_ operator()(ParametricCoordinate const &parametric_coordinate,
+                   UniqueEvaluations& unique_evaluations,
+                   int const& tree_info,
+                   Tolerance const &tolerance = kEpsilon) const override;
+  Type_ operator()(ParametricCoordinate const &parametric_coordinate,
+                   Derivative const &derivative,
+                   Tolerance const &tolerance = kEpsilon) const override;
+  Type_ operator()(ParametricCoordinate const &parametric_coordinate,
+                   Derivative const &derivative,
+                   UniqueDerivatives& unique_derivatives,
+                   UniqueEvaluations& unique_evaluations,
+                   IsTopLevelComputed& top_level_computed,
+                   int const &tree_info,
                    Tolerance const &tolerance = kEpsilon) const override;
 
  protected:

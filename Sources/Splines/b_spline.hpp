@@ -72,10 +72,22 @@ class BSpline : public Spline<parametric_dimensionality, dimensionality> {
                                                                  Tolerance const &tolerance);
   // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
   friend bool operator==<parametric_dimensionality, dimensionality>(BSpline const &lhs, BSpline const &rhs);
-  Coordinate_ operator()(ParametricCoordinate_ const &parametric_coordinate, Tolerance const &tolerance = kEpsilon)
-      const override;
-  Coordinate_ operator()(ParametricCoordinate_ const &parametric_coordinate, Derivative_ const &derivative,
+  // Default evaluation uses lookup tricks
+  Coordinate_ operator()(ParametricCoordinate_ const &parametric_coordinate,
                          Tolerance const &tolerance = kEpsilon) const override;
+  Coordinate_ operator()(ParametricCoordinate_ const &parametric_coordinate,
+                         Derivative_ const &derivative,
+                         Tolerance const &tolerance = kEpsilon) const override;
+
+  // Original implementation of SplineLib
+  Coordinate_ FullyRecursiveEvaluate(
+      ParametricCoordinate_ const &parametric_coordinate,
+      Tolerance const &tolerance = kEpsilon) const;
+  Coordinate_ FullyRecursiveDerivative(
+      ParametricCoordinate_ const &parametric_coordinate,
+      Derivative_ const &derivative,
+      Tolerance const &tolerance = kEpsilon) const;
+
 
   void InsertKnot(Dimension const &dimension, Knot_ knot, Multiplicity const &multiplicity = kMultiplicity,
                   Tolerance const &tolerance = kEpsilon) const override;

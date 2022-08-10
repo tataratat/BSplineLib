@@ -97,6 +97,11 @@ class ParameterSpace {
   using BezierInformation_ = Tuple<int, Knots_>;
   using Knot_ = typename Knots_::value_type;
 
+  // same reason as UniqueBSplineBasisFunctions_
+  using UniqueEvaluations_ = UniqueEvaluationsArray<parametric_dimensionality>;
+  using UniqueDerivatives_ = UniqueDerivativesArray<parametric_dimensionality>;
+  using IsTopLevelComputed_ = IsTopLevelComputedArray<parametric_dimensionality>;
+
   ParameterSpace() = default;
   ParameterSpace(KnotVectors_ knot_vectors, Degrees_ degrees, Tolerance const &tolerance = kEpsilon);
   ParameterSpace(ParameterSpace const &other);
@@ -120,11 +125,29 @@ class ParameterSpace {
                                                Tolerance const &tolerance = kEpsilon) const;
   virtual BezierInformation_ DetermineBezierExtractionKnots(Dimension const &dimension,
                                                             Tolerance const &tolerance = kEpsilon) const;
-
-  virtual Type_ EvaluateBasisFunction(Index_ const &basis_function_index,
-      ParametricCoordinate_ const &parametric_coordinate, Tolerance const &tolerance = kEpsilon) const;
-  virtual Type_ EvaluateBasisFunctionDerivative(Index_ const &basis_function_index,
-      ParametricCoordinate_ const &parametric_coordinate, Derivative_ const &derivative,
+  virtual Type_ EvaluateBasisFunction(
+      Index_ const &basis_function_index,
+      ParametricCoordinate_ const &parametric_coordinate,
+      Tolerance const &tolerance = kEpsilon) const;
+  virtual Type_ EvaluateBasisFunction(
+      Index_ const &basis_function_index,
+      Index_ const &basis_function_index_without_offset,
+      ParametricCoordinate_ const &parametric_coordinate,
+      UniqueEvaluations_& unique_evaluations,
+      Tolerance const &tolerance = kEpsilon) const;
+  virtual Type_ EvaluateBasisFunctionDerivative(
+      Index_ const &basis_function_index,
+      ParametricCoordinate_ const &parametric_coordinate,
+      Derivative_ const &derivative,
+      Tolerance const &tolerance = kEpsilon) const;
+  virtual Type_ EvaluateBasisFunctionDerivative(
+      Index_ const &basis_function_index,
+      Index_ const &basis_function_index_without_offset,
+      IsTopLevelComputed_& top_level_computed,
+      ParametricCoordinate_ const &parametric_coordinate,
+      Derivative_ const &derivative,
+      UniqueDerivatives_& unique_derivatives,
+      UniqueEvaluations_& unique_evaluations,
       Tolerance const &tolerance = kEpsilon) const;
 
   virtual InsertionInformation_ InsertKnot(Dimension const &dimension, Knot_ knot,

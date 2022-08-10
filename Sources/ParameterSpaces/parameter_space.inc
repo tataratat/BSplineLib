@@ -185,6 +185,49 @@ ParameterSpace<parametric_dimensionality>::EvaluateBasisFunction(Index_ const &b
 
 template<int parametric_dimensionality>
 typename ParameterSpace<parametric_dimensionality>::Type_
+ParameterSpace<parametric_dimensionality>::EvaluateBasisFunction(
+    Index_ const &basis_function_index,
+    Index_ const &basis_function_index_without_offset,
+    ParametricCoordinate_ const &parametric_coordinate,
+    UniqueEvaluations_& unique_evaluations,
+    Tolerance const &tolerance) const {
+#ifndef NDEBUG
+  Message const kName{"splinelib::sources::parameter_spaces::ParameterSpace::EvaluateBasisFunction"};
+
+  try {
+    ThrowIfBasisFunctionIndexIsInvalid(basis_function_index);
+    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
+  } catch (InvalidArgument const &exception) { Throw(exception, kName); }
+    catch (OutOfRange const &exception) { Throw(exception, kName); }
+#endif
+
+
+  Type_ basis_function_value{1.0};
+  Dimension::ForEach(
+      0,
+      parametric_dimensionality,
+      [&] (Dimension const &dimension) {
+        Dimension::Type_ const &current_dimension = dimension.Get();
+
+        // extract the basis function we need
+        const auto& basis_functions =
+            basis_functions_[current_dimension];
+        const auto& basis_function =
+            *basis_functions[basis_function_index[dimension].Get()];
+
+        basis_function_value *= basis_function(
+            parametric_coordinate[current_dimension],
+            unique_evaluations[current_dimension],
+            basis_function_index_without_offset[dimension].Get(),
+            tolerance
+        );
+      }
+  );
+  return basis_function_value;
+}
+
+template<int parametric_dimensionality>
+typename ParameterSpace<parametric_dimensionality>::Type_
 ParameterSpace<parametric_dimensionality>::EvaluateBasisFunctionDerivative(Index_ const &basis_function_index,
     ParametricCoordinate_ const &parametric_coordinate, Derivative_ const &derivative, Tolerance const &tolerance) const
 {
@@ -203,6 +246,64 @@ ParameterSpace<parametric_dimensionality>::EvaluateBasisFunctionDerivative(Index
     basis_function_derivative_value *=
         (*basis_functions_[current_dimension][basis_function_index[dimension].Get()])(
             parametric_coordinate[current_dimension], derivative[current_dimension], tolerance); });
+  return basis_function_derivative_value;
+}
+
+template<int parametric_dimensionality>
+typename ParameterSpace<parametric_dimensionality>::Type_
+ParameterSpace<parametric_dimensionality>::EvaluateBasisFunctionDerivative(
+    Index_ const &basis_function_index,
+    Index_ const &basis_function_index_without_offset,
+    IsTopLevelComputed_ &top_level_computed,
+    ParametricCoordinate_ const &parametric_coordinate,
+    Derivative_ const &derivative,
+    UniqueDerivatives_& unique_derivatives,
+    UniqueEvaluations_& unique_evaluations,
+    Tolerance const &tolerance) const {
+#ifndef NDEBUG
+  Message const kName{"splinelib::sources::parameter_spaces::ParameterSpace::EvaluateBasisFunctionDerivative"};
+
+  try {
+    ThrowIfBasisFunctionIndexIsInvalid(basis_function_index);
+    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
+  } catch (InvalidArgument const &exception) { Throw(exception, kName); }
+    catch (OutOfRange const &exception) { Throw(exception, kName); }
+#endif
+  Type_ basis_function_derivative_value{1.0};
+  Dimension::ForEach(
+      0,
+      parametric_dimensionality,
+      [&] (Dimension const &dimension) {
+
+        Dimension::Type_ const &current_dimension = dimension.Get();
+        // extract the basis function we need
+        const auto& basis_functions =
+            basis_functions_[current_dimension];
+        const auto& basis_function =
+            *basis_functions[basis_function_index[dimension].Get()];
+
+        // for 0th derivative query, we let's call eval directly.
+        if (derivative[current_dimension] == Derivative{}) {
+            basis_function_derivative_value *= basis_function(
+                parametric_coordinate[current_dimension],
+                unique_evaluations[current_dimension],
+                basis_function_index_without_offset[dimension].Get(),
+                tolerance
+            );
+
+        } else {
+            basis_function_derivative_value *= basis_function(
+                parametric_coordinate[current_dimension],
+                derivative[current_dimension],
+                unique_derivatives[current_dimension],
+                unique_evaluations[current_dimension],
+                top_level_computed[current_dimension],
+                basis_function_index_without_offset[dimension].Get(),
+                tolerance
+            );
+        }
+      }
+  );
   return basis_function_derivative_value;
 }
 
