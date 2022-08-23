@@ -36,6 +36,8 @@ set(
 set_source_files_properties(${HEADERS} PROPERTIES LANGUAGE CXX HEADER_FILE_ONLY TRUE)
 
 add_library(input_output ${SOURCES})
+add_library(SplineLib::input_output ALIAS input_output)
+
 target_include_directories(input_output PUBLIC ${INCLUDE_DIRECTORIES})
 target_include_directories(input_output SYSTEM PRIVATE ${PUGIXML_INCLUDEDIR})
 target_link_libraries(input_output PUBLIC utilities splines 

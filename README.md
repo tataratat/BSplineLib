@@ -1,3 +1,12 @@
+# tataratat/SplineLib
+BSpline and NURBS library written in modern c++ for seamless integration to 
+[splinepy](https://github.com/tataratat/splinepy).  
+Checkout [upstream project](https://github.com/SplineLib/SplineLib) and
+`README` below for more information!
+
+
+<details><summary><strong>`SplinbLib/SplineLib`'s README</strong></summary><p>
+
 # SplineLib
 Library for spline manipulation.
 
@@ -106,3 +115,4 @@ Research Assistants:
   - Max Spahn
   - Christoph Susen
   - Konstantin Varbenov
+</p></details>

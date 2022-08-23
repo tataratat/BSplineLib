@@ -35,6 +35,8 @@ set(
 set_source_files_properties(${HEADERS} PROPERTIES LANGUAGE CXX HEADER_FILE_ONLY TRUE)
 
 add_library(parameter_spaces ${SOURCES})
+add_library(SplineLib::parameter_spaces ALIAS ${SOURCES})
+
 target_include_directories(parameter_spaces PUBLIC ${INCLUDE_DIRECTORIES})
 target_link_libraries(parameter_spaces PUBLIC utilities)
 target_compile_definitions(parameter_spaces INTERFACE ${COMPILE_DEFINITIONS})

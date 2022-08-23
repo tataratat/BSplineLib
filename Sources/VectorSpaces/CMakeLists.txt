@@ -33,6 +33,8 @@ if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.19")
 else()
     add_library(vector_spaces INTERFACE)
 endif()
+add_library(SplineLib::vector_spaces ALIAS vector_spaces)
+
 target_include_directories(vector_spaces INTERFACE ${INCLUDE_DIRECTORIES})
 target_link_libraries(vector_spaces INTERFACE utilities)
 target_compile_definitions(vector_spaces INTERFACE ${COMPILE_DEFINITIONS})
