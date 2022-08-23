@@ -43,6 +43,8 @@ set(
 set_source_files_properties(${HEADERS} PROPERTIES LANGUAGE CXX HEADER_FILE_ONLY TRUE)
 
 add_library(utilities ${SOURCES})
+add_library(SplineLib::utilities ALIAS utilities)
+
 target_include_directories(utilities PUBLIC ${INCLUDE_DIRECTORIES})
 target_compile_definitions(utilities INTERFACE ${COMPILE_DEFINITIONS})
 target_compile_options(utilities PRIVATE ${COMPILE_OPTIONS})
