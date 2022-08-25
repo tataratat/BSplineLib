@@ -39,6 +39,7 @@ target_include_directories(splines PUBLIC ${INCLUDE_DIRECTORIES})
 target_link_libraries(splines PUBLIC utilities parameter_spaces vector_spaces)
 target_compile_definitions(splines INTERFACE ${COMPILE_DEFINITIONS})
 target_compile_options(splines PRIVATE ${COMPILE_OPTIONS})
+target_compile_features(splines PUBLIC ${SPLINELIB_COMPILE_FEATURES})
 
 install(
         TARGETS splines

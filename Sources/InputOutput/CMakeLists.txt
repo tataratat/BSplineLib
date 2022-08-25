@@ -42,8 +42,10 @@ target_include_directories(input_output PUBLIC ${INCLUDE_DIRECTORIES})
 target_include_directories(input_output SYSTEM PRIVATE ${PUGIXML_INCLUDEDIR})
 target_link_libraries(input_output PUBLIC utilities splines 
                                    PRIVATE pugixml::pugixml)
-target_compile_definitions(input_output INTERFACE ${COMPILE_DEFINITIONS} PRIVATE ${PUGIXML_CFLAGS_OTHER})
+target_compile_definitions(input_output INTERFACE ${COMPILE_DEFINITIONS}
+                                        PRIVATE ${PUGIXML_CFLAGS_OTHER})
 target_compile_options(input_output PRIVATE ${COMPILE_OPTIONS})
+target_compile_features(input_output PUBLIC ${SPLINELIB_COMPILE_FEATURES})
 
 install(
         TARGETS input_output

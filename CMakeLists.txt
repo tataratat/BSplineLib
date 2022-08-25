@@ -17,7 +17,6 @@ cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 
 # Project
 project(SplineLib VERSION 1.0.0 LANGUAGES CXX)
-set(CMAKE_CXX_STANDARD 20)
 set(namespace "${PROJECT_NAME}::")
 set(targets_export_name "${PROJECT_NAME}Targets")
 option(SPLINELIB_SHARED "Build shared library" OFF)
@@ -27,10 +26,10 @@ option(SPLINELIB_BUILD_PUGIXML "Build pugixml" ON)
 
 # Overwrite some options if this is for splinepy
 if(SPLINEPY_BUILD_SPLINELIB)
-  set(SPLINELIB_SHARED OFF)
-  set(SPLINELIB_GOOGLETEST OFF)
-  set(SPLINELIB_BUILD_TOOLS OFF)
-  set(SPLINELIB_BUILD_PUGIXML ON)
+    set(SPLINELIB_SHARED OFF)
+    set(SPLINELIB_GOOGLETEST OFF)
+    set(SPLINELIB_BUILD_TOOLS OFF)
+    set(SPLINELIB_BUILD_PUGIXML ON)
 endif()
 
 # Setup
@@ -49,7 +48,7 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    set(OPTIMIZATION_FLAGS $<$<NOT:$<CONFIG:Debug>>:-O3 -march=native>)
+    set(OPTIMIZATION_FLAGS $<$<NOT:$<CONFIG:Debug>>:-O3>)
     set(PARALLELIZATION_FLAGS)
     set(RUNTIME_CHECKS_DEBUG)
     set(WARNING_FLAGS
@@ -66,7 +65,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
                                      -Wno-unused-variable>
             $<$<BOOL:${SPLINELIB_GOOGLETEST}>:-Wno-gnu-zero-variadic-macro-arguments>)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    set(OPTIMIZATION_FLAGS $<$<NOT:$<CONFIG:Debug>>:-O3 -march=native>)
+    set(OPTIMIZATION_FLAGS $<$<NOT:$<CONFIG:Debug>>:-O3>)
     set(PARALLELIZATION_FLAGS)
     set(RUNTIME_CHECKS_DEBUG)
     set(WARNING_FLAGS
@@ -97,8 +96,10 @@ set(CMAKE_DEBUG_POSTFIX "d")
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)
     message(STATUS "Build debug!")
+    set(SPLINELIB_COMPILE_FEATURES cxx_std_20)
 else()
     message(STATUS "Build release!")
+    set(SPLINELIB_COMPILE_FEATURES cxx_std_17)
 endif()
 if(SPLINELIB_SHARED)
     message(STATUS "Build shared!")
