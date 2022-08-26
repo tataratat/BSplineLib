@@ -61,8 +61,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
             -Wshadow
             -Wfloat-equal
             -Weffc++
-            $<$<NOT:$<CONFIG:Debug>>:-Wno-unused-parameter
-                                     -Wno-unused-variable>
+            $<$<NOT:$<CONFIG:Debug>>:-Wno-unused-parameter>
+            $<$<NOT:$<CONFIG:Debug>>:-Wno-unused-variable>
             $<$<BOOL:${SPLINELIB_GOOGLETEST}>:-Wno-gnu-zero-variadic-macro-arguments>)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     set(OPTIMIZATION_FLAGS $<$<NOT:$<CONFIG:Debug>>:-O3>)
