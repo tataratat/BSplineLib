@@ -1,9 +1,6 @@
-#ifndef SOURCES_SPLINES_B_SPLINE_CPP_
-#define SOURCES_SPLINES_B_SPLINE_CPP_
-
+#ifdef SPLINELIB_STATIC_EXPLICIT_LIBRARY
 #include "Sources/Splines/b_spline.hpp"
 
-#ifdef SPLINELIB_STATIC_EXPLICIT_LIBRARY
 template class splinelib::sources::splines::BSpline<1, 1>;
 template class splinelib::sources::splines::BSpline<1, 2>;
 template class splinelib::sources::splines::BSpline<1, 3>;
@@ -114,5 +111,3 @@ template class splinelib::sources::splines::BSpline<10, 8>;
 template class splinelib::sources::splines::BSpline<10, 9>;
 template class splinelib::sources::splines::BSpline<10, 10>;
 #endif
-
-#endif 

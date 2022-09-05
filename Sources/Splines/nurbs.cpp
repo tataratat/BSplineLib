@@ -1,9 +1,5 @@
-#ifndef SOURCES_SPLINES_NURBS_CPP_
-#define SOURCES_SPLINES_NURBS_CPP_
-
-#include "Sources/Splines/nurbs.hpp"
-
 #ifdef SPLINELIB_STATIC_EXPLICIT_LIBRARY
+#include "Sources/Splines/nurbs.hpp"
 template class splinelib::sources::splines::Nurbs<1, 1>;
 template class splinelib::sources::splines::Nurbs<1, 2>;
 template class splinelib::sources::splines::Nurbs<1, 3>;
