@@ -27,6 +27,8 @@ set(
 set(
     SOURCES
     spline_item.cpp
+    b_spline.cpp
+    nurbs.cpp
 #
     ${HEADERS}
 )
