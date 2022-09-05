@@ -29,6 +29,7 @@ set(
     knot_vector.cpp
     non_zero_degree_b_spline_basis_function.cpp
     zero_degree_b_spline_basis_function.cpp
+    parameter_space.cpp
 #
     ${HEADERS}
 )
