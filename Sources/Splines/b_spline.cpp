@@ -1,4 +1,4 @@
-#ifdef SPLINELIB_STATIC_EXPLICIT_LIBRARY
+#ifdef SPLINELIB_EXPLICIT_STATIC_LIBRARY
 #include "Sources/Splines/b_spline.hpp"
 
 template class splinelib::sources::splines::BSpline<1, 1>;

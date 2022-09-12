@@ -1,4 +1,4 @@
-#ifdef SPLINELIB_STATIC_EXPLICIT_LIBRARY
+#ifdef SPLINELIB_EXPLICIT_STATIC_LIBRARY
 #include "Sources/Splines/nurbs.hpp"
 template class splinelib::sources::splines::Nurbs<1, 1>;
 template class splinelib::sources::splines::Nurbs<1, 2>;
@@ -110,5 +110,3 @@ template class splinelib::sources::splines::Nurbs<10, 8>;
 template class splinelib::sources::splines::Nurbs<10, 9>;
 template class splinelib::sources::splines::Nurbs<10, 10>;
 #endif
-
-#endif 

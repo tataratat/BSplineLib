@@ -24,21 +24,19 @@ set(
 set(
     SOURCES
 #
-    ${HEADERS}
+    vector_space.cpp
+    weighted_vector_space.cpp
 )
 set_source_files_properties(${HEADERS} PROPERTIES LANGUAGE CXX HEADER_FILE_ONLY TRUE)
 
-if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.19")
-    add_library(vector_spaces INTERFACE ${SOURCES})
-else()
-    add_library(vector_spaces INTERFACE)
-endif()
+add_library(vector_spaces ${SOURCES})
 add_library(SplineLib::vector_spaces ALIAS vector_spaces)
 
-target_include_directories(vector_spaces INTERFACE ${INCLUDE_DIRECTORIES})
-target_link_libraries(vector_spaces INTERFACE utilities)
-target_compile_definitions(vector_spaces INTERFACE ${COMPILE_DEFINITIONS})
-target_compile_features(vector_spaces INTERFACE ${SPLINELIB_COMPILE_FEATURES})
+# TODO: make sure PRIVATE is enough
+target_include_directories(vector_spaces PUBLIC ${INCLUDE_DIRECTORIES})
+target_link_libraries(vector_spaces PRIVATE utilities)
+target_compile_definitions(vector_spaces PRIVATE ${COMPILE_DEFINITIONS})
+target_compile_features(vector_spaces PRIVATE ${SPLINELIB_COMPILE_FEATURES})
 
 install(
         TARGETS vector_spaces
