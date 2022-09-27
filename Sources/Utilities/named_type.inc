@@ -35,6 +35,20 @@ constexpr NamedType<Name, Type>::NamedType(Type_ value)
 #endif
 }
 
+/// This kinda goes against the whole purpose of namedtype, but improves
+/// usability a lot.
+template<typename Name, typename Type>
+template<typename InputType>
+constexpr Type_& NamedType<Name, Type>::operator=(InputType const& rhs) {
+  if constexpr (!std::is_same<Type_, InputType>::value) {
+    throw DomainError(
+        "Type mismatch in `NameType::operator=`. "
+        + "Input type does not match NamedType's Type.");
+  }
+  value_ = rhs;
+  return value_;
+};
+
 template<typename Name, typename Type>
 constexpr NamedType<Name, Type>&
 NamedType<Name, Type>::operator+=(NamedType const& rhs) {
