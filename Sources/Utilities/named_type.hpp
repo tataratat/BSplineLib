@@ -136,7 +136,7 @@ public:
   constexpr NamedType(NamedType&& other) noexcept = default;
   constexpr NamedType& operator=(NamedType const& rhs) = default;
   constexpr NamedType& operator=(NamedType&& rhs) noexcept = default;
-  template<InputType>
+  template<typename InputType>
   constexpr Type_& operator=(InputType const& rhs);
   ~NamedType() = default;
 
