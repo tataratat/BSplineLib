@@ -245,7 +245,7 @@ ParameterSpace<parametric_dimensionality>::DetermineBezierExtractionKnots(
 
 template<int parametric_dimensionality>
 template<bool clear_first>
-void ParameterSpace<parametric_dimensionality>::InitializeUniqueEvalutions(
+void ParameterSpace<parametric_dimensionality>::InitializeUniqueEvaluations(
     UniqueEvaluations_& unique_evaluations) const {
 
   if constexpr (clear_first) {

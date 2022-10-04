@@ -153,7 +153,7 @@ public:
                                  Tolerance const& tolerance = kEpsilon) const;
 
   template<bool clear_first = true>
-  void InitializeUniqueEvalutions(UniqueEvaluations_& unique_evaluations) const;
+  void InitializeUniqueEvaluations(UniqueEvaluations_& unique_evaluations) const;
   template<bool clear_first = true>
   void InitializeUniqueDerivativeContainers(
       Derivative_ const& derivative,
