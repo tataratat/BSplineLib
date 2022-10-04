@@ -152,15 +152,14 @@ public:
   DetermineBezierExtractionKnots(Dimension const& dimension,
                                  Tolerance const& tolerance = kEpsilon) const;
 
-  template<bool clear_first=true>
-  void
-  InitializeUniqueEvalutions(UniqueEvaluations_& unique_evaluations) const;
-  template<bool clear_first=true>
-  void
-  InitializeUniqueDerivativeContainers(Derivative_ const& derivative,
-                                       IsTopLevelComputed_& top_levels_computed,
-                                       UniqueDerivatives_& unique_derivatives,
-                                       UniqueEvaluations_& unique_evaluations) const;
+  template<bool clear_first = true>
+  void InitializeUniqueEvalutions(UniqueEvaluations_& unique_evaluations) const;
+  template<bool clear_first = true>
+  void InitializeUniqueDerivativeContainers(
+      Derivative_ const& derivative,
+      IsTopLevelComputed_& top_levels_computed,
+      UniqueDerivatives_& unique_derivatives,
+      UniqueEvaluations_& unique_evaluations) const;
   virtual Type_
   EvaluateBasisFunction(Index_ const& basis_function_index,
                         ParametricCoordinate_ const& parametric_coordinate,
