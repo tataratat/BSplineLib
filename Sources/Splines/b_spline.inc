@@ -154,7 +154,7 @@ BSpline<parametric_dimensionality, dimensionality>::operator()(
   const auto& degrees = parameter_space.GetDegrees();
   Coordinate_ evaluated_b_spline_derivative{};
 
-  // prepare map to hold unique evaluation values.
+  // prepare array of vectors to hold unique evaluation values.
   typename ParameterSpace_::UniqueDerivatives_ unique_derivatives;
   typename ParameterSpace_::UniqueEvaluations_ unique_evaluations;
   typename ParameterSpace_::IsTopLevelComputed_ top_levels_computed;
