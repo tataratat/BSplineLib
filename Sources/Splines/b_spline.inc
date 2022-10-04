@@ -97,24 +97,8 @@ BSpline<parametric_dimensionality, dimensionality>::operator()(
 
   // prepare vectors to hold unique evaluation values.
   typename ParameterSpace_::UniqueEvaluations_ unique_evaluations;
+  parameter_space.template InitializeUniqueEvaluations<false>(unique_evaluations);
 
-  for (int i{}; i < parametric_dimensionality; ++i) {
-    // For `left->lookup & right->compute` to work, we should visit each
-    // node only once with depth-first method. If it has been visited already,
-    // we have to look it up.
-    // At the next loop, top-level nodes are visited multiple times. Thus,
-    // this should ensure that revisit is always a lookup.
-    //
-    // entry hints:
-    //   0 : zero-th degree evaluations  <- currently not used
-    //   1 : first degree evaluation
-    //   ...
-    //   degree + 0 : top-level evaluation, 0th support
-    //   ...
-    //   degree + degree : top-level evaluation, last support
-    auto& unique_evaluation = unique_evaluations[i];
-    unique_evaluation.assign(degrees[i] * 2 + 1, -1.0);
-  }
   for (Index_ non_zero_basis_function{parameter_space.First()};
        non_zero_basis_function != parameter_space.Behind();
        ++non_zero_basis_function) {
@@ -154,36 +138,16 @@ BSpline<parametric_dimensionality, dimensionality>::operator()(
   const auto& degrees = parameter_space.GetDegrees();
   Coordinate_ evaluated_b_spline_derivative{};
 
-  // prepare map to hold unique evaluation values.
+  // prepare array of vectors to hold unique evaluation values.
   typename ParameterSpace_::UniqueDerivatives_ unique_derivatives;
   typename ParameterSpace_::UniqueEvaluations_ unique_evaluations;
   typename ParameterSpace_::IsTopLevelComputed_ top_levels_computed;
 
-  // Assign spaces for lookup. Similar procedure to evaluation.
-  for (int i{}; i < parametric_dimensionality; ++i) {
-    auto const& current_degree = degrees[i].Get();
-
-    // entry hints:
-    //   0 : zero-th degree derivative
-    //   1 : first degree derivative
-    //   ...
-    //   derivative + 0 : top-level derivative, 0th support
-    //   ...
-    //   derivative + degree : top-level derivative, last support
-    auto& unique_derivative = unique_derivatives[i];
-    unique_derivative.assign(derivative[i].Get() + current_degree + 1, 0.0);
-
-    // may not use all the slots, but this guarantees enough space.
-    // (current_degree - derivative[i]) would be an option, but this becomes
-    // negative for allowed but unreasonable derivative queries.
-    // TODO maybe return zero right away?
-    auto& unique_evaluation = unique_evaluations[i];
-    unique_evaluation.assign(current_degree * 2 + 1, -1.0);
-
-    // number of support is degree + 1
-    auto& top_level_computed = top_levels_computed[i];
-    top_level_computed.assign(current_degree + 1, false);
-  }
+  parameter_space.template InitializeUniqueDerivativeContainers<false>(
+                                                       derivative,
+                                                       top_levels_computed,
+                                                       unique_derivatives,
+                                                       unique_evaluations);
 
   for (Index_ non_zero_basis_function{parameter_space.First()};
        non_zero_basis_function != parameter_space.Behind();
