@@ -27,6 +27,7 @@ set(
 set(
     SOURCES
     spline_item.cpp
+    spline.cpp
     b_spline.cpp
     nurbs.cpp
 #
