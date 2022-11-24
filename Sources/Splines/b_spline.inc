@@ -92,7 +92,6 @@ BSpline<parametric_dimensionality, dimensionality>::operator()(
   }
 #endif
   ParameterSpace_ const& parameter_space = *Base_::parameter_space_;
-  const auto& degrees = parameter_space.GetDegrees();
   Coordinate_ evaluated_b_spline{};
 
   // prepare vectors to hold unique evaluation values.
