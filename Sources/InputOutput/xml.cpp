@@ -128,6 +128,7 @@ void Write(Splines const& splines,
 #endif
     File file;
     Node spline_list{file.append_child("SplineList")};
+    spline_list.append_attribute("SplineType") = "1";
     spline_list.append_attribute("NumberOfSplines") =
         to_string(splines.size()).c_str();
     for_each(splines.begin(), splines.end(), [&](SplineEntry const& spline) {
