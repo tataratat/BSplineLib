@@ -79,6 +79,8 @@ public:
   friend bool operator==<dimensionality>(VectorSpace const& lhs,
                                          VectorSpace const& rhs);
   virtual Coordinate_ const& operator[](Index const& coordinate) const;
+  virtual Coordinates_& GetCoordinates() {return coordinates_;}
+  virtual Coordinates_ const& GetCoordinates() const {return coordinates_;}
 
   virtual int GetNumberOfCoordinates() const;
   virtual void Replace(Index const& coordinate_index, Coordinate_ coordinate);
