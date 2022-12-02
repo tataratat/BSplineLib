@@ -147,7 +147,6 @@ public:
   // Number of non-zero basis functions is equal to p+1 - see NURBS book P2.2.
   NumberOfBasisFunctions_ GetNumberOfNonZeroBasisFunctions() const;
 
-
   virtual Index_ FindFirstNonZeroBasisFunction(
       ParametricCoordinate_ const& parametric_coordinate,
       Tolerance const& tolerance = kEpsilon) const;
@@ -156,7 +155,8 @@ public:
                                  Tolerance const& tolerance = kEpsilon) const;
 
   template<bool clear_first = true>
-  void InitializeUniqueEvaluations(UniqueEvaluations_& unique_evaluations) const;
+  void
+  InitializeUniqueEvaluations(UniqueEvaluations_& unique_evaluations) const;
   template<bool clear_first = true>
   void InitializeUniqueDerivativeContainers(
       Derivative_ const& derivative,

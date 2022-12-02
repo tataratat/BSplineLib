@@ -96,7 +96,8 @@ BSpline<parametric_dimensionality, dimensionality>::operator()(
 
   // prepare vectors to hold unique evaluation values.
   typename ParameterSpace_::UniqueEvaluations_ unique_evaluations;
-  parameter_space.template InitializeUniqueEvaluations<false>(unique_evaluations);
+  parameter_space.template InitializeUniqueEvaluations<false>(
+      unique_evaluations);
 
   for (Index_ non_zero_basis_function{parameter_space.First()};
        non_zero_basis_function != parameter_space.Behind();
@@ -142,10 +143,10 @@ BSpline<parametric_dimensionality, dimensionality>::operator()(
   typename ParameterSpace_::IsTopLevelComputed_ top_levels_computed;
 
   parameter_space.template InitializeUniqueDerivativeContainers<false>(
-                                                       derivative,
-                                                       top_levels_computed,
-                                                       unique_derivatives,
-                                                       unique_evaluations);
+      derivative,
+      top_levels_computed,
+      unique_derivatives,
+      unique_evaluations);
 
   for (Index_ non_zero_basis_function{parameter_space.First()};
        non_zero_basis_function != parameter_space.Behind();
