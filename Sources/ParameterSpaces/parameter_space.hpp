@@ -144,6 +144,9 @@ public:
 
   virtual NumberOfBasisFunctions_ GetNumberOfBasisFunctions() const;
   virtual int GetTotalNumberOfBasisFunctions() const;
+  // Number of non-zero basis functions is equal to p+1 - see NURBS book P2.2.
+  NumberOfBasisFunctions_ GetNumberOfNonZeroBasisFunctions() const;
+
 
   virtual Index_ FindFirstNonZeroBasisFunction(
       ParametricCoordinate_ const& parametric_coordinate,
@@ -245,7 +248,6 @@ private:
 
   // Number of non-zero basis functions is equal to p+1 - see NURBS book P2.2.
   int GetNumberOfNonZeroBasisFunctions(Dimension const& dimension) const;
-  NumberOfBasisFunctions_ GetNumberOfNonZeroBasisFunctions() const;
   // Number of basis functions n is equal to m-(p+1) - see NURBS book P2.8.
   Length GetNumberOfBasisFunctions(Dimension const& dimension) const;
 
