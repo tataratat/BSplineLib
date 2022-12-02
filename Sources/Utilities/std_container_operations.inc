@@ -53,8 +53,10 @@ constexpr ContainerTypeTo TransformNamedTypes(ContainerTypeFrom const& from) {
   using TypeTo = typename ContainerTypeTo::value_type;
   using std::transform;
 
-  static_assert(is_named_type<TypeFrom>,
-                "Source standard library container must contain NamedTypes.");
+  static_assert(
+      is_named_type<TypeFrom>,
+      "Source standard library container must contain NamedTypes."
+  );
 
   std::function<TypeTo(TypeFrom const&)> const& transformation =
       [](TypeFrom const& value) {
@@ -70,8 +72,10 @@ constexpr ContainerTypeTo TransformNamedTypes(ContainerTypeFrom const& from) {
     to.reserve(from.size());
     transform(from.begin(), from.end(), std::back_inserter(to), transformation);
   } else {
-    static_assert(error_handling::is_false<ContainerTypeTo>,
-                  "Only std::array and std::vector are supported.");
+    static_assert(
+        error_handling::is_false<ContainerTypeTo>,
+        "Only std::array and std::vector are supported."
+    );
   }
   return to;
 }
@@ -80,7 +84,8 @@ template<typename ContainerType>
 constexpr bool DoesContainEqualValues(
     ContainerType const& lhs,
     ContainerType const& rhs,
-    typename ContainerType::value_type::Type_ const& tolerance) {
+    typename ContainerType::value_type::Type_ const& tolerance
+) {
   using ValueType = typename ContainerType::value_type;
   using std::begin, std::end;
 
@@ -88,9 +93,11 @@ constexpr bool DoesContainEqualValues(
   try {
     numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "splinelib::sources::utilities::std_container_operations::"
-          "DoesContainEqualValues");
+    Throw(
+        exception,
+        "splinelib::sources::utilities::std_container_operations::"
+        "DoesContainEqualValues"
+    );
   }
 #endif
   return std::equal(
@@ -100,14 +107,16 @@ constexpr bool DoesContainEqualValues(
       end(rhs),
       [&](ValueType const& lhs_value, ValueType const& rhs_value) {
         return IsEqual(lhs_value, rhs_value, tolerance);
-      });
+      }
+  );
 }
 
 template<typename ContainerType>
 constexpr bool DoesContainPointersToEqualValues(
     ContainerType const& lhs,
     ContainerType const& rhs,
-    typename ContainerType::value_type::element_type::Type_ const& tolerance) {
+    typename ContainerType::value_type::element_type::Type_ const& tolerance
+) {
   using ValueType = typename ContainerType::value_type;
   using std::begin, std::end;
 
@@ -115,9 +124,11 @@ constexpr bool DoesContainPointersToEqualValues(
   try {
     numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "splinelib::sources::utilities::std_container_operations::"
-          "DoesContainPointersToEqualValues");
+    Throw(
+        exception,
+        "splinelib::sources::utilities::std_container_operations::"
+        "DoesContainPointersToEqualValues"
+    );
   }
 #endif
   return std::equal(
@@ -127,36 +138,40 @@ constexpr bool DoesContainPointersToEqualValues(
       end(rhs),
       [&](ValueType const& lhs_pointer, ValueType const& rhs_pointer) {
         return IsEqual(*lhs_pointer, *rhs_pointer, tolerance);
-      });
+      }
+  );
 }
 
 template<typename ContainerType>
-constexpr ContainerType& AddAndAssignToFirst(ContainerType& lhs,
-                                             ContainerType const& rhs) {
+constexpr ContainerType&
+AddAndAssignToFirst(ContainerType& lhs, ContainerType const& rhs) {
 #ifndef NDEBUG
   if constexpr (is_vector<ContainerType>)
     try {
       ThrowIfContainerSizesDiffer(lhs, rhs);
     } catch (InvalidArgument const& exception) {
-      Throw(exception,
-            "splinelib::sources::utilities::std_container_operations::"
-            "AddAndAssignToFirst");
+      Throw(
+          exception,
+          "splinelib::sources::utilities::std_container_operations::"
+          "AddAndAssignToFirst"
+      );
     }
 #endif
   std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std::plus{});
   return lhs;
 }
 template<typename ContainerType, typename... ContainerTypes>
-constexpr ContainerType&
-AddAndAssignToFirst(ContainerType& lhs,
-                    ContainerType const& rhs,
-                    ContainerTypes const&... further_rhs) {
+constexpr ContainerType& AddAndAssignToFirst(
+    ContainerType& lhs,
+    ContainerType const& rhs,
+    ContainerTypes const&... further_rhs
+) {
   return AddAndAssignToFirst(AddAndAssignToFirst(lhs, rhs), further_rhs...);
 }
 
 template<typename ContainerType, typename... ContainerTypes>
-constexpr ContainerType Add(ContainerType const& lhs,
-                            ContainerTypes const&... rhs) {
+constexpr ContainerType
+Add(ContainerType const& lhs, ContainerTypes const&... rhs) {
   ContainerType sum(lhs);
 #ifndef NDEBUG
   try {
@@ -164,45 +179,54 @@ constexpr ContainerType Add(ContainerType const& lhs,
     AddAndAssignToFirst(sum, rhs...);
 #ifndef NDEBUG
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "splinelib::sources::utilities::std_container_operations::Add");
+    Throw(
+        exception,
+        "splinelib::sources::utilities::std_container_operations::Add"
+    );
   }
 #endif
   return sum;
 }
 
 template<typename ContainerType>
-constexpr ContainerType& SubtractAndAssignToFirst(ContainerType& lhs,
-                                                  ContainerType const& rhs) {
+constexpr ContainerType&
+SubtractAndAssignToFirst(ContainerType& lhs, ContainerType const& rhs) {
 #ifndef NDEBUG
   if constexpr (is_vector<ContainerType>)
     try {
       ThrowIfContainerSizesDiffer(lhs, rhs);
     } catch (InvalidArgument const& exception) {
-      Throw(exception,
-            "splinelib::sources::utilities::std_container_operations::"
-            "SubtractAndAssignToFirst");
+      Throw(
+          exception,
+          "splinelib::sources::utilities::std_container_operations::"
+          "SubtractAndAssignToFirst"
+      );
     }
 #endif
-  std::transform(lhs.begin(),
-                 lhs.end(),
-                 rhs.begin(),
-                 lhs.begin(),
-                 std::minus{});
+  std::transform(
+      lhs.begin(),
+      lhs.end(),
+      rhs.begin(),
+      lhs.begin(),
+      std::minus{}
+  );
   return lhs;
 }
 template<typename ContainerType, typename... ContainerTypes>
-constexpr ContainerType&
-SubtractAndAssignToFirst(ContainerType& lhs,
-                         ContainerType const& rhs,
-                         ContainerTypes const&... further_rhs) {
-  return SubtractAndAssignToFirst(SubtractAndAssignToFirst(lhs, rhs),
-                                  further_rhs...);
+constexpr ContainerType& SubtractAndAssignToFirst(
+    ContainerType& lhs,
+    ContainerType const& rhs,
+    ContainerTypes const&... further_rhs
+) {
+  return SubtractAndAssignToFirst(
+      SubtractAndAssignToFirst(lhs, rhs),
+      further_rhs...
+  );
 }
 
 template<typename ContainerType, typename... ContainerTypes>
-constexpr ContainerType Subtract(ContainerType const& lhs,
-                                 ContainerTypes const&... rhs) {
+constexpr ContainerType
+Subtract(ContainerType const& lhs, ContainerTypes const&... rhs) {
   ContainerType difference{lhs};
 #ifndef NDEBUG
   try {
@@ -210,34 +234,43 @@ constexpr ContainerType Subtract(ContainerType const& lhs,
     SubtractAndAssignToFirst(difference, rhs...);
 #ifndef NDEBUG
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "splinelib::sources::utilities::std_container_operations::Subtract");
+    Throw(
+        exception,
+        "splinelib::sources::utilities::std_container_operations::Subtract"
+    );
   }
 #endif
   return difference;
 }
 
 template<typename ContainerType>
-constexpr ContainerType
-Multiply(ContainerType const& container,
-         typename ContainerType::value_type::Type_ const& factor) {
+constexpr ContainerType Multiply(
+    ContainerType const& container,
+    typename ContainerType::value_type::Type_ const& factor
+) {
   using std::bind, std::multiplies, std::placeholders::_1, std::transform;
 
   ContainerType multiplied;
   if constexpr (is_array<ContainerType>) {
-    transform(container.begin(),
-              container.end(),
-              multiplied.begin(),
-              bind(multiplies{}, _1, factor));
+    transform(
+        container.begin(),
+        container.end(),
+        multiplied.begin(),
+        bind(multiplies{}, _1, factor)
+    );
   } else if constexpr (is_vector<ContainerType>) {
     multiplied.reserve(container.size());
-    transform(container.begin(),
-              container.end(),
-              std::back_inserter(multiplied),
-              bind(multiplies{}, _1, factor));
+    transform(
+        container.begin(),
+        container.end(),
+        std::back_inserter(multiplied),
+        bind(multiplies{}, _1, factor)
+    );
   } else {
-    static_assert(error_handling::is_false<ContainerType>,
-                  "Only std::array and std::vector are supported.");
+    static_assert(
+        error_handling::is_false<ContainerType>,
+        "Only std::array and std::vector are supported."
+    );
   }
   return multiplied;
 }
@@ -246,28 +279,37 @@ template<typename ContainerType>
 ContainerType& DivideAndAssignToFirst(
     ContainerType& container,
     typename ContainerType::value_type::Type_ const& divisor,
-    typename ContainerType::value_type::Type_ const& tolerance) {
+    typename ContainerType::value_type::Type_ const& tolerance
+) {
 #ifndef NDEBUG
-  if (numeric_operations::IsEqual(divisor,
-                                  typename ContainerType::value_type::Type_{},
-                                  tolerance))
-    Throw(InvalidArgument("Division by zero (" + std::to_string(divisor)
-                          + ") encountered."),
-          "splinelib::sources::utilities::std_container_operations::"
-          "DivideAndAssignToFirst");
+  if (numeric_operations::IsEqual(
+          divisor,
+          typename ContainerType::value_type::Type_{},
+          tolerance
+      ))
+    Throw(
+        InvalidArgument(
+            "Division by zero (" + std::to_string(divisor) + ") encountered."
+        ),
+        "splinelib::sources::utilities::std_container_operations::"
+        "DivideAndAssignToFirst"
+    );
 #endif
-  std::transform(container.begin(),
-                 container.end(),
-                 container.begin(),
-                 std::bind(std::divides{}, std::placeholders::_1, divisor));
+  std::transform(
+      container.begin(),
+      container.end(),
+      container.begin(),
+      std::bind(std::divides{}, std::placeholders::_1, divisor)
+  );
   return container;
 }
 
 template<typename ContainerType>
-constexpr ContainerType
-Divide(ContainerType const& container,
-       typename ContainerType::value_type::Type_ const& divisor,
-       typename ContainerType::value_type::Type_ const& tolerance) {
+constexpr ContainerType Divide(
+    ContainerType const& container,
+    typename ContainerType::value_type::Type_ const& divisor,
+    typename ContainerType::value_type::Type_ const& tolerance
+) {
   ContainerType divided{container};
 #ifndef NDEBUG
   try {
@@ -275,8 +317,10 @@ Divide(ContainerType const& container,
     DivideAndAssignToFirst(divided, divisor, tolerance);
 #ifndef NDEBUG
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "splinelib::sources::utilities::std_container_operations::Divide");
+    Throw(
+        exception,
+        "splinelib::sources::utilities::std_container_operations::Divide"
+    );
   }
 #endif
   return divided;
@@ -290,15 +334,19 @@ DotProduct(ContainerType const& lhs, ContainerType const& rhs) {
     try {
       ThrowIfContainerSizesDiffer(lhs, rhs);
     } catch (InvalidArgument const& exception) {
-      Throw(exception,
-            "splinelib::sources::utilities::std_container_operations::"
-            "DotProduct");
+      Throw(
+          exception,
+          "splinelib::sources::utilities::std_container_operations::"
+          "DotProduct"
+      );
     }
 #endif
-  return std::inner_product(lhs.begin(),
-                            lhs.end(),
-                            rhs.begin(),
-                            typename ContainerType::value_type{});
+  return std::inner_product(
+      lhs.begin(),
+      lhs.end(),
+      rhs.begin(),
+      typename ContainerType::value_type{}
+  );
 }
 
 template<typename ContainerType>
@@ -316,9 +364,11 @@ EuclidianDistance(ContainerType const& lhs, ContainerType const& rhs) {
     try {
       ThrowIfContainerSizesDiffer(lhs, rhs);
     } catch (InvalidArgument const& exception) {
-      Throw(exception,
-            "splinelib::sources::utilities::std_container_operations::"
-            "EuclidianDistance");
+      Throw(
+          exception,
+          "splinelib::sources::utilities::std_container_operations::"
+          "EuclidianDistance"
+      );
     }
 #endif
   return TwoNorm(Subtract(lhs, rhs));
@@ -326,15 +376,19 @@ EuclidianDistance(ContainerType const& lhs, ContainerType const& rhs) {
 
 #ifndef NDEBUG
 template<typename ContainerTypeLhs, typename ContainerTypeRhs>
-void ThrowIfContainerSizesDiffer(ContainerTypeLhs const& lhs,
-                                 ContainerTypeRhs const& rhs) {
+void ThrowIfContainerSizesDiffer(
+    ContainerTypeLhs const& lhs,
+    ContainerTypeRhs const& rhs
+) {
   using std::to_string;
 
   int const &size_lhs = lhs.size(), &size_rhs = rhs.size();
   if (size_lhs != size_rhs)
-    throw InvalidArgument("Expected equal sizes of the lhs and rhs containers "
-                          "but encountered sizes of "
-                          + to_string(size_lhs) + " and " + to_string(size_rhs)
-                          + ", respectively.");
+    throw InvalidArgument(
+        "Expected equal sizes of the lhs and rhs containers "
+        "but encountered sizes of "
+        + to_string(size_lhs) + " and " + to_string(size_rhs)
+        + ", respectively."
+    );
 }
 #endif

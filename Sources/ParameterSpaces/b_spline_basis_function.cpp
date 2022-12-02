@@ -33,19 +33,21 @@ using std::move;
 
 // This function also creates all basis functions of lower degree required for
 // evaluation.
-BSplineBasisFunction*
-BSplineBasisFunction::CreateDynamic(KnotVector const& knot_vector,
-                                    KnotSpan const& start_of_support,
-                                    Degree degree,
-                                    Tolerance const& tolerance) {
+BSplineBasisFunction* BSplineBasisFunction::CreateDynamic(
+    KnotVector const& knot_vector,
+    KnotSpan const& start_of_support,
+    Degree degree,
+    Tolerance const& tolerance
+) {
 #ifndef NDEBUG
   Message const kName{"splinelib::sources::parameter_spaces::"
                       "BSplineBasisFunction::CreateDynamic"};
 
   try {
-    KnotSpan::ThrowIfNamedIntegerIsOutOfBounds(start_of_support,
-                                               (knot_vector.GetSize() - 1)
-                                                   - (degree.Get() + 1));
+    KnotSpan::ThrowIfNamedIntegerIsOutOfBounds(
+        start_of_support,
+        (knot_vector.GetSize() - 1) - (degree.Get() + 1)
+    );
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
     Throw(exception, kName);
@@ -54,14 +56,18 @@ BSplineBasisFunction::CreateDynamic(KnotVector const& knot_vector,
   }
 #endif
   if (degree == Degree{}) {
-    return new ZeroDegreeBSplineBasisFunction(knot_vector,
-                                              start_of_support,
-                                              tolerance);
+    return new ZeroDegreeBSplineBasisFunction(
+        knot_vector,
+        start_of_support,
+        tolerance
+    );
   } else {
-    return new NonZeroDegreeBSplineBasisFunction(knot_vector,
-                                                 start_of_support,
-                                                 move(degree),
-                                                 tolerance);
+    return new NonZeroDegreeBSplineBasisFunction(
+        knot_vector,
+        start_of_support,
+        move(degree),
+        tolerance
+    );
   }
 }
 
@@ -73,7 +79,8 @@ SharedPointer<BSplineBasisFunction> BSplineBasisFunction::CreateDynamic(
     KnotSpan const& start_of_support,
     Degree degree,
     UniqueBSplineBasisFunctions& unique_basis_functions,
-    Tolerance const& tolerance) {
+    Tolerance const& tolerance
+) {
 
   // make a unique identifier str
   const std::string basis_identifier = std::to_string(start_of_support.Get())
@@ -91,10 +98,11 @@ SharedPointer<BSplineBasisFunction> BSplineBasisFunction::CreateDynamic(
     // does not exist. create - store - return
     if (degree == Degree{}) {
       auto& new_basis = unique_basis_functions[basis_identifier];
-      new_basis =
-          std::make_shared<ZeroDegreeBSplineBasisFunction>(knot_vector,
-                                                           start_of_support,
-                                                           tolerance);
+      new_basis = std::make_shared<ZeroDegreeBSplineBasisFunction>(
+          knot_vector,
+          start_of_support,
+          tolerance
+      );
 
       return new_basis;
     } else {
@@ -104,17 +112,20 @@ SharedPointer<BSplineBasisFunction> BSplineBasisFunction::CreateDynamic(
           start_of_support,
           move(degree),
           unique_basis_functions,
-          tolerance);
+          tolerance
+      );
 
       return new_basis;
     }
   }
 }
 
-BSplineBasisFunction::BSplineBasisFunction(KnotVector const& knot_vector,
-                                           KnotSpan const& start_of_support,
-                                           Degree degree,
-                                           Tolerance const& tolerance)
+BSplineBasisFunction::BSplineBasisFunction(
+    KnotVector const& knot_vector,
+    KnotSpan const& start_of_support,
+    Degree degree,
+    Tolerance const& tolerance
+)
     : degree_(move(degree)) {
   Index const start{start_of_support.Get()};
   start_knot_ = knot_vector[start];
@@ -123,37 +134,46 @@ BSplineBasisFunction::BSplineBasisFunction(KnotVector const& knot_vector,
       knot_vector.DoesParametricCoordinateEqualBack(end_knot_, tolerance);
 }
 
-bool IsEqual(BSplineBasisFunction const& lhs,
-             BSplineBasisFunction const& rhs,
-             Tolerance const& tolerance) {
+bool IsEqual(
+    BSplineBasisFunction const& lhs,
+    BSplineBasisFunction const& rhs,
+    Tolerance const& tolerance
+) {
 #ifndef NDEBUG
   try {
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
     Throw(
         exception,
-        "splinelib::sources::parameter_spaces::IsEqual::BSplineBasisFunction");
+        "splinelib::sources::parameter_spaces::IsEqual::BSplineBasisFunction"
+    );
   }
 #endif
   return (
       (lhs.degree_ == rhs.degree_)
       && IsEqual(lhs.start_knot_, rhs.start_knot_, tolerance)
       && IsEqual(lhs.end_knot_, rhs.end_knot_, tolerance)
-      && (lhs.end_knot_equals_last_knot_ == rhs.end_knot_equals_last_knot_));
+      && (lhs.end_knot_equals_last_knot_ == rhs.end_knot_equals_last_knot_)
+  );
 }
 
-bool operator==(BSplineBasisFunction const& lhs,
-                BSplineBasisFunction const& rhs) {
+bool operator==(
+    BSplineBasisFunction const& lhs,
+    BSplineBasisFunction const& rhs
+) {
   return IsEqual(lhs, rhs);
 }
 
 bool BSplineBasisFunction::IsInSupport(
     ParametricCoordinate const& parametric_coordinate,
-    Tolerance const& tolerance) const {
-  return ((IsGreaterOrEqual(parametric_coordinate, start_knot_, tolerance)
-           && IsLess(parametric_coordinate, end_knot_, tolerance))
-          || (IsEqual(parametric_coordinate, end_knot_, tolerance)
-              && end_knot_equals_last_knot_));
+    Tolerance const& tolerance
+) const {
+  return (
+      (IsGreaterOrEqual(parametric_coordinate, start_knot_, tolerance)
+       && IsLess(parametric_coordinate, end_knot_, tolerance))
+      || (IsEqual(parametric_coordinate, end_knot_, tolerance)
+          && end_knot_equals_last_knot_)
+  );
 }
 
 } // namespace splinelib::sources::parameter_spaces

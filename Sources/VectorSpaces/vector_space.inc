@@ -22,9 +22,11 @@ VectorSpace<dimensionality>::VectorSpace(Coordinates_ coordinates)
     : coordinates_(std::move(coordinates)) {}
 
 template<int dimensionality>
-bool IsEqual(VectorSpace<dimensionality> const& lhs,
-             VectorSpace<dimensionality> const& rhs,
-             Tolerance const& tolerance) {
+bool IsEqual(
+    VectorSpace<dimensionality> const& lhs,
+    VectorSpace<dimensionality> const& rhs,
+    Tolerance const& tolerance
+) {
 #ifndef NDEBUG
   try {
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
@@ -37,16 +39,21 @@ bool IsEqual(VectorSpace<dimensionality> const& lhs,
       lhs.coordinates_.end(),
       rhs.coordinates_.begin(),
       rhs.coordinates_.end(),
-      std::bind(utilities::std_container_operations::DoesContainEqualValues<
-                    typename VectorSpace<dimensionality>::Coordinate_>,
-                std::placeholders::_1,
-                std::placeholders::_2,
-                tolerance));
+      std::bind(
+          utilities::std_container_operations::DoesContainEqualValues<
+              typename VectorSpace<dimensionality>::Coordinate_>,
+          std::placeholders::_1,
+          std::placeholders::_2,
+          tolerance
+      )
+  );
 }
 
 template<int dimensionality>
-bool operator==(VectorSpace<dimensionality> const& lhs,
-                VectorSpace<dimensionality> const& rhs) {
+bool operator==(
+    VectorSpace<dimensionality> const& lhs,
+    VectorSpace<dimensionality> const& rhs
+) {
   return IsEqual(lhs, rhs);
 }
 
@@ -57,8 +64,10 @@ VectorSpace<dimensionality>::operator[](Index const& coordinate) const {
   try {
     ThrowIfIndexIsInvalid(coordinate);
   } catch (OutOfRange const& exception) {
-    Throw(exception,
-          "splinelib::sources::vector_spaces::VectorSpace::operator[]");
+    Throw(
+        exception,
+        "splinelib::sources::vector_spaces::VectorSpace::operator[]"
+    );
   }
 #endif
   return coordinates_[coordinate.Get()];
@@ -70,8 +79,10 @@ int VectorSpace<dimensionality>::GetNumberOfCoordinates() const {
 }
 
 template<int dimensionality>
-void VectorSpace<dimensionality>::Replace(Index const& coordinate_index,
-                                          Coordinate_ coordinate) {
+void VectorSpace<dimensionality>::Replace(
+    Index const& coordinate_index,
+    Coordinate_ coordinate
+) {
 #ifndef NDEBUG
   try {
     ThrowIfIndexIsInvalid(coordinate_index);
@@ -83,8 +94,10 @@ void VectorSpace<dimensionality>::Replace(Index const& coordinate_index,
 }
 
 template<int dimensionality>
-void VectorSpace<dimensionality>::Insert(Index const& coordinate_index,
-                                         Coordinate_ coordinate) {
+void VectorSpace<dimensionality>::Insert(
+    Index const& coordinate_index,
+    Coordinate_ coordinate
+) {
 #ifndef NDEBUG
   try {
     ThrowIfIndexIsInvalid(coordinate_index);
@@ -92,8 +105,10 @@ void VectorSpace<dimensionality>::Insert(Index const& coordinate_index,
     Throw(exception, "splinelib::sources::vector_spaces::VectorSpace::Insert");
   }
 #endif
-  coordinates_.insert(coordinates_.begin() + coordinate_index.Get(),
-                      std::move(coordinate));
+  coordinates_.insert(
+      coordinates_.begin() + coordinate_index.Get(),
+      std::move(coordinate)
+  );
 }
 
 template<int dimensionality>
@@ -110,29 +125,38 @@ void VectorSpace<dimensionality>::Erase(Index const& coordinate_index) {
 
 template<int dimensionality>
 Coordinate VectorSpace<dimensionality>::DetermineMaximumDistanceFromOrigin(
-    Tolerance const& tolerance) const {
+    Tolerance const& tolerance
+) const {
 #ifndef NDEBUG
   try {
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "splinelib::sources::vector_spaces::VectorSpace::"
-          "DetermineMaximumDistanceFromOrigin");
+    Throw(
+        exception,
+        "splinelib::sources::vector_spaces::VectorSpace::"
+        "DetermineMaximumDistanceFromOrigin"
+    );
   }
 #endif
   Coordinate maximum_distance{};
-  std::for_each(coordinates_.begin(),
-                coordinates_.end(),
-                [&](Coordinate_ const& coordinate) {
-                  maximum_distance = std::max(
-                      utilities::std_container_operations::TwoNorm(coordinate),
-                      maximum_distance,
-                      std::bind(utilities::IsLess<typename Coordinate::Name_,
-                                                  typename Coordinate::Type_>,
-                                std::placeholders::_1,
-                                std::placeholders::_2,
-                                tolerance));
-                });
+  std::for_each(
+      coordinates_.begin(),
+      coordinates_.end(),
+      [&](Coordinate_ const& coordinate) {
+        maximum_distance = std::max(
+            utilities::std_container_operations::TwoNorm(coordinate),
+            maximum_distance,
+            std::bind(
+                utilities::IsLess<
+                    typename Coordinate::Name_,
+                    typename Coordinate::Type_>,
+                std::placeholders::_1,
+                std::placeholders::_2,
+                tolerance
+            )
+        );
+      }
+  );
   return maximum_distance;
 }
 
@@ -145,8 +169,8 @@ VectorSpace<dimensionality>::Write(Precision const& precision) const {
 
 #ifndef NDEBUG
 template<int dimensionality>
-void VectorSpace<dimensionality>::ThrowIfIndexIsInvalid(
-    Index const& coordinate) const {
+void VectorSpace<dimensionality>::ThrowIfIndexIsInvalid(Index const& coordinate
+) const {
   Index::ThrowIfNamedIntegerIsOutOfBounds(coordinate, coordinates_.size() - 1);
 }
 #endif

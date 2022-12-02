@@ -50,13 +50,17 @@ constexpr Type GetEpsilon();
 template<typename Type>
 constexpr int GetPrecision();
 template<typename Type>
-constexpr bool IsEqual(Type const& lhs,
-                       Type const& rhs,
-                       Type const& tolerance = GetEpsilon<Type>());
+constexpr bool IsEqual(
+    Type const& lhs,
+    Type const& rhs,
+    Type const& tolerance = GetEpsilon<Type>()
+);
 template<typename Type>
-constexpr bool IsLess(Type const& lhs,
-                      Type const& rhs,
-                      Type const& tolerance = GetEpsilon<Type>());
+constexpr bool IsLess(
+    Type const& lhs,
+    Type const& rhs,
+    Type const& tolerance = GetEpsilon<Type>()
+);
 
 #ifndef NDEBUG
 template<typename Type>

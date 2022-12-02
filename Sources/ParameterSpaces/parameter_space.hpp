@@ -42,12 +42,16 @@ template<int parametric_dimensionality>
 class ParameterSpace;
 
 template<int parametric_dimensionality>
-bool IsEqual(ParameterSpace<parametric_dimensionality> const& lhs,
-             ParameterSpace<parametric_dimensionality> const& rhs,
-             Tolerance const& tolerance = kEpsilon);
+bool IsEqual(
+    ParameterSpace<parametric_dimensionality> const& lhs,
+    ParameterSpace<parametric_dimensionality> const& rhs,
+    Tolerance const& tolerance = kEpsilon
+);
 template<int parametric_dimensionality>
-bool operator==(ParameterSpace<parametric_dimensionality> const& lhs,
-                ParameterSpace<parametric_dimensionality> const& rhs);
+bool operator==(
+    ParameterSpace<parametric_dimensionality> const& lhs,
+    ParameterSpace<parametric_dimensionality> const& rhs
+);
 
 // ParameterSpaces provide the B-spline basis functions corresponding to given
 // knot vectors and degrees.  Only clamped knot vectors of degree p — i.e., both
@@ -101,10 +105,10 @@ public:
   using KnotVectors_ = KnotVectors<parametric_dimensionality>;
   using NumberOfBasisFunctions_ = IndexLength_;
   using NumberOfParametricCoordinates_ = IndexLength_;
-  using OutputInformation_ =
-      Tuple<KnotVectorsOutputInformation<parametric_dimensionality>,
-            StringArray_,
-            StringArray_>;
+  using OutputInformation_ = Tuple<
+      KnotVectorsOutputInformation<parametric_dimensionality>,
+      StringArray_,
+      StringArray_>;
   using ParametricCoordinate_ =
       Array<ParametricCoordinate, parametric_dimensionality>;
   using ParametricCoordinates_ = Vector<ParametricCoordinate_>;
@@ -123,9 +127,11 @@ public:
       IsTopLevelComputedArray<parametric_dimensionality>;
 
   ParameterSpace() = default;
-  ParameterSpace(KnotVectors_ knot_vectors,
-                 Degrees_ degrees,
-                 Tolerance const& tolerance = kEpsilon);
+  ParameterSpace(
+      KnotVectors_ knot_vectors,
+      Degrees_ degrees,
+      Tolerance const& tolerance = kEpsilon
+  );
   ParameterSpace(ParameterSpace const& other);
   ParameterSpace(ParameterSpace&& other) noexcept = default;
   ParameterSpace& operator=(ParameterSpace const& rhs);
@@ -133,12 +139,16 @@ public:
   virtual ~ParameterSpace() = default;
 
   // Comparison based on tolerance.
-  friend bool IsEqual<parametric_dimensionality>(ParameterSpace const& lhs,
-                                                 ParameterSpace const& rhs,
-                                                 Tolerance const& tolerance);
+  friend bool IsEqual<parametric_dimensionality>(
+      ParameterSpace const& lhs,
+      ParameterSpace const& rhs,
+      Tolerance const& tolerance
+  );
   // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
-  friend bool operator==<parametric_dimensionality>(ParameterSpace const& lhs,
-                                                    ParameterSpace const& rhs);
+  friend bool operator==<parametric_dimensionality>(
+      ParameterSpace const& lhs,
+      ParameterSpace const& rhs
+  );
   virtual Index_ First() const;
   virtual Index_ Behind() const;
 
@@ -147,34 +157,41 @@ public:
 
   virtual Index_ FindFirstNonZeroBasisFunction(
       ParametricCoordinate_ const& parametric_coordinate,
-      Tolerance const& tolerance = kEpsilon) const;
-  virtual BezierInformation_
-  DetermineBezierExtractionKnots(Dimension const& dimension,
-                                 Tolerance const& tolerance = kEpsilon) const;
+      Tolerance const& tolerance = kEpsilon
+  ) const;
+  virtual BezierInformation_ DetermineBezierExtractionKnots(
+      Dimension const& dimension,
+      Tolerance const& tolerance = kEpsilon
+  ) const;
 
   template<bool clear_first = true>
-  void InitializeUniqueEvaluations(UniqueEvaluations_& unique_evaluations) const;
+  void InitializeUniqueEvaluations(UniqueEvaluations_& unique_evaluations
+  ) const;
   template<bool clear_first = true>
   void InitializeUniqueDerivativeContainers(
       Derivative_ const& derivative,
       IsTopLevelComputed_& top_levels_computed,
       UniqueDerivatives_& unique_derivatives,
-      UniqueEvaluations_& unique_evaluations) const;
-  virtual Type_
-  EvaluateBasisFunction(Index_ const& basis_function_index,
-                        ParametricCoordinate_ const& parametric_coordinate,
-                        Tolerance const& tolerance = kEpsilon) const;
-  virtual Type_
-  EvaluateBasisFunction(Index_ const& basis_function_index,
-                        Index_ const& basis_function_index_without_offset,
-                        ParametricCoordinate_ const& parametric_coordinate,
-                        UniqueEvaluations_& unique_evaluations,
-                        Tolerance const& tolerance = kEpsilon) const;
+      UniqueEvaluations_& unique_evaluations
+  ) const;
+  virtual Type_ EvaluateBasisFunction(
+      Index_ const& basis_function_index,
+      ParametricCoordinate_ const& parametric_coordinate,
+      Tolerance const& tolerance = kEpsilon
+  ) const;
+  virtual Type_ EvaluateBasisFunction(
+      Index_ const& basis_function_index,
+      Index_ const& basis_function_index_without_offset,
+      ParametricCoordinate_ const& parametric_coordinate,
+      UniqueEvaluations_& unique_evaluations,
+      Tolerance const& tolerance = kEpsilon
+  ) const;
   virtual Type_ EvaluateBasisFunctionDerivative(
       Index_ const& basis_function_index,
       ParametricCoordinate_ const& parametric_coordinate,
       Derivative_ const& derivative,
-      Tolerance const& tolerance = kEpsilon) const;
+      Tolerance const& tolerance = kEpsilon
+  ) const;
   virtual Type_ EvaluateBasisFunctionDerivative(
       Index_ const& basis_function_index,
       Index_ const& basis_function_index_without_offset,
@@ -183,34 +200,39 @@ public:
       Derivative_ const& derivative,
       UniqueDerivatives_& unique_derivatives,
       UniqueEvaluations_& unique_evaluations,
-      Tolerance const& tolerance = kEpsilon) const;
+      Tolerance const& tolerance = kEpsilon
+  ) const;
 
-  virtual InsertionInformation_
-  InsertKnot(Dimension const& dimension,
-             Knot_ knot,
-             Multiplicity const& multiplicity = kMultiplicity,
-             Tolerance const& tolerance = kEpsilon);
+  virtual InsertionInformation_ InsertKnot(
+      Dimension const& dimension,
+      Knot_ knot,
+      Multiplicity const& multiplicity = kMultiplicity,
+      Tolerance const& tolerance = kEpsilon
+  );
   // Tries to interpret knot removal as the inverse process of knot insertion.
-  virtual InsertionInformation_
-  RemoveKnot(Dimension const& dimension,
-             Knot_ const& knot,
-             Multiplicity const& multiplicity = kMultiplicity,
-             Tolerance const& tolerance = kEpsilon);
+  virtual InsertionInformation_ RemoveKnot(
+      Dimension const& dimension,
+      Knot_ const& knot,
+      Multiplicity const& multiplicity = kMultiplicity,
+      Tolerance const& tolerance = kEpsilon
+  );
   // Elevation information refer to degree elevation of Bezier basis functions.
-  virtual ElevationInformation_
-  ElevateDegree(Dimension const& dimension,
-                Multiplicity const& multiplicity = kMultiplicity,
-                Tolerance const& tolerance = kEpsilon);
+  virtual ElevationInformation_ ElevateDegree(
+      Dimension const& dimension,
+      Multiplicity const& multiplicity = kMultiplicity,
+      Tolerance const& tolerance = kEpsilon
+  );
   // Tries to interpret degree reduction as the inverse process of degree
   // elevation.
-  virtual ElevationInformation_
-  ReduceDegree(Dimension const& dimension,
-               Multiplicity const& multiplicity = kMultiplicity,
-               Tolerance const& tolerance = kEpsilon);
+  virtual ElevationInformation_ ReduceDegree(
+      Dimension const& dimension,
+      Multiplicity const& multiplicity = kMultiplicity,
+      Tolerance const& tolerance = kEpsilon
+  );
 
   virtual ParametricCoordinates_
-  Sample(NumberOfParametricCoordinates_ const& number_of_parametric_coordinates)
-      const;
+  Sample(NumberOfParametricCoordinates_ const& number_of_parametric_coordinates
+  ) const;
   virtual OutputInformation_
   Write(Precision const& precision = kPrecision) const;
 
@@ -218,7 +240,8 @@ public:
   virtual void ThrowIfParametricCoordinateIsOutsideScope(
       Dimension const& dimension,
       ParametricCoordinate const& parametric_coordinate,
-      Tolerance const& tolerance = kEpsilon) const;
+      Tolerance const& tolerance = kEpsilon
+  ) const;
 #endif
 
   virtual const KnotVectors_& GetKnotVectors() const { return knot_vectors_; }
@@ -253,18 +276,21 @@ private:
       Dimension const& dimension,
       ParametricCoordinate const& knot,
       Multiplicity const& multiplicity = kMultiplicity,
-      Tolerance const& tolerance = kEpsilon) const;
+      Tolerance const& tolerance = kEpsilon
+  ) const;
   ElevationInformation_ DetermineElevationInformation(
       Dimension const& dimension,
-      Multiplicity const& multiplicity = kMultiplicity) const;
+      Multiplicity const& multiplicity = kMultiplicity
+  ) const;
 
 #ifndef NDEBUG
-  void
-  ThrowIfBasisFunctionIndexIsInvalid(Index_ const& basis_function_index) const;
+  void ThrowIfBasisFunctionIndexIsInvalid(Index_ const& basis_function_index
+  ) const;
   void ThrowIfFrontOrBackKnotIsToBeInsertedOrRemoved(
       Dimension const& dimension,
       ParametricCoordinate const& knot,
-      Tolerance const& tolerance) const;
+      Tolerance const& tolerance
+  ) const;
 #endif
 };
 

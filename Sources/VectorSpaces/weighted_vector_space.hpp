@@ -38,12 +38,16 @@ template<int dimensionality>
 class WeightedVectorSpace;
 
 template<int dimensionality>
-bool IsEqual(WeightedVectorSpace<dimensionality> const& lhs,
-             WeightedVectorSpace<dimensionality> const& rhs,
-             Tolerance const& tolerance = kEpsilon);
+bool IsEqual(
+    WeightedVectorSpace<dimensionality> const& lhs,
+    WeightedVectorSpace<dimensionality> const& rhs,
+    Tolerance const& tolerance = kEpsilon
+);
 template<int dimensionality>
-bool operator==(WeightedVectorSpace<dimensionality> const& lhs,
-                WeightedVectorSpace<dimensionality> const& rhs);
+bool operator==(
+    WeightedVectorSpace<dimensionality> const& lhs,
+    WeightedVectorSpace<dimensionality> const& rhs
+);
 
 // WeightedVectorSpaces store coordinates and weights together using
 // homogeneous, i.e., weighted coordinates.
@@ -87,18 +91,23 @@ public:
   ~WeightedVectorSpace() override = default;
 
   // Comparison based on tolerance.
-  friend bool IsEqual<dimensionality>(WeightedVectorSpace const& lhs,
-                                      WeightedVectorSpace const& rhs,
-                                      Tolerance const& tolerance);
+  friend bool IsEqual<dimensionality>(
+      WeightedVectorSpace const& lhs,
+      WeightedVectorSpace const& rhs,
+      Tolerance const& tolerance
+  );
   // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
-  friend bool operator==<dimensionality>(WeightedVectorSpace const& lhs,
-                                         WeightedVectorSpace const& rhs);
+  friend bool operator==<dimensionality>(
+      WeightedVectorSpace const& lhs,
+      WeightedVectorSpace const& rhs
+  );
 
   static Coordinate_
   Project(HomogeneousCoordinate_ const& homogeneous_coordinate);
   virtual MaximumDistanceFromOriginAndMinimumWeight_
   DetermineMaximumDistanceFromOriginAndMinimumWeight(
-      Tolerance const& tolerance = kEpsilon) const;
+      Tolerance const& tolerance = kEpsilon
+  ) const;
 
   virtual OutputInformation_
   WriteProjected(Precision const& precision = kPrecision) const;
@@ -108,8 +117,10 @@ public:
 private:
   using HomogeneousCoordinates_ = typename Base_::Coordinates_;
 
-  HomogeneousCoordinates_ HomogenizeCoordinates(Coordinates_ const& coordinates,
-                                                Weights_ const& weights) const;
+  HomogeneousCoordinates_ HomogenizeCoordinates(
+      Coordinates_ const& coordinates,
+      Weights_ const& weights
+  ) const;
 };
 
 #include "Sources/VectorSpaces/weighted_vector_space.inc"

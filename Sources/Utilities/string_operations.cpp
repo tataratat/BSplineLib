@@ -30,10 +30,11 @@ bool EndsWith(String const& string, String const& pattern) {
   int const &length_of_string = string.length(),
             &length_of_pattern = pattern.length();
   return length_of_string >= length_of_pattern
-             ? string.compare((length_of_string - length_of_pattern),
-                              length_of_pattern,
-                              pattern)
-                   == 0
+             ? string.compare(
+                   (length_of_string - length_of_pattern),
+                   length_of_pattern,
+                   pattern
+               ) == 0
              : false;
 }
 
@@ -52,10 +53,14 @@ String TrimCharacter(String string, char const& character) {
       [&](char const& current_character) {
         return (current_character != character);
       };
-  string.erase(string_begin,
-               find_if(string_begin, string.end(), is_not_character));
-  string.erase(find_if(string.rbegin(), string.rend(), is_not_character).base(),
-               string.end());
+  string.erase(
+      string_begin,
+      find_if(string_begin, string.end(), is_not_character)
+  );
+  string.erase(
+      find_if(string.rbegin(), string.rend(), is_not_character).base(),
+      string.end()
+  );
   return string;
 }
 

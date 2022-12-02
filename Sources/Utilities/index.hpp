@@ -35,11 +35,11 @@ template<int size>
 class Index;
 
 template<int size>
-Index<size> operator+(Index<size> const& lhs,
-                      typename Index<size>::Value_ const& rhs);
+Index<size>
+operator+(Index<size> const& lhs, typename Index<size>::Value_ const& rhs);
 template<int size>
-Index<size> operator-(Index<size> const& lhs,
-                      typename Index<size>::Value_ const& rhs);
+Index<size>
+operator-(Index<size> const& lhs, typename Index<size>::Value_ const& rhs);
 template<int size>
 bool operator==(Index<size> const& lhs, Index<size> const& rhs);
 template<int size>

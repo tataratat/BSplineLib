@@ -45,50 +45,68 @@ public:
   using Type_ = Base_::Type_;
 
   ZeroDegreeBSplineBasisFunction() = default;
-  ZeroDegreeBSplineBasisFunction(KnotVector const& knot_vector,
-                                 KnotSpan const& start_of_support,
-                                 Tolerance const& tolerance = kEpsilon);
-  ZeroDegreeBSplineBasisFunction(ZeroDegreeBSplineBasisFunction const& other) =
-      default;
   ZeroDegreeBSplineBasisFunction(
-      ZeroDegreeBSplineBasisFunction&& other) noexcept = default;
+      KnotVector const& knot_vector,
+      KnotSpan const& start_of_support,
+      Tolerance const& tolerance = kEpsilon
+  );
+  ZeroDegreeBSplineBasisFunction(ZeroDegreeBSplineBasisFunction const& other
+  ) = default;
+  ZeroDegreeBSplineBasisFunction(ZeroDegreeBSplineBasisFunction&& other
+  ) noexcept = default;
   ZeroDegreeBSplineBasisFunction&
   operator=(ZeroDegreeBSplineBasisFunction const& rhs) = default;
-  ZeroDegreeBSplineBasisFunction&
-  operator=(ZeroDegreeBSplineBasisFunction&& rhs) noexcept = default;
+  ZeroDegreeBSplineBasisFunction& operator=(ZeroDegreeBSplineBasisFunction&& rhs
+  ) noexcept = default;
   ~ZeroDegreeBSplineBasisFunction() override = default;
 
   // Comparison based on tolerance.
-  friend bool IsEqual(ZeroDegreeBSplineBasisFunction const& lhs,
-                      ZeroDegreeBSplineBasisFunction const& rhs,
-                      Tolerance const& tolerance);
+  friend bool IsEqual(
+      ZeroDegreeBSplineBasisFunction const& lhs,
+      ZeroDegreeBSplineBasisFunction const& rhs,
+      Tolerance const& tolerance
+  );
   // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
-  friend bool operator==(ZeroDegreeBSplineBasisFunction const& lhs,
-                         ZeroDegreeBSplineBasisFunction const& rhs);
+  friend bool operator==(
+      ZeroDegreeBSplineBasisFunction const& lhs,
+      ZeroDegreeBSplineBasisFunction const& rhs
+  );
 
-  Type_ operator()(ParametricCoordinate const& parametric_coordinate,
-                   Tolerance const& tolerance = kEpsilon) const override;
-  Type_ operator()(ParametricCoordinate const& parametric_coordinate,
-                   UniqueEvaluations& unique_evaluations,
-                   int const& tree_info,
-                   Tolerance const& tolerance = kEpsilon) const override;
-  Type_ operator()(ParametricCoordinate const& parametric_coordinate,
-                   Derivative const& derivative,
-                   Tolerance const& tolerance = kEpsilon) const override;
-  Type_ operator()(ParametricCoordinate const& parametric_coordinate,
-                   Derivative const& derivative,
-                   UniqueDerivatives& unique_derivatives,
-                   UniqueEvaluations& unique_evaluations,
-                   IsTopLevelComputed& top_level_computed,
-                   int const& tree_info,
-                   Tolerance const& tolerance = kEpsilon) const override;
+  Type_ operator()(
+      ParametricCoordinate const& parametric_coordinate,
+      Tolerance const& tolerance = kEpsilon
+  ) const override;
+  Type_ operator()(
+      ParametricCoordinate const& parametric_coordinate,
+      UniqueEvaluations& unique_evaluations,
+      int const& tree_info,
+      Tolerance const& tolerance = kEpsilon
+  ) const override;
+  Type_ operator()(
+      ParametricCoordinate const& parametric_coordinate,
+      Derivative const& derivative,
+      Tolerance const& tolerance = kEpsilon
+  ) const override;
+  Type_ operator()(
+      ParametricCoordinate const& parametric_coordinate,
+      Derivative const& derivative,
+      UniqueDerivatives& unique_derivatives,
+      UniqueEvaluations& unique_evaluations,
+      IsTopLevelComputed& top_level_computed,
+      int const& tree_info,
+      Tolerance const& tolerance = kEpsilon
+  ) const override;
 };
 
-bool IsEqual(ZeroDegreeBSplineBasisFunction const& lhs,
-             ZeroDegreeBSplineBasisFunction const& rhs,
-             Tolerance const& tolerance = kEpsilon);
-bool operator==(ZeroDegreeBSplineBasisFunction const& lhs,
-                ZeroDegreeBSplineBasisFunction const& rhs);
+bool IsEqual(
+    ZeroDegreeBSplineBasisFunction const& lhs,
+    ZeroDegreeBSplineBasisFunction const& rhs,
+    Tolerance const& tolerance = kEpsilon
+);
+bool operator==(
+    ZeroDegreeBSplineBasisFunction const& lhs,
+    ZeroDegreeBSplineBasisFunction const& rhs
+);
 
 } // namespace splinelib::sources::parameter_spaces
 

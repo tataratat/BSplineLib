@@ -40,12 +40,15 @@ using Degrees = typename parameter_spaces::ParameterSpace<
 template<int parametric_dimensionality>
 using NumbersOfNonZeroKnotSpans = Array<Length, parametric_dimensionality>;
 
-template<int parametric_dimensionality,
-         int geometric_dimensionality,
-         bool is_rational>
-auto Generate(NumbersOfNonZeroKnotSpans<parametric_dimensionality> const&
-                  numbers_of_non_zero_knot_spans,
-              Degrees<parametric_dimensionality> const& degrees);
+template<
+    int parametric_dimensionality,
+    int geometric_dimensionality,
+    bool is_rational>
+auto Generate(
+    NumbersOfNonZeroKnotSpans<parametric_dimensionality> const&
+        numbers_of_non_zero_knot_spans,
+    Degrees<parametric_dimensionality> const& degrees
+);
 
 #include "Sources/Models/rectangular.inc"
 

@@ -60,9 +60,11 @@ public:
   virtual ~KnotVector() = default;
 
   // Comparison based on tolerance.
-  friend bool IsEqual(KnotVector const& lhs,
-                      KnotVector const& rhs,
-                      Tolerance const& tolerance);
+  friend bool IsEqual(
+      KnotVector const& lhs,
+      KnotVector const& rhs,
+      Tolerance const& tolerance
+  );
   // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
   friend bool operator==(KnotVector const& lhs, KnotVector const& rhs);
   virtual Knot_ const& operator[](Index const& index) const;
@@ -73,32 +75,43 @@ public:
 
   virtual bool DoesParametricCoordinateEqualBack(
       ParametricCoordinate const& parametric_coordinate,
-      Tolerance const& tolerance = kEpsilon) const;
+      Tolerance const& tolerance = kEpsilon
+  ) const;
   virtual bool DoesParametricCoordinateEqualFrontOrBack(
       ParametricCoordinate const& parametric_coordinate,
-      Tolerance const& tolerance = kEpsilon) const;
+      Tolerance const& tolerance = kEpsilon
+  ) const;
   // Returns the (m-s)th or ith knot span if the parametric coordinate u equals
   // the last knot u_m of multiplicity s or is in the interval [u_i, u_{i+1})
   // (implying the knot span is non-zero, i.e., u_i < u_{i+1}), respectively.
-  virtual KnotSpan FindSpan(ParametricCoordinate const& parametric_coordinate,
-                            Tolerance const& tolerance = kEpsilon) const;
-  virtual Multiplicity
-  DetermineMultiplicity(Knot_ const& knot,
-                        Tolerance const& tolerance = kEpsilon) const;
+  virtual KnotSpan FindSpan(
+      ParametricCoordinate const& parametric_coordinate,
+      Tolerance const& tolerance = kEpsilon
+  ) const;
+  virtual Multiplicity DetermineMultiplicity(
+      Knot_ const& knot,
+      Tolerance const& tolerance = kEpsilon
+  ) const;
   virtual Knots_ GetUniqueKnots(Tolerance const& tolerance = kEpsilon) const;
 
-  virtual void Insert(Knot_ knot,
-                      Multiplicity const& multiplicity = kMultiplicity,
-                      Tolerance const& tolerance = kEpsilon);
-  virtual Multiplicity Remove(Knot_ const& knot,
-                              Multiplicity const& multiplicity = kMultiplicity,
-                              Tolerance const& tolerance = kEpsilon);
-  virtual void
-  IncreaseMultiplicities(Multiplicity const& multiplicity = kMultiplicity,
-                         Tolerance const& tolerance = kEpsilon);
-  virtual void
-  DecreaseMultiplicities(Multiplicity const& multiplicity = kMultiplicity,
-                         Tolerance const& tolerance = kEpsilon);
+  virtual void Insert(
+      Knot_ knot,
+      Multiplicity const& multiplicity = kMultiplicity,
+      Tolerance const& tolerance = kEpsilon
+  );
+  virtual Multiplicity Remove(
+      Knot_ const& knot,
+      Multiplicity const& multiplicity = kMultiplicity,
+      Tolerance const& tolerance = kEpsilon
+  );
+  virtual void IncreaseMultiplicities(
+      Multiplicity const& multiplicity = kMultiplicity,
+      Tolerance const& tolerance = kEpsilon
+  );
+  virtual void DecreaseMultiplicities(
+      Multiplicity const& multiplicity = kMultiplicity,
+      Tolerance const& tolerance = kEpsilon
+  );
 
   virtual OutputInformation_
   Write(Precision const& precision = kPrecision) const;
@@ -106,7 +119,8 @@ public:
 #ifndef NDEBUG
   virtual void ThrowIfParametricCoordinateIsOutsideScope(
       ParametricCoordinate const& parametric_coordinate,
-      Tolerance const& tolerance = kEpsilon) const;
+      Tolerance const& tolerance = kEpsilon
+  ) const;
 #endif
 
 protected:
@@ -120,9 +134,11 @@ private:
 #endif
 };
 
-bool IsEqual(KnotVector const& lhs,
-             KnotVector const& rhs,
-             Tolerance const& tolerance = kEpsilon);
+bool IsEqual(
+    KnotVector const& lhs,
+    KnotVector const& rhs,
+    Tolerance const& tolerance = kEpsilon
+);
 bool operator==(KnotVector const& lhs, KnotVector const& rhs);
 
 template<int parametric_dimensionality>

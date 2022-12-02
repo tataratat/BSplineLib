@@ -38,12 +38,16 @@ template<int parametric_dimensionality, int dimensionality>
 class BSpline;
 
 template<int parametric_dimensionality, int dimensionality>
-bool IsEqual(BSpline<parametric_dimensionality, dimensionality> const& lhs,
-             BSpline<parametric_dimensionality, dimensionality> const& rhs,
-             Tolerance const& tolerance = kEpsilon);
+bool IsEqual(
+    BSpline<parametric_dimensionality, dimensionality> const& lhs,
+    BSpline<parametric_dimensionality, dimensionality> const& rhs,
+    Tolerance const& tolerance = kEpsilon
+);
 template<int parametric_dimensionality, int dimensionality>
-bool operator==(BSpline<parametric_dimensionality, dimensionality> const& lhs,
-                BSpline<parametric_dimensionality, dimensionality> const& rhs);
+bool operator==(
+    BSpline<parametric_dimensionality, dimensionality> const& lhs,
+    BSpline<parametric_dimensionality, dimensionality> const& rhs
+);
 
 // B-splines are non-rational splines.  Currently only single-patch B-splines
 // are supported.
@@ -66,12 +70,15 @@ public:
   using ParameterSpace_ = typename Base_::ParameterSpace_;
   using ParametricCoordinate_ = typename Base_::ParametricCoordinate_;
   using VectorSpace_ = typename Base_::VectorSpace_;
-  using OutputInformation_ = Tuple<typename ParameterSpace_::OutputInformation_,
-                                   typename VectorSpace_::OutputInformation_>;
+  using OutputInformation_ = Tuple<
+      typename ParameterSpace_::OutputInformation_,
+      typename VectorSpace_::OutputInformation_>;
 
   BSpline();
-  BSpline(SharedPointer<ParameterSpace_> parameter_space,
-          SharedPointer<VectorSpace_> vector_space);
+  BSpline(
+      SharedPointer<ParameterSpace_> parameter_space,
+      SharedPointer<VectorSpace_> vector_space
+  );
   BSpline(BSpline const& other);
   BSpline(BSpline&& other) noexcept = default;
   BSpline& operator=(BSpline const& rhs);
@@ -82,49 +89,66 @@ public:
   friend bool IsEqual<parametric_dimensionality, dimensionality>(
       BSpline const& lhs,
       BSpline const& rhs,
-      Tolerance const& tolerance);
+      Tolerance const& tolerance
+  );
   // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
-  friend bool
-  operator==<parametric_dimensionality, dimensionality>(BSpline const& lhs,
-                                                        BSpline const& rhs);
+  friend bool operator==<parametric_dimensionality, dimensionality>(
+      BSpline const& lhs,
+      BSpline const& rhs
+  );
   // Default evaluation uses lookup tricks
-  Coordinate_ operator()(ParametricCoordinate_ const& parametric_coordinate,
-                         Tolerance const& tolerance = kEpsilon) const override;
-  Coordinate_ operator()(ParametricCoordinate_ const& parametric_coordinate,
-                         Derivative_ const& derivative,
-                         Tolerance const& tolerance = kEpsilon) const override;
+  Coordinate_ operator()(
+      ParametricCoordinate_ const& parametric_coordinate,
+      Tolerance const& tolerance = kEpsilon
+  ) const override;
+  Coordinate_ operator()(
+      ParametricCoordinate_ const& parametric_coordinate,
+      Derivative_ const& derivative,
+      Tolerance const& tolerance = kEpsilon
+  ) const override;
 
   // Original implementation of SplineLib
-  Coordinate_
-  FullyRecursiveEvaluate(ParametricCoordinate_ const& parametric_coordinate,
-                         Tolerance const& tolerance = kEpsilon) const;
-  Coordinate_
-  FullyRecursiveDerivative(ParametricCoordinate_ const& parametric_coordinate,
-                           Derivative_ const& derivative,
-                           Tolerance const& tolerance = kEpsilon) const;
+  Coordinate_ FullyRecursiveEvaluate(
+      ParametricCoordinate_ const& parametric_coordinate,
+      Tolerance const& tolerance = kEpsilon
+  ) const;
+  Coordinate_ FullyRecursiveDerivative(
+      ParametricCoordinate_ const& parametric_coordinate,
+      Derivative_ const& derivative,
+      Tolerance const& tolerance = kEpsilon
+  ) const;
 
-  void InsertKnot(Dimension const& dimension,
-                  Knot_ knot,
-                  Multiplicity const& multiplicity = kMultiplicity,
-                  Tolerance const& tolerance = kEpsilon) const override;
+  void InsertKnot(
+      Dimension const& dimension,
+      Knot_ knot,
+      Multiplicity const& multiplicity = kMultiplicity,
+      Tolerance const& tolerance = kEpsilon
+  ) const override;
   // Tries to interpret knot removal as the inverse process of knot insertion.
-  Multiplicity RemoveKnot(Dimension const& dimension,
-                          Knot_ const& knot,
-                          Tolerance const& tolerance_removal,
-                          Multiplicity const& multiplicity = kMultiplicity,
-                          Tolerance const& tolerance = kEpsilon) const override;
-  void ElevateDegree(Dimension const& dimension,
-                     Multiplicity const& multiplicity = kMultiplicity,
-                     Tolerance const& tolerance = kEpsilon) const override;
+  Multiplicity RemoveKnot(
+      Dimension const& dimension,
+      Knot_ const& knot,
+      Tolerance const& tolerance_removal,
+      Multiplicity const& multiplicity = kMultiplicity,
+      Tolerance const& tolerance = kEpsilon
+  ) const override;
+  void ElevateDegree(
+      Dimension const& dimension,
+      Multiplicity const& multiplicity = kMultiplicity,
+      Tolerance const& tolerance = kEpsilon
+  ) const override;
   // Tries to interpret degree reduction as the inverse process of degree
   // elevation.
-  bool ReduceDegree(Dimension const& dimension,
-                    Tolerance const& tolerance_reduction,
-                    Multiplicity const& multiplicity = kMultiplicity,
-                    Tolerance const& tolerance = kEpsilon) const override;
+  bool ReduceDegree(
+      Dimension const& dimension,
+      Tolerance const& tolerance_reduction,
+      Multiplicity const& multiplicity = kMultiplicity,
+      Tolerance const& tolerance = kEpsilon
+  ) const override;
 
   Coordinate ComputeUpperBoundForMaximumDistanceFromOrigin(
-      Tolerance const& tolerance = kEpsilon) const override;
+      Tolerance const& tolerance = kEpsilon
+  ) const override;
   OutputInformation_ Write(Precision const& precision = kPrecision) const;
 
 protected:
@@ -141,8 +165,10 @@ private:
   using BinomialRatio_ = typename BinomialRatios_::value_type;
   using KnotRatio_ = typename KnotRatios_::value_type;
 
-  BezierInformation_ MakeBezier(Dimension const& dimension,
-                                Tolerance const& tolerance = kEpsilon) const;
+  BezierInformation_ MakeBezier(
+      Dimension const& dimension,
+      Tolerance const& tolerance = kEpsilon
+  ) const;
 };
 
 #include "Sources/Splines/b_spline.inc"

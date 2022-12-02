@@ -20,45 +20,59 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 template<int dimensionality>
 WeightedVectorSpace<dimensionality>::WeightedVectorSpace(
     Coordinates_ const& coordinates,
-    Weights_ const& weights)
+    Weights_ const& weights
+)
     : Base_{HomogenizeCoordinates(coordinates, weights)} {}
 
 template<int dimensionality>
-bool IsEqual(WeightedVectorSpace<dimensionality> const& lhs,
-             WeightedVectorSpace<dimensionality> const& rhs,
-             Tolerance const& tolerance) {
+bool IsEqual(
+    WeightedVectorSpace<dimensionality> const& lhs,
+    WeightedVectorSpace<dimensionality> const& rhs,
+    Tolerance const& tolerance
+) {
   using Base = typename WeightedVectorSpace<dimensionality>::Base_;
 
 #ifndef NDEBUG
   try {
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "splinelib::sources::vector_spaces::IsEqual::WeightedVectorSpace");
+    Throw(
+        exception,
+        "splinelib::sources::vector_spaces::IsEqual::WeightedVectorSpace"
+    );
   }
 #endif
-  return IsEqual(static_cast<Base const&>(lhs),
-                 static_cast<Base const&>(rhs),
-                 tolerance);
+  return IsEqual(
+      static_cast<Base const&>(lhs),
+      static_cast<Base const&>(rhs),
+      tolerance
+  );
 }
 
 template<int dimensionality>
-bool operator==(WeightedVectorSpace<dimensionality> const& lhs,
-                WeightedVectorSpace<dimensionality> const& rhs) {
+bool operator==(
+    WeightedVectorSpace<dimensionality> const& lhs,
+    WeightedVectorSpace<dimensionality> const& rhs
+) {
   return IsEqual(lhs, rhs);
 }
 
 template<int dimensionality>
 typename WeightedVectorSpace<dimensionality>::Coordinate_
 WeightedVectorSpace<dimensionality>::Project(
-    HomogeneousCoordinate_ const& homogeneous_coordinate) {
+    HomogeneousCoordinate_ const& homogeneous_coordinate
+) {
   Coordinate_ coordinate;
-  std::transform(homogeneous_coordinate.begin(),
-                 std::prev(homogeneous_coordinate.end()),
-                 coordinate.begin(),
-                 std::bind(std::divides{},
-                           std::placeholders::_1,
-                           homogeneous_coordinate[dimensionality].Get()));
+  std::transform(
+      homogeneous_coordinate.begin(),
+      std::prev(homogeneous_coordinate.end()),
+      coordinate.begin(),
+      std::bind(
+          std::divides{},
+          std::placeholders::_1,
+          homogeneous_coordinate[dimensionality].Get()
+      )
+  );
   return coordinate;
 }
 
@@ -67,31 +81,38 @@ typename WeightedVectorSpace<
     dimensionality>::MaximumDistanceFromOriginAndMinimumWeight_
 WeightedVectorSpace<dimensionality>::
     DetermineMaximumDistanceFromOriginAndMinimumWeight(
-        Tolerance const& tolerance) const {
+        Tolerance const& tolerance
+    ) const {
   using std::placeholders::_1, std::placeholders::_2;
 
 #ifndef NDEBUG
   try {
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "splinelib::sources::vector_spaces::WeightedVectorSpace::"
-          "DetermineMaximumDistanceFromOriginAndMinimumWeight");
+    Throw(
+        exception,
+        "splinelib::sources::vector_spaces::WeightedVectorSpace::"
+        "DetermineMaximumDistanceFromOriginAndMinimumWeight"
+    );
   }
 #endif
   Coordinate maximum_distance{};
   Weight minimum_weight{std::numeric_limits<Weight::Type_>::max()};
   for (HomogeneousCoordinate_ const& homogeneous_coordinate :
        Base_::coordinates_) {
-    maximum_distance =
-        std::max(utilities::std_container_operations::TwoNorm(
-                     Project(homogeneous_coordinate)),
-                 maximum_distance,
-                 std::bind(utilities::IsLess<typename Coordinate::Name_,
-                                             typename Coordinate::Type_>,
-                           _1,
-                           _2,
-                           tolerance));
+    maximum_distance = std::max(
+        utilities::std_container_operations::TwoNorm(
+            Project(homogeneous_coordinate)
+        ),
+        maximum_distance,
+        std::bind(
+            utilities::
+                IsLess<typename Coordinate::Name_, typename Coordinate::Type_>,
+            _1,
+            _2,
+            tolerance
+        )
+    );
     minimum_weight = std::min(
         Weight{homogeneous_coordinate[dimensionality].Get()},
         minimum_weight,
@@ -99,15 +120,17 @@ WeightedVectorSpace<dimensionality>::
             utilities::IsLess<typename Weight::Name_, typename Weight::Type_>,
             _1,
             _2,
-            tolerance));
+            tolerance
+        )
+    );
   }
   return {maximum_distance, minimum_weight};
 }
 
 template<int dimensionality>
 typename WeightedVectorSpace<dimensionality>::OutputInformation_
-WeightedVectorSpace<dimensionality>::WriteProjected(
-    Precision const& precision) const {
+WeightedVectorSpace<dimensionality>::WriteProjected(Precision const& precision
+) const {
   using std::tuple_element_t;
   using ProjectedCoordinatesOutput = tuple_element_t<0, OutputInformation_>;
   using utilities::string_operations::Write;
@@ -118,23 +141,28 @@ WeightedVectorSpace<dimensionality>::WriteProjected(
   coordinates.reserve(number_of_homogeneous_coordinates);
   tuple_element_t<1, OutputInformation_> weights;
   weights.reserve(number_of_homogeneous_coordinates);
-  std::for_each(homogeneous_coordinates.begin(),
-                homogeneous_coordinates.end(),
-                [&](HomogeneousCoordinate_ const& homogeneous_coordinate) {
-                  coordinates.emplace_back(
-                      Write<typename ProjectedCoordinatesOutput::value_type>(
-                          Project(homogeneous_coordinate),
-                          precision));
-                  weights.emplace_back(
-                      Write(homogeneous_coordinate[dimensionality], precision));
-                });
+  std::for_each(
+      homogeneous_coordinates.begin(),
+      homogeneous_coordinates.end(),
+      [&](HomogeneousCoordinate_ const& homogeneous_coordinate) {
+        coordinates.emplace_back(
+            Write<typename ProjectedCoordinatesOutput::value_type>(
+                Project(homogeneous_coordinate),
+                precision
+            )
+        );
+        weights.emplace_back(
+            Write(homogeneous_coordinate[dimensionality], precision)
+        );
+      }
+  );
   return OutputInformation_{coordinates, weights};
 }
 
 template<int dimensionality>
 typename WeightedVectorSpace<dimensionality>::OutputInformation_
-WeightedVectorSpace<dimensionality>::WriteWeighted(
-    Precision const& precision) const {
+WeightedVectorSpace<dimensionality>::WriteWeighted(Precision const& precision
+) const {
   using std::tuple_element_t;
   using ProjectedCoordinatesOutput = tuple_element_t<0, OutputInformation_>;
   using utilities::string_operations::Write;
@@ -158,10 +186,14 @@ WeightedVectorSpace<dimensionality>::WriteWeighted(
                   });
                   return coordinate;
                 }(),
-                precision));
+                precision
+            )
+        );
         weights.emplace_back(
-            Write(homogeneous_coordinate[dimensionality], precision));
-      });
+            Write(homogeneous_coordinate[dimensionality], precision)
+        );
+      }
+  );
   return OutputInformation_{coordinates, weights};
 }
 
@@ -169,7 +201,8 @@ template<int dimensionality>
 typename WeightedVectorSpace<dimensionality>::HomogeneousCoordinates_
 WeightedVectorSpace<dimensionality>::HomogenizeCoordinates(
     Coordinates_ const& coordinates,
-    Weights_ const& weights) const {
+    Weights_ const& weights
+) const {
   using std::to_string;
 
   int const& number_of_coordinates = coordinates.size();
@@ -179,7 +212,8 @@ WeightedVectorSpace<dimensionality>::HomogenizeCoordinates(
     throw DomainError(
         to_string(number_of_weights) + " weights were provided but "
         + to_string(number_of_coordinates)
-        + " are needed to associate each weight with a coordinate.");
+        + " are needed to associate each weight with a coordinate."
+    );
 #endif
   HomogeneousCoordinates_ homogeneous_coordinates;
   homogeneous_coordinates.reserve(number_of_coordinates);
@@ -189,10 +223,12 @@ WeightedVectorSpace<dimensionality>::HomogenizeCoordinates(
     HomogeneousCoordinate_ homogeneous_coordinate;
     Coordinate& weight = homogeneous_coordinate[dimensionality];
     weight = Coordinate{weights[coordinate_index_value].Get()};
-    std::transform(coordinate.begin(),
-                   coordinate.end(),
-                   homogeneous_coordinate.begin(),
-                   std::bind(std::multiplies{}, weight, std::placeholders::_1));
+    std::transform(
+        coordinate.begin(),
+        coordinate.end(),
+        homogeneous_coordinate.begin(),
+        std::bind(std::multiplies{}, weight, std::placeholders::_1)
+    );
     homogeneous_coordinates.push_back(homogeneous_coordinate);
   });
   return homogeneous_coordinates;

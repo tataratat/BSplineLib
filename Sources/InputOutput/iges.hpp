@@ -32,10 +32,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 namespace splinelib::sources::input_output::iges {
 
 Splines Read(String const& file_name);
-void Write(Splines const& splines,
-           String const& file_name,
-           Precision const& precision = kPrecision,
-           Tolerance const& tolerance = kEpsilon);
+void Write(
+    Splines const& splines,
+    String const& file_name,
+    Precision const& precision = kPrecision,
+    Tolerance const& tolerance = kEpsilon
+);
 
 } // namespace splinelib::sources::input_output::iges
 

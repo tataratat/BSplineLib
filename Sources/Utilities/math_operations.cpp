@@ -25,8 +25,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace splinelib::sources::utilities::math_operations {
 
-int ComputeBinomialCoefficient(int const& number_of_elements_in_set,
-                               int const& number_of_elements_in_subset) {
+int ComputeBinomialCoefficient(
+    int const& number_of_elements_in_set,
+    int const& number_of_elements_in_subset
+) {
 #ifndef NDEBUG
   using std::to_string;
 
@@ -34,25 +36,36 @@ int ComputeBinomialCoefficient(int const& number_of_elements_in_set,
                       "ComputeBinomialCoefficient"};
 
   if (number_of_elements_in_set < 0) {
-    Throw(InvalidArgument("The number of elements in the set ("
-                          + to_string(number_of_elements_in_set)
-                          + ") must not "
-                            "be negative."),
-          kName);
+    Throw(
+        InvalidArgument(
+            "The number of elements in the set ("
+            + to_string(number_of_elements_in_set)
+            + ") must not "
+              "be negative."
+        ),
+        kName
+    );
   } else if (number_of_elements_in_subset < 0) {
-    Throw(InvalidArgument("The number of elements in the subset ("
-                          + to_string(number_of_elements_in_subset)
-                          + ") must "
-                            "not be negative."),
-          kName);
+    Throw(
+        InvalidArgument(
+            "The number of elements in the subset ("
+            + to_string(number_of_elements_in_subset)
+            + ") must "
+              "not be negative."
+        ),
+        kName
+    );
   } else if (number_of_elements_in_subset > number_of_elements_in_set) {
-    Throw(InvalidArgument(
-              "The number of elements in the subset ("
-              + to_string(number_of_elements_in_subset)
-              + ") must "
-                "not be greater than the number of elements in the set ("
-              + to_string(number_of_elements_in_set) + ")."),
-          kName);
+    Throw(
+        InvalidArgument(
+            "The number of elements in the subset ("
+            + to_string(number_of_elements_in_subset)
+            + ") must "
+              "not be greater than the number of elements in the set ("
+            + to_string(number_of_elements_in_set) + ")."
+        ),
+        kName
+    );
   }
 #endif
   //  NOLINTNEXTLINE(whitespace/todo)
@@ -68,10 +81,16 @@ int ComputeBinomialCoefficient(int const& number_of_elements_in_set,
   } else {
     int const& number_of_elements_in_set_minus_1 =
         (number_of_elements_in_set - 1);
-    return (ComputeBinomialCoefficient(number_of_elements_in_set_minus_1,
-                                       number_of_elements_in_subset)
-            + ComputeBinomialCoefficient(number_of_elements_in_set_minus_1,
-                                         number_of_elements_in_subset - 1));
+    return (
+        ComputeBinomialCoefficient(
+            number_of_elements_in_set_minus_1,
+            number_of_elements_in_subset
+        )
+        + ComputeBinomialCoefficient(
+            number_of_elements_in_set_minus_1,
+            number_of_elements_in_subset - 1
+        )
+    );
   }
 }
 

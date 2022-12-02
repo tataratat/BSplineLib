@@ -83,81 +83,102 @@ class BSplineBasisFunction {
 public:
   using Type_ = ParametricCoordinate::Type_;
 
-  static BSplineBasisFunction*
-  CreateDynamic(KnotVector const& knot_vector,
-                KnotSpan const& start_of_support,
-                Degree degree,
-                Tolerance const& tolerance = kEpsilon);
+  static BSplineBasisFunction* CreateDynamic(
+      KnotVector const& knot_vector,
+      KnotSpan const& start_of_support,
+      Degree degree,
+      Tolerance const& tolerance = kEpsilon
+  );
 
-  static SharedPointer<BSplineBasisFunction>
-  CreateDynamic(KnotVector const& knot_vector,
-                KnotSpan const& start_of_support,
-                Degree degree,
-                UniqueBSplineBasisFunctions& unique_basis_functions,
-                Tolerance const& tolerance = kEpsilon);
+  static SharedPointer<BSplineBasisFunction> CreateDynamic(
+      KnotVector const& knot_vector,
+      KnotSpan const& start_of_support,
+      Degree degree,
+      UniqueBSplineBasisFunctions& unique_basis_functions,
+      Tolerance const& tolerance = kEpsilon
+  );
 
   virtual ~BSplineBasisFunction() = default;
 
   // Comparison based on tolerance.
-  friend bool IsEqual(BSplineBasisFunction const& lhs,
-                      BSplineBasisFunction const& rhs,
-                      Tolerance const& tolerance);
+  friend bool IsEqual(
+      BSplineBasisFunction const& lhs,
+      BSplineBasisFunction const& rhs,
+      Tolerance const& tolerance
+  );
   // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
-  friend bool operator==(BSplineBasisFunction const& lhs,
-                         BSplineBasisFunction const& rhs);
-  virtual Type_ operator()(ParametricCoordinate const& parametric_coordinate,
-                           Tolerance const& tolerance = kEpsilon) const = 0;
+  friend bool
+  operator==(BSplineBasisFunction const& lhs, BSplineBasisFunction const& rhs);
+  virtual Type_ operator()(
+      ParametricCoordinate const& parametric_coordinate,
+      Tolerance const& tolerance = kEpsilon
+  ) const = 0;
   // tree_info should tell you if requested basis function is ...
   //   <tree_info value> : <info>
   //                  -2 : left branch
   //                  -1 : right branch
   //         0 or bigger : top_node id. used to determine entry id for
   //                       top level evaluations
-  virtual Type_ operator()(ParametricCoordinate const& parametric_coordinate,
-                           UniqueEvaluations& unique_evaluations,
-                           int const& tree_info,
-                           Tolerance const& tolerance = kEpsilon) const = 0;
-  virtual Type_ operator()(ParametricCoordinate const& parametric_coordinate,
-                           Derivative const& derivative,
-                           Tolerance const& tolerance = kEpsilon) const = 0;
-  virtual Type_ operator()(ParametricCoordinate const& parametric_coordinate,
-                           Derivative const& derivative,
-                           UniqueDerivatives& unique_derivatives,
-                           UniqueEvaluations& unique_evaluations,
-                           IsTopLevelComputed& top_level_computed,
-                           int const& tree_info,
-                           Tolerance const& tolerance = kEpsilon) const = 0;
+  virtual Type_ operator()(
+      ParametricCoordinate const& parametric_coordinate,
+      UniqueEvaluations& unique_evaluations,
+      int const& tree_info,
+      Tolerance const& tolerance = kEpsilon
+  ) const = 0;
+  virtual Type_ operator()(
+      ParametricCoordinate const& parametric_coordinate,
+      Derivative const& derivative,
+      Tolerance const& tolerance = kEpsilon
+  ) const = 0;
+  virtual Type_ operator()(
+      ParametricCoordinate const& parametric_coordinate,
+      Derivative const& derivative,
+      UniqueDerivatives& unique_derivatives,
+      UniqueEvaluations& unique_evaluations,
+      IsTopLevelComputed& top_level_computed,
+      int const& tree_info,
+      Tolerance const& tolerance = kEpsilon
+  ) const = 0;
 
 protected:
   BSplineBasisFunction() = default;
-  BSplineBasisFunction(KnotVector const& knot_vector,
-                       KnotSpan const& start_of_support,
-                       Degree degree,
-                       Tolerance const& tolerance = kEpsilon);
+  BSplineBasisFunction(
+      KnotVector const& knot_vector,
+      KnotSpan const& start_of_support,
+      Degree degree,
+      Tolerance const& tolerance = kEpsilon
+  );
   BSplineBasisFunction(BSplineBasisFunction const& other) = default;
   BSplineBasisFunction(BSplineBasisFunction&& other) noexcept = default;
   BSplineBasisFunction& operator=(BSplineBasisFunction const& rhs) = default;
-  BSplineBasisFunction&
-  operator=(BSplineBasisFunction&& rhs) noexcept = default;
+  BSplineBasisFunction& operator=(BSplineBasisFunction&& rhs
+  ) noexcept = default;
 
   // The last knot is treated in a special way (cf. KnotVector::FindSpan).
-  bool IsInSupport(ParametricCoordinate const& parametric_coordinate,
-                   Tolerance const& tolerance = kEpsilon) const;
+  bool IsInSupport(
+      ParametricCoordinate const& parametric_coordinate,
+      Tolerance const& tolerance = kEpsilon
+  ) const;
 
   Degree degree_;
   ParametricCoordinate start_knot_, end_knot_;
   bool end_knot_equals_last_knot_;
 };
 
-bool IsEqual(BSplineBasisFunction const& lhs,
-             BSplineBasisFunction const& rhs,
-             Tolerance const& tolerance = kEpsilon);
-bool operator==(BSplineBasisFunction const& lhs,
-                BSplineBasisFunction const& rhs);
+bool IsEqual(
+    BSplineBasisFunction const& lhs,
+    BSplineBasisFunction const& rhs,
+    Tolerance const& tolerance = kEpsilon
+);
+bool operator==(
+    BSplineBasisFunction const& lhs,
+    BSplineBasisFunction const& rhs
+);
 
 template<int parametric_dimensionality>
-using BSplineBasisFunctions = Array<Vector<SharedPointer<BSplineBasisFunction>>,
-                                    parametric_dimensionality>;
+using BSplineBasisFunctions = Array<
+    Vector<SharedPointer<BSplineBasisFunction>>,
+    parametric_dimensionality>;
 
 } // namespace splinelib::sources::parameter_spaces
 

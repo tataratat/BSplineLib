@@ -17,15 +17,20 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-template<int parametric_dimensionality,
-         int geometric_dimensionality,
-         bool is_rational>
-auto Generate(NumbersOfNonZeroKnotSpans<parametric_dimensionality> const&
-                  numbers_of_non_zero_knot_spans,
-              Degrees<parametric_dimensionality> const& degrees) {
-  static_assert(parametric_dimensionality <= geometric_dimensionality,
-                "Geometric dimensionality must not be less than "
-                "parametric dimensionality!");
+template<
+    int parametric_dimensionality,
+    int geometric_dimensionality,
+    bool is_rational>
+auto Generate(
+    NumbersOfNonZeroKnotSpans<parametric_dimensionality> const&
+        numbers_of_non_zero_knot_spans,
+    Degrees<parametric_dimensionality> const& degrees
+) {
+  static_assert(
+      parametric_dimensionality <= geometric_dimensionality,
+      "Geometric dimensionality must not be less than "
+      "parametric dimensionality!"
+  );
 
   using DimensionType = Dimension::Type_;
   using IndexType = Index::Type_;
@@ -57,7 +62,8 @@ auto Generate(NumbersOfNonZeroKnotSpans<parametric_dimensionality> const&
          ++non_zero_knot_span)
       knots.emplace_back(
           static_cast<typename Knot::Type_>(1 + non_zero_knot_span)
-          / number_of_non_zero_knot_spans);
+          / number_of_non_zero_knot_spans
+      );
     for (IndexType non_zero_knot_span{}; non_zero_knot_span < degree_value;
          ++non_zero_knot_span)
       knots.emplace_back(1.0);
@@ -80,10 +86,11 @@ auto Generate(NumbersOfNonZeroKnotSpans<parametric_dimensionality> const&
     Coordinate coordinate{};
     for (DimensionType dimension{}; dimension < parametric_dimensionality;
          ++dimension)
-      coordinate[dimension] =
-          CoordinateScalar{static_cast<typename CoordinateScalar::Type_>(
-                               index_coordinate[Dimension{dimension}].Get())
-                           / (number_of_basis_functions[dimension].Get() - 1)};
+      coordinate[dimension] = CoordinateScalar{
+          static_cast<typename CoordinateScalar::Type_>(
+              index_coordinate[Dimension{dimension}].Get()
+          )
+          / (number_of_basis_functions[dimension].Get() - 1)};
     coordinates.push_back(coordinate);
   }
   if constexpr (is_rational) {
@@ -92,15 +99,19 @@ auto Generate(NumbersOfNonZeroKnotSpans<parametric_dimensionality> const&
     using WeightedVectorSpace = typename Nurbs::WeightedVectorSpace_;
     using Weights = typename WeightedVectorSpace::Weights_;
 
-    Weights weights(total_number_of_basis_functions,
-                    typename Weights::value_type{2.0});
-    return Nurbs{parameter_space,
-                 make_shared<WeightedVectorSpace>(coordinates, weights)};
+    Weights weights(
+        total_number_of_basis_functions,
+        typename Weights::value_type{2.0}
+    );
+    return Nurbs{
+        parameter_space,
+        make_shared<WeightedVectorSpace>(coordinates, weights)};
   } else {
     using BSpline =
         splines::BSpline<parametric_dimensionality, geometric_dimensionality>;
 
-    return BSpline{parameter_space,
-                   make_shared<typename BSpline::VectorSpace_>(coordinates)};
+    return BSpline{
+        parameter_space,
+        make_shared<typename BSpline::VectorSpace_>(coordinates)};
   }
 }

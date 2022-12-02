@@ -34,8 +34,10 @@ IsEqual(Type const& lhs, Type const& rhs, Type const& tolerance) {
   try {
     ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "splinelib::sources::utilities::numeric_operations::IsEqual");
+    Throw(
+        exception,
+        "splinelib::sources::utilities::numeric_operations::IsEqual"
+    );
   }
 #endif
   return std::abs(lhs - rhs) <= tolerance;
@@ -47,8 +49,10 @@ constexpr bool IsLess(Type const& lhs, Type const& rhs, Type const& tolerance) {
   try {
     ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "splinelib::sources::utilities::numeric_operations::IsLess");
+    Throw(
+        exception,
+        "splinelib::sources::utilities::numeric_operations::IsLess"
+    );
   }
 #endif
   return IsEqual(lhs, rhs, tolerance) ? false : (lhs < rhs);
@@ -58,9 +62,10 @@ constexpr bool IsLess(Type const& lhs, Type const& rhs, Type const& tolerance) {
 template<typename Type>
 constexpr void ThrowIfToleranceIsNegative(Type const& tolerance) {
   tolerance >= Type{} ? void()
-                      : throw InvalidArgument("The provided tolerance "
-                                              + std::to_string(tolerance)
-                                              + " must "
-                                                "not be negative.");
+                      : throw InvalidArgument(
+                          "The provided tolerance " + std::to_string(tolerance)
+                          + " must "
+                            "not be negative."
+                      );
 }
 #endif

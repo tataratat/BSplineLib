@@ -35,72 +35,79 @@ template<typename Name, typename Type>
 class NamedType;
 
 template<typename Name, typename Type>
-constexpr NamedType<Name, Type> operator+(NamedType<Name, Type> const& lhs,
-                                          NamedType<Name, Type> const& rhs);
+constexpr NamedType<Name, Type>
+operator+(NamedType<Name, Type> const& lhs, NamedType<Name, Type> const& rhs);
 template<typename Name, typename Type>
-constexpr NamedType<Name, Type> operator-(NamedType<Name, Type> const& lhs,
-                                          NamedType<Name, Type> const& rhs);
+constexpr NamedType<Name, Type>
+operator-(NamedType<Name, Type> const& lhs, NamedType<Name, Type> const& rhs);
 template<typename Name, typename Type>
-constexpr NamedType<Name, Type> operator*(NamedType<Name, Type> const& lhs,
-                                          NamedType<Name, Type> const& rhs);
+constexpr NamedType<Name, Type>
+operator*(NamedType<Name, Type> const& lhs, NamedType<Name, Type> const& rhs);
 template<typename Name, typename Type>
-constexpr NamedType<Name, Type> operator*(Type const& lhs,
-                                          NamedType<Name, Type> const& rhs);
+constexpr NamedType<Name, Type>
+operator*(Type const& lhs, NamedType<Name, Type> const& rhs);
 template<typename Name, typename Type>
-constexpr NamedType<Name, Type> operator*(NamedType<Name, Type> const& lhs,
-                                          Type const& rhs);
+constexpr NamedType<Name, Type>
+operator*(NamedType<Name, Type> const& lhs, Type const& rhs);
 template<typename Name, typename Type>
-constexpr NamedType<Name, Type> operator/(NamedType<Name, Type> const& dividend,
-                                          NamedType<Name, Type> const& divisor);
+constexpr NamedType<Name, Type> operator/(
+    NamedType<Name, Type> const& dividend,
+    NamedType<Name, Type> const& divisor
+);
 template<typename Name, typename Type>
-constexpr NamedType<Name, Type> operator/(Type const& dividend,
-                                          NamedType<Name, Type> const& divisor);
+constexpr NamedType<Name, Type>
+operator/(Type const& dividend, NamedType<Name, Type> const& divisor);
 template<typename Name, typename Type>
-constexpr NamedType<Name, Type> operator/(NamedType<Name, Type> const& dividend,
-                                          Type const& divisor);
+constexpr NamedType<Name, Type>
+operator/(NamedType<Name, Type> const& dividend, Type const& divisor);
 template<typename Name, typename Type>
-constexpr bool
-IsEqual(NamedType<Name, Type> const& lhs,
-        NamedType<Name, Type> const& rhs,
-        Type const& tolerance = numeric_operations::GetEpsilon<Type>());
+constexpr bool IsEqual(
+    NamedType<Name, Type> const& lhs,
+    NamedType<Name, Type> const& rhs,
+    Type const& tolerance = numeric_operations::GetEpsilon<Type>()
+);
 template<typename Name, typename Type>
-constexpr bool
-IsLessOrEqual(NamedType<Name, Type> const& lhs,
-              NamedType<Name, Type> const& rhs,
-              Type const& tolerance = numeric_operations::GetEpsilon<Type>());
+constexpr bool IsLessOrEqual(
+    NamedType<Name, Type> const& lhs,
+    NamedType<Name, Type> const& rhs,
+    Type const& tolerance = numeric_operations::GetEpsilon<Type>()
+);
 template<typename Name, typename Type>
 constexpr bool IsGreaterOrEqual(
     NamedType<Name, Type> const& lhs,
     NamedType<Name, Type> const& rhs,
-    Type const& tolerance = numeric_operations::GetEpsilon<Type>());
+    Type const& tolerance = numeric_operations::GetEpsilon<Type>()
+);
+template<typename Name, typename Type>
+constexpr bool IsLess(
+    NamedType<Name, Type> const& lhs,
+    NamedType<Name, Type> const& rhs,
+    Type const& tolerance = numeric_operations::GetEpsilon<Type>()
+);
+template<typename Name, typename Type>
+constexpr bool IsGreater(
+    NamedType<Name, Type> const& lhs,
+    NamedType<Name, Type> const& rhs,
+    Type const& tolerance = numeric_operations::GetEpsilon<Type>()
+);
 template<typename Name, typename Type>
 constexpr bool
-IsLess(NamedType<Name, Type> const& lhs,
-       NamedType<Name, Type> const& rhs,
-       Type const& tolerance = numeric_operations::GetEpsilon<Type>());
+operator==(NamedType<Name, Type> const& lhs, NamedType<Name, Type> const& rhs);
 template<typename Name, typename Type>
 constexpr bool
-IsGreater(NamedType<Name, Type> const& lhs,
-          NamedType<Name, Type> const& rhs,
-          Type const& tolerance = numeric_operations::GetEpsilon<Type>());
+operator!=(NamedType<Name, Type> const& lhs, NamedType<Name, Type> const& rhs);
 template<typename Name, typename Type>
-constexpr bool operator==(NamedType<Name, Type> const& lhs,
-                          NamedType<Name, Type> const& rhs);
+constexpr bool
+operator<=(NamedType<Name, Type> const& lhs, NamedType<Name, Type> const& rhs);
 template<typename Name, typename Type>
-constexpr bool operator!=(NamedType<Name, Type> const& lhs,
-                          NamedType<Name, Type> const& rhs);
+constexpr bool
+operator>=(NamedType<Name, Type> const& lhs, NamedType<Name, Type> const& rhs);
 template<typename Name, typename Type>
-constexpr bool operator<=(NamedType<Name, Type> const& lhs,
-                          NamedType<Name, Type> const& rhs);
+constexpr bool
+operator<(NamedType<Name, Type> const& lhs, NamedType<Name, Type> const& rhs);
 template<typename Name, typename Type>
-constexpr bool operator>=(NamedType<Name, Type> const& lhs,
-                          NamedType<Name, Type> const& rhs);
-template<typename Name, typename Type>
-constexpr bool operator<(NamedType<Name, Type> const& lhs,
-                         NamedType<Name, Type> const& rhs);
-template<typename Name, typename Type>
-constexpr bool operator>(NamedType<Name, Type> const& lhs,
-                         NamedType<Name, Type> const& rhs);
+constexpr bool
+operator>(NamedType<Name, Type> const& lhs, NamedType<Name, Type> const& rhs);
 
 // NamedTypes allow to check for semantics of variables (especially arguments)
 // at compile time.  Actual connections between names and intrinsic types are
@@ -142,51 +149,61 @@ public:
   constexpr NamedType& operator-=(NamedType const& rhs);
   constexpr NamedType& operator++();
   constexpr NamedType& operator--();
-  friend constexpr NamedType operator+<Name, Type>(NamedType const& lhs,
-                                                   NamedType const& rhs);
-  friend constexpr NamedType operator-<Name, Type>(NamedType const& lhs,
-                                                   NamedType const& rhs);
-  friend constexpr NamedType operator*<Name, Type>(NamedType const& lhs,
-                                                   NamedType const& rhs);
-  friend constexpr NamedType operator*<Name, Type>(Type_ const& lhs,
-                                                   NamedType const& rhs);
-  friend constexpr NamedType operator*<Name, Type>(NamedType const& lhs,
-                                                   Type_ const& rhs);
-  friend constexpr NamedType operator/<Name, Type>(NamedType const& dividend,
-                                                   NamedType const& divisor);
-  friend constexpr NamedType operator/<Name, Type>(Type_ const& dividend,
-                                                   NamedType const& divisor);
-  friend constexpr NamedType operator/<Name, Type>(NamedType const& dividend,
-                                                   Type_ const& divisor);
+  friend constexpr NamedType
+  operator+<Name, Type>(NamedType const& lhs, NamedType const& rhs);
+  friend constexpr NamedType
+  operator-<Name, Type>(NamedType const& lhs, NamedType const& rhs);
+  friend constexpr NamedType
+  operator*<Name, Type>(NamedType const& lhs, NamedType const& rhs);
+  friend constexpr NamedType
+  operator*<Name, Type>(Type_ const& lhs, NamedType const& rhs);
+  friend constexpr NamedType
+  operator*<Name, Type>(NamedType const& lhs, Type_ const& rhs);
+  friend constexpr NamedType
+  operator/<Name, Type>(NamedType const& dividend, NamedType const& divisor);
+  friend constexpr NamedType
+  operator/<Name, Type>(Type_ const& dividend, NamedType const& divisor);
+  friend constexpr NamedType
+  operator/<Name, Type>(NamedType const& dividend, Type_ const& divisor);
   // Comparison based on given tolerance.
-  friend constexpr bool IsEqual<Name, Type>(NamedType const& lhs,
-                                            NamedType const& rhs,
-                                            Type_ const& tolerance);
-  friend constexpr bool IsLessOrEqual<Name, Type>(NamedType const& lhs,
-                                                  NamedType const& rhs,
-                                                  Type_ const& tolerance);
-  friend constexpr bool IsGreaterOrEqual<Name, Type>(NamedType const& lhs,
-                                                     NamedType const& rhs,
-                                                     Type_ const& tolerance);
-  friend constexpr bool IsLess<Name, Type>(NamedType const& lhs,
-                                           NamedType const& rhs,
-                                           Type_ const& tolerance);
-  friend constexpr bool IsGreater<Name, Type>(NamedType const& lhs,
-                                              NamedType const& rhs,
-                                              Type_ const& tolerance);
+  friend constexpr bool IsEqual<Name, Type>(
+      NamedType const& lhs,
+      NamedType const& rhs,
+      Type_ const& tolerance
+  );
+  friend constexpr bool IsLessOrEqual<Name, Type>(
+      NamedType const& lhs,
+      NamedType const& rhs,
+      Type_ const& tolerance
+  );
+  friend constexpr bool IsGreaterOrEqual<Name, Type>(
+      NamedType const& lhs,
+      NamedType const& rhs,
+      Type_ const& tolerance
+  );
+  friend constexpr bool IsLess<Name, Type>(
+      NamedType const& lhs,
+      NamedType const& rhs,
+      Type_ const& tolerance
+  );
+  friend constexpr bool IsGreater<Name, Type>(
+      NamedType const& lhs,
+      NamedType const& rhs,
+      Type_ const& tolerance
+  );
   // Comparison based on numeric_operations::GetEpsilon<Type>().
-  friend constexpr bool operator==<Name, Type>(NamedType const& lhs,
-                                               NamedType const& rhs);
-  friend constexpr bool operator!=<Name, Type>(NamedType const& lhs,
-                                               NamedType const& rhs);
-  friend constexpr bool operator<=<Name, Type>(NamedType const& lhs,
-                                               NamedType const& rhs);
-  friend constexpr bool operator>=<Name, Type>(NamedType const& lhs,
-                                               NamedType const& rhs);
-  friend constexpr bool operator< <Name, Type>(NamedType const& lhs,
-                                               NamedType const& rhs);
-  friend constexpr bool operator><Name, Type>(NamedType const& lhs,
-                                              NamedType const& rhs);
+  friend constexpr bool
+  operator==<Name, Type>(NamedType const& lhs, NamedType const& rhs);
+  friend constexpr bool
+  operator!=<Name, Type>(NamedType const& lhs, NamedType const& rhs);
+  friend constexpr bool
+  operator<=<Name, Type>(NamedType const& lhs, NamedType const& rhs);
+  friend constexpr bool
+  operator>=<Name, Type>(NamedType const& lhs, NamedType const& rhs);
+  friend constexpr bool
+  operator< <Name, Type>(NamedType const& lhs, NamedType const& rhs);
+  friend constexpr bool
+  operator><Name, Type>(NamedType const& lhs, NamedType const& rhs);
 
   constexpr operator Type_() const { return value_; }
   constexpr operator Type_&() { return value_; }
@@ -194,15 +211,17 @@ public:
   constexpr Type_ const& Get() const;
   constexpr Type_& Get();
 
-  static void
-  ForEach(int const& first,
-          int const& size,
-          std::function<void(NamedType<Name, int> const&)> const& function);
+  static void ForEach(
+      int const& first,
+      int const& size,
+      std::function<void(NamedType<Name, int> const&)> const& function
+  );
 
 #ifndef NDEBUG
-  static void
-  ThrowIfNamedIntegerIsOutOfBounds(NamedType<Name, int> const& named_integer,
-                                   int const& maximum_value);
+  static void ThrowIfNamedIntegerIsOutOfBounds(
+      NamedType<Name, int> const& named_integer,
+      int const& maximum_value
+  );
 #endif
 
 private:
@@ -251,9 +270,8 @@ constexpr Tolerance const kEpsilon{
 } // namespace sources::parameter_spaces
 
 // vector spaces
-using Coordinate =
-    sources::utilities::NamedType<struct CoordinateName,
-                                  sources::parameter_spaces::Type>;
+using Coordinate = sources::utilities::
+    NamedType<struct CoordinateName, sources::parameter_spaces::Type>;
 using Weight =
     sources::utilities::NamedType<struct WeightName, Coordinate::Type_>;
 

@@ -31,25 +31,31 @@ NonZeroDegreeBSplineBasisFunction::NonZeroDegreeBSplineBasisFunction(
     KnotVector const& knot_vector,
     KnotSpan const& start_of_support,
     Degree degree,
-    Tolerance const& tolerance)
+    Tolerance const& tolerance
+)
     : Base_(knot_vector, start_of_support, std::move(degree), tolerance),
-      left_lower_degree_basis_function_{CreateDynamic(knot_vector,
-                                                      start_of_support,
-                                                      degree_ - Degree{1},
-                                                      tolerance)},
-      right_lower_degree_basis_function_{
-          CreateDynamic(knot_vector,
-                        start_of_support + KnotSpan{1},
-                        degree_ - Degree{1},
-                        tolerance)} {
+      left_lower_degree_basis_function_{CreateDynamic(
+          knot_vector,
+          start_of_support,
+          degree_ - Degree{1},
+          tolerance
+      )},
+      right_lower_degree_basis_function_{CreateDynamic(
+          knot_vector,
+          start_of_support + KnotSpan{1},
+          degree_ - Degree{1},
+          tolerance
+      )} {
   Index const start_index{start_of_support.Get()};
   Degree::Type_ const& degree_value = degree_.Get();
   left_denominator_inverse_ = InvertPotentialZero(
       knot_vector[start_index + Index{degree_value}] - start_knot_,
-      tolerance);
-  right_denominator_inverse_ =
-      InvertPotentialZero(end_knot_ - knot_vector[start_index + Index{1}],
-                          tolerance);
+      tolerance
+  );
+  right_denominator_inverse_ = InvertPotentialZero(
+      end_knot_ - knot_vector[start_index + Index{1}],
+      tolerance
+  );
   left_quotient_derivative_ = (degree_value * left_denominator_inverse_);
   right_quotient_derivative_ = (degree_value * right_denominator_inverse_);
 }
@@ -59,37 +65,47 @@ NonZeroDegreeBSplineBasisFunction::NonZeroDegreeBSplineBasisFunction(
     KnotSpan const& start_of_support,
     Degree degree,
     UniqueBSplineBasisFunctions& unique_basis_functions,
-    Tolerance const& tolerance)
-    : Base_(knot_vector, /* generates this_hash_ */
-            start_of_support,
-            std::move(degree),
-            tolerance),
-      left_lower_degree_basis_function_{CreateDynamic(knot_vector,
-                                                      start_of_support,
-                                                      degree_ - Degree{1},
-                                                      unique_basis_functions,
-                                                      tolerance)},
-      right_lower_degree_basis_function_{
-          CreateDynamic(knot_vector,
-                        start_of_support + KnotSpan{1},
-                        degree_ - Degree{1},
-                        unique_basis_functions,
-                        tolerance)} {
+    Tolerance const& tolerance
+)
+    : Base_(
+        knot_vector, /* generates this_hash_ */
+        start_of_support,
+        std::move(degree),
+        tolerance
+    ),
+      left_lower_degree_basis_function_{CreateDynamic(
+          knot_vector,
+          start_of_support,
+          degree_ - Degree{1},
+          unique_basis_functions,
+          tolerance
+      )},
+      right_lower_degree_basis_function_{CreateDynamic(
+          knot_vector,
+          start_of_support + KnotSpan{1},
+          degree_ - Degree{1},
+          unique_basis_functions,
+          tolerance
+      )} {
   Index const start_index{start_of_support.Get()};
   Degree::Type_ const& degree_value = degree_.Get();
   left_denominator_inverse_ = InvertPotentialZero(
       knot_vector[start_index + Index{degree_value}] - start_knot_,
-      tolerance);
-  right_denominator_inverse_ =
-      InvertPotentialZero(end_knot_ - knot_vector[start_index + Index{1}],
-                          tolerance);
+      tolerance
+  );
+  right_denominator_inverse_ = InvertPotentialZero(
+      end_knot_ - knot_vector[start_index + Index{1}],
+      tolerance
+  );
   left_quotient_derivative_ = (degree_value * left_denominator_inverse_);
   right_quotient_derivative_ = (degree_value * right_denominator_inverse_);
 }
 
-bool IsEqual(NonZeroDegreeBSplineBasisFunction const& lhs,
-             NonZeroDegreeBSplineBasisFunction const& rhs,
-             Tolerance const& tolerance) {
+bool IsEqual(
+    NonZeroDegreeBSplineBasisFunction const& lhs,
+    NonZeroDegreeBSplineBasisFunction const& rhs,
+    Tolerance const& tolerance
+) {
   using Base = NonZeroDegreeBSplineBasisFunction::Base_;
   using utilities::numeric_operations::IsEqual;
 
@@ -97,36 +113,56 @@ bool IsEqual(NonZeroDegreeBSplineBasisFunction const& lhs,
   try {
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "splinelib::sources::parameter_spaces::IsEqual::"
-          "NonZeroDegreeBSplineBasisFunction");
+    Throw(
+        exception,
+        "splinelib::sources::parameter_spaces::IsEqual::"
+        "NonZeroDegreeBSplineBasisFunction"
+    );
   }
 #endif
-  return (IsEqual(lhs.left_denominator_inverse_,
-                  rhs.left_denominator_inverse_,
-                  tolerance)
-          && IsEqual(lhs.right_denominator_inverse_,
-                     rhs.right_denominator_inverse_,
-                     tolerance)
-          && IsEqual(lhs.left_quotient_derivative_,
-                     rhs.left_quotient_derivative_,
-                     tolerance)
-          && IsEqual(lhs.right_quotient_derivative_,
-                     rhs.right_quotient_derivative_,
-                     tolerance)
-          && IsEqual(*lhs.left_lower_degree_basis_function_,
-                     *rhs.left_lower_degree_basis_function_,
-                     tolerance)
-          && IsEqual(*lhs.right_lower_degree_basis_function_,
-                     *rhs.right_lower_degree_basis_function_,
-                     tolerance)
-          && IsEqual(static_cast<Base const&>(lhs),
-                     static_cast<Base const&>(rhs),
-                     tolerance));
+  return (
+      IsEqual(
+          lhs.left_denominator_inverse_,
+          rhs.left_denominator_inverse_,
+          tolerance
+      )
+      && IsEqual(
+          lhs.right_denominator_inverse_,
+          rhs.right_denominator_inverse_,
+          tolerance
+      )
+      && IsEqual(
+          lhs.left_quotient_derivative_,
+          rhs.left_quotient_derivative_,
+          tolerance
+      )
+      && IsEqual(
+          lhs.right_quotient_derivative_,
+          rhs.right_quotient_derivative_,
+          tolerance
+      )
+      && IsEqual(
+          *lhs.left_lower_degree_basis_function_,
+          *rhs.left_lower_degree_basis_function_,
+          tolerance
+      )
+      && IsEqual(
+          *lhs.right_lower_degree_basis_function_,
+          *rhs.right_lower_degree_basis_function_,
+          tolerance
+      )
+      && IsEqual(
+          static_cast<Base const&>(lhs),
+          static_cast<Base const&>(rhs),
+          tolerance
+      )
+  );
 }
 
-bool operator==(NonZeroDegreeBSplineBasisFunction const& lhs,
-                NonZeroDegreeBSplineBasisFunction const& rhs) {
+bool operator==(
+    NonZeroDegreeBSplineBasisFunction const& lhs,
+    NonZeroDegreeBSplineBasisFunction const& rhs
+) {
   return IsEqual(lhs, rhs);
 }
 
@@ -135,26 +171,29 @@ bool operator==(NonZeroDegreeBSplineBasisFunction const& lhs,
 NonZeroDegreeBSplineBasisFunction::Type_
 NonZeroDegreeBSplineBasisFunction::operator()(
     ParametricCoordinate const& parametric_coordinate,
-    Tolerance const& tolerance) const {
+    Tolerance const& tolerance
+) const {
 #ifndef NDEBUG
   try {
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "splinelib::sources::parameter_spaces::"
-          "NonZeroDegreeBSplineBasisFunction::operator()");
+    Throw(
+        exception,
+        "splinelib::sources::parameter_spaces::"
+        "NonZeroDegreeBSplineBasisFunction::operator()"
+    );
   }
 #endif
-  return IsInSupport(parametric_coordinate, tolerance) ? (
-             ((parametric_coordinate - start_knot_).Get()
-              * left_denominator_inverse_
-              * (*left_lower_degree_basis_function_)(parametric_coordinate,
-                                                     tolerance))
-             + ((end_knot_ - parametric_coordinate).Get()
-                * right_denominator_inverse_
-                * (*right_lower_degree_basis_function_)(parametric_coordinate,
-                                                        tolerance)))
-                                                       : Type_{};
+  return IsInSupport(parametric_coordinate, tolerance)
+             ? (((parametric_coordinate - start_knot_).Get()
+                 * left_denominator_inverse_
+                 * (*left_lower_degree_basis_function_
+                 )(parametric_coordinate, tolerance))
+                + ((end_knot_ - parametric_coordinate).Get()
+                   * right_denominator_inverse_
+                   * (*right_lower_degree_basis_function_
+                   )(parametric_coordinate, tolerance)))
+             : Type_{};
 }
 
 NonZeroDegreeBSplineBasisFunction::Type_
@@ -162,7 +201,8 @@ NonZeroDegreeBSplineBasisFunction::operator()(
     ParametricCoordinate const& parametric_coordinate,
     UniqueEvaluations& unique_evaluations,
     int const& tree_info,
-    Tolerance const& tolerance) const {
+    Tolerance const& tolerance
+) const {
 
   // First, support check - exit if not
   if (!IsInSupport(parametric_coordinate, tolerance)) {
@@ -194,15 +234,11 @@ NonZeroDegreeBSplineBasisFunction::operator()(
   auto& computed_basis = unique_evaluations[id + entry_offset];
   computed_basis =
       ((parametric_coordinate - start_knot_).Get() * left_denominator_inverse_
-       * (*left_lower_degree_basis_function_)(parametric_coordinate,
-                                              unique_evaluations,
-                                              -2,
-                                              tolerance))
+       * (*left_lower_degree_basis_function_
+       )(parametric_coordinate, unique_evaluations, -2, tolerance))
       + ((end_knot_ - parametric_coordinate).Get() * right_denominator_inverse_
-         * (*right_lower_degree_basis_function_)(parametric_coordinate,
-                                                 unique_evaluations,
-                                                 -1,
-                                                 tolerance));
+         * (*right_lower_degree_basis_function_
+         )(parametric_coordinate, unique_evaluations, -1, tolerance));
 
   return computed_basis;
 }
@@ -213,27 +249,30 @@ NonZeroDegreeBSplineBasisFunction::Type_
 NonZeroDegreeBSplineBasisFunction::operator()(
     ParametricCoordinate const& parametric_coordinate,
     Derivative const& derivative,
-    Tolerance const& tolerance) const {
+    Tolerance const& tolerance
+) const {
 #ifndef NDEBUG
   try {
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "splinelib::sources::parameter_spaces::"
-          "NonZeroDegreeBSplineBasisFunction::operator()");
+    Throw(
+        exception,
+        "splinelib::sources::parameter_spaces::"
+        "NonZeroDegreeBSplineBasisFunction::operator()"
+    );
   }
 #endif
   if (derivative != Derivative{}) {
     if (IsInSupport(parametric_coordinate, tolerance)) {
       Derivative const lower_derivative = (derivative - Derivative{1});
-      return ((left_quotient_derivative_
-               * (*left_lower_degree_basis_function_)(parametric_coordinate,
-                                                      lower_derivative,
-                                                      tolerance))
-              - (right_quotient_derivative_
-                 * (*right_lower_degree_basis_function_)(parametric_coordinate,
-                                                         lower_derivative,
-                                                         tolerance)));
+      return (
+          (left_quotient_derivative_
+           * (*left_lower_degree_basis_function_
+           )(parametric_coordinate, lower_derivative, tolerance))
+          - (right_quotient_derivative_
+             * (*right_lower_degree_basis_function_
+             )(parametric_coordinate, lower_derivative, tolerance))
+      );
     } else {
       return Type_{};
     }
@@ -250,14 +289,17 @@ NonZeroDegreeBSplineBasisFunction::operator()(
     UniqueEvaluations& unique_evaluations,
     IsTopLevelComputed& top_level_computed,
     int const& tree_info,
-    Tolerance const& tolerance) const {
+    Tolerance const& tolerance
+) const {
 #ifndef NDEBUG
   try {
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "splinelib::sources::parameter_spaces::"
-          "NonZeroDegreeBSplineBasisFunction::operator()");
+    Throw(
+        exception,
+        "splinelib::sources::parameter_spaces::"
+        "NonZeroDegreeBSplineBasisFunction::operator()"
+    );
   }
 #endif
 
@@ -277,7 +319,8 @@ NonZeroDegreeBSplineBasisFunction::operator()(
       if (derivative == Derivative{}) {
         throw std::runtime_error(
             String("CRITICAL ISSUE! Please help us by writing an issue at ")
-            + String("github.com/tataratat/SplineLib"));
+            + String("github.com/tataratat/SplineLib")
+        );
       }
       return unique_derivatives[derivative.Get() + tree_info];
     }
@@ -304,23 +347,24 @@ NonZeroDegreeBSplineBasisFunction::operator()(
     // same idea as evaluation.
     // top-level-derivative and all right ones
     auto& computed_basis = unique_derivatives[derivative.Get() + entry_offset];
-    computed_basis =
-        (left_quotient_derivative_
-         * (*left_lower_degree_basis_function_)(parametric_coordinate,
-                                                lower_derivative,
-                                                unique_derivatives,
-                                                unique_evaluations,
-                                                top_level_computed,
-                                                -2,
-                                                tolerance))
-        - (right_quotient_derivative_
-           * (*right_lower_degree_basis_function_)(parametric_coordinate,
-                                                   lower_derivative,
-                                                   unique_derivatives,
-                                                   unique_evaluations,
-                                                   top_level_computed,
-                                                   -1,
-                                                   tolerance));
+    computed_basis = (left_quotient_derivative_
+                      * (*left_lower_degree_basis_function_
+                      )(parametric_coordinate,
+                        lower_derivative,
+                        unique_derivatives,
+                        unique_evaluations,
+                        top_level_computed,
+                        -2,
+                        tolerance))
+                     - (right_quotient_derivative_
+                        * (*right_lower_degree_basis_function_
+                        )(parametric_coordinate,
+                          lower_derivative,
+                          unique_derivatives,
+                          unique_evaluations,
+                          top_level_computed,
+                          -1,
+                          tolerance));
 
     // here would be a good alternative place to set top-level computed flag.
     return computed_basis;
@@ -336,10 +380,12 @@ NonZeroDegreeBSplineBasisFunction::operator()(
         break;
       ++top_level_id;
     }
-    const auto evaluation = operator()(parametric_coordinate,
-                                       unique_evaluations,
-                                       top_level_id,
-                                       tolerance);
+    const auto evaluation = operator()(
+        parametric_coordinate,
+        unique_evaluations,
+        top_level_id,
+        tolerance
+    );
 
     // Here's always 0th derivative.
     unique_derivatives[0] = evaluation;
@@ -351,7 +397,8 @@ NonZeroDegreeBSplineBasisFunction::operator()(
 NonZeroDegreeBSplineBasisFunction::Type_
 NonZeroDegreeBSplineBasisFunction::InvertPotentialZero(
     ParametricCoordinate const& potential_zero,
-    Tolerance const& tolerance) const {
+    Tolerance const& tolerance
+) const {
   return IsEqual(potential_zero, ParametricCoordinate{}, tolerance)
              ? Type{}
              : Type_{1.0 / potential_zero.Get()};

@@ -51,9 +51,11 @@ using OutOfRange = std::out_of_range;
 using RuntimeError = std::runtime_error;
 
 template<typename Exception>
-void Throw(Exception const& exception,
-           Message const& name,
-           int const& dimension = -1);
+void Throw(
+    Exception const& exception,
+    Message const& name,
+    int const& dimension = -1
+);
 
 #include "Sources/Utilities/error_handling.inc"
 #endif

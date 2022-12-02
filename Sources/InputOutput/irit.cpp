@@ -33,9 +33,9 @@ namespace splinelib::sources::input_output::irit {
 namespace {
 
 template<int parametric_dimensionality>
-using ParameterSpace =
-    typename splines::Spline<parametric_dimensionality,
-                             parametric_dimensionality>::ParameterSpace_;
+using ParameterSpace = typename splines::Spline<
+    parametric_dimensionality,
+    parametric_dimensionality>::ParameterSpace_;
 using StringVectorConstIterator =
     utilities::string_operations::StringVectorConstIterator;
 using std::make_shared, std::move, std::to_string,
@@ -53,22 +53,29 @@ template<int parametric_dimensionality, int dimensionality>
 SplineEntry CreateSpline(
     SharedPointer<ParameterSpace<parametric_dimensionality>> parameter_space,
     bool const& is_non_rational,
-    StringVectorConstIterator& entry);
+    StringVectorConstIterator& entry
+);
 
 template<int parametric_dimensionality>
-void WriteSpline(OutputStream& file,
-                 SplineEntry const& spline,
-                 String const& type,
-                 Precision const& precision);
+void WriteSpline(
+    OutputStream& file,
+    SplineEntry const& spline,
+    String const& type,
+    Precision const& precision
+);
 template<int parametric_dimensionality, int dimensionality>
-void WriteSpline(OutputStream& file,
-                 SplineEntry const& spline,
-                 Precision const& precision);
+void WriteSpline(
+    OutputStream& file,
+    SplineEntry const& spline,
+    Precision const& precision
+);
 template<bool is_rational, typename SplineType>
-void WriteSpline(OutputStream& file,
-                 SplineType const& spline,
-                 String const& point_type,
-                 Precision const& precision);
+void WriteSpline(
+    OutputStream& file,
+    SplineType const& spline,
+    String const& point_type,
+    Precision const& precision
+);
 
 } // namespace
 
@@ -97,10 +104,12 @@ Splines Read(String const& file_name) {
           splines.emplace_back(CreateSpline<3>(entry));
         } else {
 #ifndef NDEBUG
-          throw RuntimeError("Unknown geometrical type (" + geometrical_type
-                             + ") encountered as currently only "
-                               "entries of geometrical type CURVE, SURFACE, "
-                               "and TRIVAR BSPLINE can be read.");
+          throw RuntimeError(
+              "Unknown geometrical type (" + geometrical_type
+              + ") encountered as currently only "
+                "entries of geometrical type CURVE, SURFACE, "
+                "and TRIVAR BSPLINE can be read."
+          );
 #endif
         }
       }
@@ -113,9 +122,11 @@ Splines Read(String const& file_name) {
   return splines;
 }
 
-void Write(Splines const& splines,
-           String const& file_name,
-           Precision const& precision) {
+void Write(
+    Splines const& splines,
+    String const& file_name,
+    Precision const& precision
+) {
 #ifndef NDEBUG
   try {
 #endif
@@ -139,12 +150,14 @@ void Write(Splines const& splines,
         break;
       default:
 #ifndef NDEBUG
-        throw RuntimeError("The parametric dimensionality ("
-                           + to_string(parametric_dimensionality)
-                           + ") of the "
-                             "spline number "
-                           + to_string(spline_index_value)
-                           + " must be greater than 0 and less than 4.");
+        throw RuntimeError(
+            "The parametric dimensionality ("
+            + to_string(parametric_dimensionality)
+            + ") of the "
+              "spline number "
+            + to_string(spline_index_value)
+            + " must be greater than 0 and less than 4."
+        );
 #endif
         break;
       }
@@ -175,19 +188,22 @@ SplineEntry CreateSpline(StringVectorConstIterator& entry) {
   using Knot = typename KnotVector::Knot_;
 
   typename ParameterSpace::NumberOfBasisFunctions_ number_of_coordinates;
-  Dimension::ForEach(0,
-                     parametric_dimensionality,
-                     [&](Dimension const& dimension) {
-                       number_of_coordinates[dimension.Get()] =
-                           ConvertToNumber<Length>(*(entry++));
-                     });
+  Dimension::ForEach(
+      0,
+      parametric_dimensionality,
+      [&](Dimension const& dimension) {
+        number_of_coordinates[dimension.Get()] =
+            ConvertToNumber<Length>(*(entry++));
+      }
+  );
   typename ParameterSpace::Degrees_ degrees;
-  Dimension::ForEach(0,
-                     parametric_dimensionality,
-                     [&](Dimension const& dimension) {
-                       degrees[dimension.Get()] =
-                           --ConvertToNumber<Degree>(*(entry++));
-                     });
+  Dimension::ForEach(
+      0,
+      parametric_dimensionality,
+      [&](Dimension const& dimension) {
+        degrees[dimension.Get()] = --ConvertToNumber<Degree>(*(entry++));
+      }
+  );
   String const& point_type = *(entry++);
   KnotVectors knot_vectors;
   Dimension::ForEach(
@@ -205,10 +221,11 @@ SplineEntry CreateSpline(StringVectorConstIterator& entry) {
         Index::ForEach(1, number_of_knots - 1, [&](Index const&) {
           knots.emplace_back(ConvertToNumber<Knot>(*(entry++)));
         });
-        knots.emplace_back(
-            ConvertToNumber<Knot>(TrimCharacter(*(entry++), ']')));
+        knots.emplace_back(ConvertToNumber<Knot>(TrimCharacter(*(entry++), ']'))
+        );
         knot_vectors[current_dimension] = make_shared<KnotVector>(knots);
-      });
+      }
+  );
   SharedPointer<ParameterSpace> parameter_space{
       make_shared<ParameterSpace>(move(knot_vectors), move(degrees))};
   SplineEntry spline;
@@ -217,31 +234,40 @@ SplineEntry CreateSpline(StringVectorConstIterator& entry) {
   bool const& is_non_rational = StartsWith(point_type, "E");
   switch (dimensionality) {
   case 1:
-    spline = CreateSpline<parametric_dimensionality, 1>(move(parameter_space),
-                                                        is_non_rational,
-                                                        entry);
+    spline = CreateSpline<parametric_dimensionality, 1>(
+        move(parameter_space),
+        is_non_rational,
+        entry
+    );
     break;
   case 2:
-    spline = CreateSpline<parametric_dimensionality, 2>(move(parameter_space),
-                                                        is_non_rational,
-                                                        entry);
+    spline = CreateSpline<parametric_dimensionality, 2>(
+        move(parameter_space),
+        is_non_rational,
+        entry
+    );
     break;
   case 3:
-    spline = CreateSpline<parametric_dimensionality, 3>(move(parameter_space),
-                                                        is_non_rational,
-                                                        entry);
+    spline = CreateSpline<parametric_dimensionality, 3>(
+        move(parameter_space),
+        is_non_rational,
+        entry
+    );
     break;
   case 4:
-    spline = CreateSpline<parametric_dimensionality, 4>(move(parameter_space),
-                                                        is_non_rational,
-                                                        entry);
+    spline = CreateSpline<parametric_dimensionality, 4>(
+        move(parameter_space),
+        is_non_rational,
+        entry
+    );
     break;
   default:
 #ifndef NDEBUG
-    throw RuntimeError("The spline's dimensionality "
-                       + to_string(dimensionality)
-                       + " must be greater than 0 and "
-                         "less than 10.");
+    throw RuntimeError(
+        "The spline's dimensionality " + to_string(dimensionality)
+        + " must be greater than 0 and "
+          "less than 10."
+    );
 #endif
     break;
   }
@@ -252,7 +278,8 @@ template<int parametric_dimensionality, int dimensionality>
 SplineEntry CreateSpline(
     SharedPointer<ParameterSpace<parametric_dimensionality>> parameter_space,
     bool const& is_non_rational,
-    StringVectorConstIterator& entry) {
+    StringVectorConstIterator& entry
+) {
   int const &total_number_of_coordinates =
                 parameter_space->GetTotalNumberOfBasisFunctions(),
             &maximum_dimension = (dimensionality - 1);
@@ -274,8 +301,10 @@ SplineEntry CreateSpline(
           ConvertToNumber<Coordinate>(TrimCharacter(*(entry++), ']'));
       coordinates.emplace_back(scalar_coordinates);
     });
-    return make_shared<BSpline>(move(parameter_space),
-                                make_shared<VectorSpace>(move(coordinates)));
+    return make_shared<BSpline>(
+        move(parameter_space),
+        make_shared<VectorSpace>(move(coordinates))
+    );
   } else {
     using Nurbs = Nurbs<parametric_dimensionality, dimensionality>;
     using WeightedVectorSpace = typename Nurbs::WeightedVectorSpace_;
@@ -296,15 +325,18 @@ SplineEntry CreateSpline(
     });
     return make_shared<Nurbs>(
         move(parameter_space),
-        make_shared<WeightedVectorSpace>(move(coordinates)));
+        make_shared<WeightedVectorSpace>(move(coordinates))
+    );
   }
 }
 
 template<int parametric_dimensionality>
-void WriteSpline(OutputStream& file,
-                 SplineEntry const& spline,
-                 String const& type,
-                 Precision const& precision) {
+void WriteSpline(
+    OutputStream& file,
+    SplineEntry const& spline,
+    String const& type,
+    Precision const& precision
+) {
   file << "\n    [" << type << " BSPLINE";
   int const& dimensionality = spline->dimensionality_;
   switch (dimensionality) {
@@ -322,19 +354,22 @@ void WriteSpline(OutputStream& file,
     break;
   default:
 #ifndef NDEBUG
-    throw RuntimeError("The spline's dimensionality ("
-                       + to_string(dimensionality)
-                       + ") must be greater than 0 and "
-                         "less than 10.");
+    throw RuntimeError(
+        "The spline's dimensionality (" + to_string(dimensionality)
+        + ") must be greater than 0 and "
+          "less than 10."
+    );
 #endif
     break;
   }
 }
 
 template<int parametric_dimensionality, int dimensionality>
-void WriteSpline(OutputStream& file,
-                 SplineEntry const& spline,
-                 Precision const& precision) {
+void WriteSpline(
+    OutputStream& file,
+    SplineEntry const& spline,
+    Precision const& precision
+) {
   using std::static_pointer_cast;
 
   String const& dimensionality_string = to_string(dimensionality);
@@ -344,20 +379,24 @@ void WriteSpline(OutputStream& file,
           *static_pointer_cast<
               Nurbs<parametric_dimensionality, dimensionality>>(spline),
           "P" + dimensionality_string,
-          precision)
+          precision
+      )
       : WriteSpline<false>(
           file,
           *static_pointer_cast<
               BSpline<parametric_dimensionality, dimensionality>>(spline),
           "E" + dimensionality_string,
-          precision);
+          precision
+      );
 }
 
 template<bool is_rational, typename SplineType>
-void WriteSpline(OutputStream& file,
-                 SplineType const& spline,
-                 String const& point_type,
-                 Precision const& precision) {
+void WriteSpline(
+    OutputStream& file,
+    SplineType const& spline,
+    String const& point_type,
+    Precision const& precision
+) {
   using OutputInformation = typename SplineType::OutputInformation_;
   using std::tuple_element_t;
   using ParameterSpace = tuple_element_t<0, OutputInformation>;
@@ -374,16 +413,22 @@ void WriteSpline(OutputStream& file,
 
   ParameterSpace const& parameter_space = get<0>(spline_written);
   String number_of_coordinates_orders_and_point_type{};
-  Append(number_of_coordinates_orders_and_point_type,
-         " ",
-         get<2>(parameter_space));
+  Append(
+      number_of_coordinates_orders_and_point_type,
+      " ",
+      get<2>(parameter_space)
+  );
   for (typename tuple_element_t<1, ParameterSpace>::value_type const& degree :
        get<1>(parameter_space))
-    Append(number_of_coordinates_orders_and_point_type,
-           " ",
-           to_string(ConvertToNumber<typename SplineType::ParameterSpace_::
-                                         Degrees_::value_type::Type_>(degree)
-                     + 1));
+    Append(
+        number_of_coordinates_orders_and_point_type,
+        " ",
+        to_string(
+            ConvertToNumber<typename SplineType::ParameterSpace_::Degrees_::
+                                value_type::Type_>(degree)
+            + 1
+        )
+    );
   Append(number_of_coordinates_orders_and_point_type, " ", point_type);
   file << number_of_coordinates_orders_and_point_type;
   for (typename tuple_element_t<0, ParameterSpace>::value_type const&

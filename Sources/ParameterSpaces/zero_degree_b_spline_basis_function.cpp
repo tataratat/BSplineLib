@@ -28,45 +28,57 @@ namespace splinelib::sources::parameter_spaces {
 ZeroDegreeBSplineBasisFunction::ZeroDegreeBSplineBasisFunction(
     KnotVector const& knot_vector,
     KnotSpan const& start_of_support,
-    Tolerance const& tolerance)
+    Tolerance const& tolerance
+)
     : BSplineBasisFunction(knot_vector, start_of_support, Degree{}, tolerance) {
 }
 
-bool IsEqual(ZeroDegreeBSplineBasisFunction const& lhs,
-             ZeroDegreeBSplineBasisFunction const& rhs,
-             Tolerance const& tolerance) {
+bool IsEqual(
+    ZeroDegreeBSplineBasisFunction const& lhs,
+    ZeroDegreeBSplineBasisFunction const& rhs,
+    Tolerance const& tolerance
+) {
   using Base = ZeroDegreeBSplineBasisFunction::Base_;
 
 #ifndef NDEBUG
   try {
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "splinelib::sources::parameter_spaces::IsEqual::"
-          "ZeroDegreeBSplineBasisFunction");
+    Throw(
+        exception,
+        "splinelib::sources::parameter_spaces::IsEqual::"
+        "ZeroDegreeBSplineBasisFunction"
+    );
   }
 #endif
-  return IsEqual(static_cast<Base const&>(lhs),
-                 static_cast<Base const&>(rhs),
-                 tolerance);
+  return IsEqual(
+      static_cast<Base const&>(lhs),
+      static_cast<Base const&>(rhs),
+      tolerance
+  );
 }
 
-bool operator==(ZeroDegreeBSplineBasisFunction const& lhs,
-                ZeroDegreeBSplineBasisFunction const& rhs) {
+bool operator==(
+    ZeroDegreeBSplineBasisFunction const& lhs,
+    ZeroDegreeBSplineBasisFunction const& rhs
+) {
   return IsEqual(lhs, rhs);
 }
 
 ZeroDegreeBSplineBasisFunction::Type_
 ZeroDegreeBSplineBasisFunction::operator()(
     ParametricCoordinate const& parametric_coordinate,
-    Tolerance const& tolerance) const {
+    Tolerance const& tolerance
+) const {
 #ifndef NDEBUG
   try {
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "splinelib::sources::parameter_spaces::"
-          "ZeroDegreeBSplineBasisFunction::operator()");
+    Throw(
+        exception,
+        "splinelib::sources::parameter_spaces::"
+        "ZeroDegreeBSplineBasisFunction::operator()"
+    );
   }
 #endif
   return (IsInSupport(parametric_coordinate, tolerance) ? Type_{1.0} : Type_{});
@@ -77,7 +89,8 @@ ZeroDegreeBSplineBasisFunction::operator()(
     ParametricCoordinate const& parametric_coordinate,
     UniqueEvaluations& unique_evaluations,
     int const& tree_info,
-    Tolerance const& tolerance) const {
+    Tolerance const& tolerance
+) const {
 
   // At each Spline evaluation, this function will be called exactly 4 times
   // per dim. So, let's just compute. It is also generally faster
@@ -88,19 +101,23 @@ ZeroDegreeBSplineBasisFunction::Type_
 ZeroDegreeBSplineBasisFunction::operator()(
     ParametricCoordinate const& parametric_coordinate,
     Derivative const& derivative,
-    Tolerance const& tolerance) const {
+    Tolerance const& tolerance
+) const {
 #ifndef NDEBUG
   try {
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "splinelib::sources::parameter_spaces::"
-          "ZeroDegreeBSplineBasisFunction::operator()");
+    Throw(
+        exception,
+        "splinelib::sources::parameter_spaces::"
+        "ZeroDegreeBSplineBasisFunction::operator()"
+    );
   }
 #endif
   return (
       derivative == Derivative{} ? operator()(parametric_coordinate, tolerance)
-                                 : Type_{});
+                                 : Type_{}
+  );
 }
 
 ZeroDegreeBSplineBasisFunction::Type_
@@ -111,21 +128,22 @@ ZeroDegreeBSplineBasisFunction::operator()(
     UniqueEvaluations& unique_evaluations,
     IsTopLevelComputed& top_level_computed,
     int const& tree_info,
-    Tolerance const& tolerance) const {
+    Tolerance const& tolerance
+) const {
 #ifndef NDEBUG
   try {
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "splinelib::sources::parameter_spaces::"
-          "ZeroDegreeBSplineBasisFunction::operator()");
+    Throw(
+        exception,
+        "splinelib::sources::parameter_spaces::"
+        "ZeroDegreeBSplineBasisFunction::operator()"
+    );
   }
 #endif
   if (derivative == Derivative{}) {
-    return operator()(parametric_coordinate,
-                      unique_derivatives,
-                      tree_info,
-                      tolerance);
+    return
+    operator()(parametric_coordinate, unique_derivatives, tree_info, tolerance);
   } else {
     return Type_{};
   }

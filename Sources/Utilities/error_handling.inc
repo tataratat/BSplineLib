@@ -18,11 +18,15 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 template<typename Exception>
-void Throw(Exception const& exception,
-           Message const& name,
-           int const& dimension) {
-  static_assert(std::is_base_of_v<std::exception, Exception>,
-                "Only exceptions of the standard library are supported.");
+void Throw(
+    Exception const& exception,
+    Message const& name,
+    int const& dimension
+) {
+  static_assert(
+      std::is_base_of_v<std::exception, Exception>,
+      "Only exceptions of the standard library are supported."
+  );
 
   Message message{name + ": Throws the following —> "};
   if (dimension != -1)

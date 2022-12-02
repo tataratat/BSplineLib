@@ -32,9 +32,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 namespace splinelib::sources::input_output::irit {
 
 Splines Read(String const& file_name);
-void Write(Splines const& splines,
-           String const& file_name,
-           Precision const& precision = kPrecision);
+void Write(
+    Splines const& splines,
+    String const& file_name,
+    Precision const& precision = kPrecision
+);
 
 } // namespace splinelib::sources::input_output::irit
 

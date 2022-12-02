@@ -22,8 +22,10 @@ FileStream Open(File const& file_name) {
   FileStream file(file_name, mode);
 #ifndef NDEBUG
   if (!file)
-    Throw(RuntimeError("File " + file_name + " cannot be opened."),
-          "splinelib::sources::utilities::system_operations::Open");
+    Throw(
+        RuntimeError("File " + file_name + " cannot be opened."),
+        "splinelib::sources::utilities::system_operations::Open"
+    );
 #endif
   return file;
 }

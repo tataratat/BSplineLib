@@ -26,7 +26,8 @@ BSpline<parametric_dimensionality, dimensionality>::BSpline() : Base_(false) {}
 template<int parametric_dimensionality, int dimensionality>
 BSpline<parametric_dimensionality, dimensionality>::BSpline(
     SharedPointer<ParameterSpace_> parameter_space,
-    SharedPointer<VectorSpace_> vector_space)
+    SharedPointer<VectorSpace_> vector_space
+)
     : Base_(std::move(parameter_space), false) {
   using std::to_string;
 
@@ -35,47 +36,58 @@ BSpline<parametric_dimensionality, dimensionality>::BSpline(
                 Base_::parameter_space_->GetTotalNumberOfBasisFunctions(),
             &number_of_coordinates = vector_space->GetNumberOfCoordinates();
   if (number_of_coordinates != total_number_of_basis_functions)
-    Throw(DomainError(to_string(number_of_coordinates)
-                      + " coordinates were provided but "
-                      + to_string(total_number_of_basis_functions)
-                      + " are needed to associate each basis function "
-                        "with a coordinate."),
-          "splinelib::sources::splines::BSpline::BSpline");
+    Throw(
+        DomainError(
+            to_string(number_of_coordinates) + " coordinates were provided but "
+            + to_string(total_number_of_basis_functions)
+            + " are needed to associate each basis function "
+              "with a coordinate."
+        ),
+        "splinelib::sources::splines::BSpline::BSpline"
+    );
 #endif
   vector_space_ = std::move(vector_space);
 }
 
 template<int parametric_dimensionality, int dimensionality>
-BSpline<parametric_dimensionality, dimensionality>::BSpline(
-    BSpline const& other)
+BSpline<parametric_dimensionality, dimensionality>::BSpline(BSpline const& other
+)
     : Base_(other),
       vector_space_{std::make_shared<VectorSpace_>(*other.vector_space_)} {}
 
 template<int parametric_dimensionality, int dimensionality>
 BSpline<parametric_dimensionality, dimensionality>&
-BSpline<parametric_dimensionality, dimensionality>::operator=(
-    BSpline const& rhs) {
+BSpline<parametric_dimensionality, dimensionality>::operator=(BSpline const& rhs
+) {
   Base_::operator=(rhs),
   vector_space_ = std::make_shared<VectorSpace_>(*rhs.vector_space_);
   return *this;
 }
 
 template<int parametric_dimensionality, int dimensionality>
-bool IsEqual(BSpline<parametric_dimensionality, dimensionality> const& lhs,
-             BSpline<parametric_dimensionality, dimensionality> const& rhs,
-             Tolerance const& tolerance) {
+bool IsEqual(
+    BSpline<parametric_dimensionality, dimensionality> const& lhs,
+    BSpline<parametric_dimensionality, dimensionality> const& rhs,
+    Tolerance const& tolerance
+) {
   using Base =
       typename BSpline<parametric_dimensionality, dimensionality>::Base_;
 
-  return (IsEqual(*lhs.vector_space_, *rhs.vector_space_, tolerance)
-          && IsEqual(static_cast<Base const&>(lhs),
-                     static_cast<Base const&>(rhs),
-                     tolerance));
+  return (
+      IsEqual(*lhs.vector_space_, *rhs.vector_space_, tolerance)
+      && IsEqual(
+          static_cast<Base const&>(lhs),
+          static_cast<Base const&>(rhs),
+          tolerance
+      )
+  );
 }
 
 template<int parametric_dimensionality, int dimensionality>
-bool operator==(BSpline<parametric_dimensionality, dimensionality> const& lhs,
-                BSpline<parametric_dimensionality, dimensionality> const& rhs) {
+bool operator==(
+    BSpline<parametric_dimensionality, dimensionality> const& lhs,
+    BSpline<parametric_dimensionality, dimensionality> const& rhs
+) {
   return IsEqual(lhs, rhs);
 }
 
@@ -83,7 +95,8 @@ template<int parametric_dimensionality, int dimensionality>
 typename Spline<parametric_dimensionality, dimensionality>::Coordinate_
 BSpline<parametric_dimensionality, dimensionality>::operator()(
     ParametricCoordinate_ const& parametric_coordinate,
-    Tolerance const& tolerance) const {
+    Tolerance const& tolerance
+) const {
 #ifndef NDEBUG
   try {
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
@@ -96,7 +109,8 @@ BSpline<parametric_dimensionality, dimensionality>::operator()(
 
   // prepare vectors to hold unique evaluation values.
   typename ParameterSpace_::UniqueEvaluations_ unique_evaluations;
-  parameter_space.template InitializeUniqueEvaluations<false>(unique_evaluations);
+  parameter_space.template InitializeUniqueEvaluations<false>(unique_evaluations
+  );
 
   for (Index_ non_zero_basis_function{parameter_space.First()};
        non_zero_basis_function != parameter_space.Behind();
@@ -112,10 +126,14 @@ BSpline<parametric_dimensionality, dimensionality>::operator()(
             (*vector_space_)[basis_function.GetIndex1d()],
             // non_zero_basis_function will provide entry id (tree_info) for
             // top-level node evaluations.
-            parameter_space.EvaluateBasisFunction(basis_function,
-                                                  non_zero_basis_function,
-                                                  parametric_coordinate,
-                                                  unique_evaluations)));
+            parameter_space.EvaluateBasisFunction(
+                basis_function,
+                non_zero_basis_function,
+                parametric_coordinate,
+                unique_evaluations
+            )
+        )
+    );
   }
   return evaluated_b_spline;
 }
@@ -125,7 +143,8 @@ typename Spline<parametric_dimensionality, dimensionality>::Coordinate_
 BSpline<parametric_dimensionality, dimensionality>::operator()(
     ParametricCoordinate_ const& parametric_coordinate,
     Derivative_ const& derivative,
-    Tolerance const& tolerance) const {
+    Tolerance const& tolerance
+) const {
 #ifndef NDEBUG
   try {
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
@@ -142,10 +161,11 @@ BSpline<parametric_dimensionality, dimensionality>::operator()(
   typename ParameterSpace_::IsTopLevelComputed_ top_levels_computed;
 
   parameter_space.template InitializeUniqueDerivativeContainers<false>(
-                                                       derivative,
-                                                       top_levels_computed,
-                                                       unique_derivatives,
-                                                       unique_evaluations);
+      derivative,
+      top_levels_computed,
+      unique_derivatives,
+      unique_evaluations
+  );
 
   for (Index_ non_zero_basis_function{parameter_space.First()};
        non_zero_basis_function != parameter_space.Behind();
@@ -166,7 +186,10 @@ BSpline<parametric_dimensionality, dimensionality>::operator()(
                 derivative,
                 unique_derivatives,
                 unique_evaluations,
-                tolerance)));
+                tolerance
+            )
+        )
+    );
   }
 
   return evaluated_b_spline_derivative;
@@ -176,7 +199,8 @@ template<int parametric_dimensionality, int dimensionality>
 typename Spline<parametric_dimensionality, dimensionality>::Coordinate_
 BSpline<parametric_dimensionality, dimensionality>::FullyRecursiveEvaluate(
     ParametricCoordinate_ const& parametric_coordinate,
-    Tolerance const& tolerance) const {
+    Tolerance const& tolerance
+) const {
 #ifndef NDEBUG
   try {
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
@@ -196,8 +220,10 @@ BSpline<parametric_dimensionality, dimensionality>::FullyRecursiveEvaluate(
         evaluated_b_spline,
         utilities::std_container_operations::Multiply(
             (*vector_space_)[basis_function.GetIndex1d()],
-            parameter_space.EvaluateBasisFunction(basis_function,
-                                                  parametric_coordinate)));
+            parameter_space
+                .EvaluateBasisFunction(basis_function, parametric_coordinate)
+        )
+    );
   }
   return evaluated_b_spline;
 }
@@ -207,7 +233,8 @@ typename Spline<parametric_dimensionality, dimensionality>::Coordinate_
 BSpline<parametric_dimensionality, dimensionality>::FullyRecursiveDerivative(
     ParametricCoordinate_ const& parametric_coordinate,
     Derivative_ const& derivative,
-    Tolerance const& tolerance) const {
+    Tolerance const& tolerance
+) const {
 #ifndef NDEBUG
   try {
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
@@ -230,7 +257,10 @@ BSpline<parametric_dimensionality, dimensionality>::FullyRecursiveDerivative(
             parameter_space.EvaluateBasisFunctionDerivative(
                 basis_function,
                 parametric_coordinate,
-                derivative)));
+                derivative
+            )
+        )
+    );
   }
   return evaluated_b_spline_derivative;
 }
@@ -241,7 +271,8 @@ void BSpline<parametric_dimensionality, dimensionality>::InsertKnot(
     Dimension const& dimension,
     Knot_ knot,
     Multiplicity const& multiplicity,
-    Tolerance const& tolerance) const {
+    Tolerance const& tolerance
+) const {
   using utilities::std_container_operations::Add,
       utilities::std_container_operations::Multiply;
 
@@ -251,12 +282,13 @@ void BSpline<parametric_dimensionality, dimensionality>::InsertKnot(
   Message const kName{"splinelib::sources::splines::BSpline::InsertKnot"};
 
   try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension,
-                                                parametric_dimensionality - 1);
+    Dimension::ThrowIfNamedIntegerIsOutOfBounds(
+        dimension,
+        parametric_dimensionality - 1
+    );
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-    parameter_space.ThrowIfParametricCoordinateIsOutsideScope(dimension,
-                                                              knot,
-                                                              tolerance);
+    parameter_space
+        .ThrowIfParametricCoordinateIsOutsideScope(dimension, knot, tolerance);
   } catch (InvalidArgument const& exception) {
     Throw(exception, kName, dimension_value);
   } catch (OutOfRange const& exception) {
@@ -289,14 +321,18 @@ void BSpline<parametric_dimensionality, dimensionality>::InsertKnot(
       Index const insertion_position = coordinate.GetIndex1d();
       vector_space.Insert(
           insertion_position,
-          Add(Multiply(vector_space[Index_{previous_number_of_coordinates,
-                                           coordinate_value}
-                                        .GetIndex1d()
-                                    + slice_coordinate.GetIndex1d()],
-                       *coefficient),
+          Add(Multiply(
+                  vector_space
+                      [Index_{previous_number_of_coordinates, coordinate_value}
+                           .GetIndex1d()
+                       + slice_coordinate.GetIndex1d()],
+                  *coefficient
+              ),
               Multiply(
                   vector_space[coordinate.Decrement(dimension).GetIndex1d()],
-                  k1_0 - *coefficient)));
+                  k1_0 - *coefficient
+              ))
+      );
       ++coefficient;
       for (; coefficient < current_coefficients.rend(); ++coefficient) {
         Index const& replacement_position = coordinate.GetIndex1d();
@@ -305,7 +341,9 @@ void BSpline<parametric_dimensionality, dimensionality>::InsertKnot(
             Add(Multiply(vector_space[replacement_position], *coefficient),
                 Multiply(
                     vector_space[coordinate.Decrement(dimension).GetIndex1d()],
-                    k1_0 - *coefficient)));
+                    k1_0 - *coefficient
+                ))
+        );
       }
     }
   }
@@ -317,7 +355,8 @@ Multiplicity BSpline<parametric_dimensionality, dimensionality>::RemoveKnot(
     Knot_ const& knot,
     Tolerance const& tolerance_removal,
     Multiplicity const& multiplicity,
-    Tolerance const& tolerance) const {
+    Tolerance const& tolerance
+) const {
   using utilities::std_container_operations::Divide,
       utilities::std_container_operations::Multiply,
       utilities::std_container_operations::Subtract;
@@ -329,8 +368,10 @@ Multiplicity BSpline<parametric_dimensionality, dimensionality>::RemoveKnot(
   Message const kName{"splinelib::sources::splines::BSpline::RemoveKnot"};
 
   try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension,
-                                                parametric_dimensionality - 1);
+    Dimension::ThrowIfNamedIntegerIsOutOfBounds(
+        dimension,
+        parametric_dimensionality - 1
+    );
     ThrowIfToleranceIsNegative(tolerance_removal);
     ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
@@ -374,32 +415,45 @@ Multiplicity BSpline<parametric_dimensionality, dimensionality>::RemoveKnot(
         coordinate_index = coordinate.Increment(dimension).GetIndex1d();
         vector_space.Replace(
             coordinate_index,
-            Divide(Subtract(vector_space[coordinate_index],
-                            Multiply(vector_space[lower_coordinate_index],
-                                     k1_0 - current_coefficient)),
-                   current_coefficient));
+            Divide(
+                Subtract(
+                    vector_space[coordinate_index],
+                    Multiply(
+                        vector_space[lower_coordinate_index],
+                        k1_0 - current_coefficient
+                    )
+                ),
+                current_coefficient
+            )
+        );
       }
       KnotRatio_ const& current_coefficient = *coefficient;
       lower_coordinate_index = coordinate_index;
       coordinate_index = coordinate.Increment(dimension).GetIndex1d();
       if (IsLessOrEqual(
               utilities::std_container_operations::EuclidianDistance(
-                  Divide(Subtract(vector_space[coordinate_index],
-                                  Multiply(vector_space[lower_coordinate_index],
-                                           k1_0 - current_coefficient)),
-                         current_coefficient),
-                  vector_space[Index_{number_of_coordinates,
-                                      coordinate.GetIndex()}
-                                   .GetIndex1d()
-                               + slice_coordinate.GetIndex1d() + Index{1}]),
-              Coordinate{tolerance_removal})) {
+                  Divide(
+                      Subtract(
+                          vector_space[coordinate_index],
+                          Multiply(
+                              vector_space[lower_coordinate_index],
+                              k1_0 - current_coefficient
+                          )
+                      ),
+                      current_coefficient
+                  ),
+                  vector_space
+                      [Index_{number_of_coordinates, coordinate.GetIndex()}
+                           .GetIndex1d()
+                       + slice_coordinate.GetIndex1d() + Index{1}]
+              ),
+              Coordinate{tolerance_removal}
+          )) {
         vector_space.Erase(coordinate_index);
       } else {
         Multiplicity const& successful_removals = (multiplicity - removal);
-        parameter_space_backup.RemoveKnot(dimension,
-                                          knot,
-                                          successful_removals,
-                                          tolerance);
+        parameter_space_backup
+            .RemoveKnot(dimension, knot, successful_removals, tolerance);
         parameter_space = parameter_space_backup;
         vector_space = vector_space_backup;
         return successful_removals;
@@ -414,7 +468,8 @@ template<int parametric_dimensionality, int dimensionality>
 void BSpline<parametric_dimensionality, dimensionality>::ElevateDegree(
     Dimension const& dimension,
     Multiplicity const& multiplicity,
-    Tolerance const& tolerance) const {
+    Tolerance const& tolerance
+) const {
   using utilities::std_container_operations::AddAndAssignToFirst,
       utilities::std_container_operations::GetBack,
       utilities::std_container_operations::Multiply;
@@ -424,8 +479,10 @@ void BSpline<parametric_dimensionality, dimensionality>::ElevateDegree(
   Message const kName{"splinelib::sources::splines::BSpline::ElevateDegree"};
 
   try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension,
-                                                parametric_dimensionality - 1);
+    Dimension::ThrowIfNamedIntegerIsOutOfBounds(
+        dimension,
+        parametric_dimensionality - 1
+    );
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
     Throw(exception, kName, dimension_value);
@@ -447,8 +504,9 @@ void BSpline<parametric_dimensionality, dimensionality>::ElevateDegree(
     Index const maximum_interior_coordinate{
         static_cast<int>(coefficients.size()) - 1};
     Index interior_coordinate{maximum_interior_coordinate},
-        last_coordinate{((segment + 1) * last_segment_coordinate.Get())
-                        + (segment * multiplicity.Get())};
+        last_coordinate{
+            ((segment + 1) * last_segment_coordinate.Get())
+            + (segment * multiplicity.Get())};
     for (; interior_coordinate >= (last_segment_coordinate - Index{1});
          --interior_coordinate) {
       BinomialRatios_ const& current_coefficients =
@@ -466,22 +524,29 @@ void BSpline<parametric_dimensionality, dimensionality>::ElevateDegree(
         IndexValue_ current_last_coordinate_value{coordinate_value};
         current_last_coordinate_value[dimension_value] +=
             (maximum_interior_coordinate - interior_coordinate);
-        Coordinate_ coordinate{
-            Multiply(vector_space[Index_{previous_number_of_coordinates,
-                                         current_last_coordinate_value}
-                                      .GetIndex1d()
-                                  + slice_coordinate.GetIndex1d()],
-                     GetBack(current_coefficients))};
+        Coordinate_ coordinate{Multiply(
+            vector_space
+                [Index_{
+                     previous_number_of_coordinates,
+                     current_last_coordinate_value}
+                     .GetIndex1d()
+                 + slice_coordinate.GetIndex1d()],
+            GetBack(current_coefficients)
+        )};
         std::for_each(
             current_coefficients.rbegin() + 1,
             current_coefficients.rend(),
             [&](BinomialRatio_ const& coefficient) {
               AddAndAssignToFirst(
                   coordinate,
-                  Multiply(vector_space[current_coordinate.Decrement(dimension)
-                                            .GetIndex1d()],
-                           coefficient));
-            });
+                  Multiply(
+                      vector_space[current_coordinate.Decrement(dimension)
+                                       .GetIndex1d()],
+                      coefficient
+                  )
+              );
+            }
+        );
         vector_space.Insert(insertion_position, coordinate);
       }
     }
@@ -497,18 +562,24 @@ void BSpline<parametric_dimensionality, dimensionality>::ElevateDegree(
         coordinate_value[dimension_value] = last_coordinate;
         Index_ current_coordinate{number_of_coordinates, coordinate_value};
         Index const& replacement_position = current_coordinate.GetIndex1d();
-        Coordinate_ coordinate{Multiply(vector_space[replacement_position],
-                                        GetBack(current_coefficients))};
+        Coordinate_ coordinate{Multiply(
+            vector_space[replacement_position],
+            GetBack(current_coefficients)
+        )};
         std::for_each(
             current_coefficients.rbegin() + 1,
             current_coefficients.rend(),
             [&](BinomialRatio_ const& coefficient) {
               AddAndAssignToFirst(
                   coordinate,
-                  Multiply(vector_space[current_coordinate.Decrement(dimension)
-                                            .GetIndex1d()],
-                           coefficient));
-            });
+                  Multiply(
+                      vector_space[current_coordinate.Decrement(dimension)
+                                       .GetIndex1d()],
+                      coefficient
+                  )
+              );
+            }
+        );
         vector_space.Replace(replacement_position, coordinate);
       }
     }
@@ -521,7 +592,8 @@ bool BSpline<parametric_dimensionality, dimensionality>::ReduceDegree(
     Dimension const& dimension,
     Tolerance const& tolerance_reduction,
     Multiplicity const& multiplicity,
-    Tolerance const& tolerance) const {
+    Tolerance const& tolerance
+) const {
   using std::for_each, utilities::std_container_operations::GetBack,
       utilities::std_container_operations::Multiply,
       utilities::std_container_operations::SubtractAndAssignToFirst;
@@ -533,8 +605,10 @@ bool BSpline<parametric_dimensionality, dimensionality>::ReduceDegree(
   Message const kName{"splinelib::sources::splines::BSpline::ReduceDegree"};
 
   try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension,
-                                                parametric_dimensionality - 1);
+    Dimension::ThrowIfNamedIntegerIsOutOfBounds(
+        dimension,
+        parametric_dimensionality - 1
+    );
     ThrowIfToleranceIsNegative(tolerance_reduction);
     ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
@@ -578,14 +652,21 @@ bool BSpline<parametric_dimensionality, dimensionality>::ReduceDegree(
             [&](BinomialRatio_ const& coefficient) {
               SubtractAndAssignToFirst(
                   coordinate,
-                  Multiply(vector_space[current_coordinate.Decrement(dimension)
-                                            .GetIndex1d()],
-                           coefficient));
-            });
-        vector_space.Replace(replacement_position,
-                             utilities::std_container_operations::Divide(
-                                 coordinate,
-                                 GetBack(current_coefficients)));
+                  Multiply(
+                      vector_space[current_coordinate.Decrement(dimension)
+                                       .GetIndex1d()],
+                      coefficient
+                  )
+              );
+            }
+        );
+        vector_space.Replace(
+            replacement_position,
+            utilities::std_container_operations::Divide(
+                coordinate,
+                GetBack(current_coefficients)
+            )
+        );
       }
       ++coordinate_index;
     }
@@ -602,8 +683,9 @@ bool BSpline<parametric_dimensionality, dimensionality>::ReduceDegree(
            --slice_coordinate) {
         IndexValue_ coordinate_value{slice_coordinate.GetIndex()};
         coordinate_value[dimension_value] = coordinate_index;
-        Index_ current_coordinate{previous_number_of_coordinates,
-                                  coordinate_value};
+        Index_ current_coordinate{
+            previous_number_of_coordinates,
+            coordinate_value};
         Index const& erasure_position = current_coordinate.GetIndex1d();
         IndexValue_ current_last_coordinate_value{coordinate_value};
         current_last_coordinate_value[dimension_value] +=
@@ -615,20 +697,29 @@ bool BSpline<parametric_dimensionality, dimensionality>::ReduceDegree(
             [&](BinomialRatio_ const& coefficient) {
               SubtractAndAssignToFirst(
                   coordinate,
-                  Multiply(vector_space[current_coordinate.Decrement(dimension)
-                                            .GetIndex1d()],
-                           coefficient));
-            });
+                  Multiply(
+                      vector_space[current_coordinate.Decrement(dimension)
+                                       .GetIndex1d()],
+                      coefficient
+                  )
+              );
+            }
+        );
         if (IsLessOrEqual(
                 utilities::std_container_operations::EuclidianDistance(
                     utilities::std_container_operations::DivideAndAssignToFirst(
                         coordinate,
-                        GetBack(current_coefficients)),
-                    vector_space[Index_{number_of_coordinates,
-                                        current_last_coordinate_value}
-                                     .GetIndex1d()
-                                 + slice_coordinate.GetIndex1d() + Index{1}]),
-                Coordinate{tolerance_reduction})) {
+                        GetBack(current_coefficients)
+                    ),
+                    vector_space
+                        [Index_{
+                             number_of_coordinates,
+                             current_last_coordinate_value}
+                             .GetIndex1d()
+                         + slice_coordinate.GetIndex1d() + Index{1}]
+                ),
+                Coordinate{tolerance_reduction}
+            )) {
           vector_space.Erase(erasure_position);
         } else {
           parameter_space = parameter_space_backup;
@@ -644,17 +735,19 @@ bool BSpline<parametric_dimensionality, dimensionality>::ReduceDegree(
 
 template<int parametric_dimensionality, int dimensionality>
 Coordinate BSpline<parametric_dimensionality, dimensionality>::
-    ComputeUpperBoundForMaximumDistanceFromOrigin(
-        Tolerance const& tolerance) const {
+    ComputeUpperBoundForMaximumDistanceFromOrigin(Tolerance const& tolerance
+    ) const {
   return vector_space_->DetermineMaximumDistanceFromOrigin(tolerance);
 }
 
 template<int parametric_dimensionality, int dimensionality>
 typename BSpline<parametric_dimensionality, dimensionality>::OutputInformation_
 BSpline<parametric_dimensionality, dimensionality>::Write(
-    Precision const& precision) const {
-  return OutputInformation_{Base_::parameter_space_->Write(precision),
-                            vector_space_->Write(precision)};
+    Precision const& precision
+) const {
+  return OutputInformation_{
+      Base_::parameter_space_->Write(precision),
+      vector_space_->Write(precision)};
 }
 
 // See NURBS book p. 169.
@@ -662,10 +755,13 @@ template<int parametric_dimensionality, int dimensionality>
 typename BSpline<parametric_dimensionality, dimensionality>::BezierInformation_
 BSpline<parametric_dimensionality, dimensionality>::MakeBezier(
     Dimension const& dimension,
-    Tolerance const& tolerance) const {
+    Tolerance const& tolerance
+) const {
   BezierInformation_ const& bezier_information =
-      Base_::parameter_space_->DetermineBezierExtractionKnots(dimension,
-                                                              tolerance);
+      Base_::parameter_space_->DetermineBezierExtractionKnots(
+          dimension,
+          tolerance
+      );
   Base_::RefineKnots(dimension, std::get<1>(bezier_information));
   return bezier_information;
 }

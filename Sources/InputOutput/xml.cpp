@@ -37,9 +37,9 @@ using Node = pugi::xml_node;
 namespace {
 
 template<int parametric_dimensionality>
-using ParameterSpace =
-    typename splines::Spline<parametric_dimensionality,
-                             parametric_dimensionality>::ParameterSpace_;
+using ParameterSpace = typename splines::Spline<
+    parametric_dimensionality,
+    parametric_dimensionality>::ParameterSpace_;
 using std::for_each, std::to_string,
     utilities::string_operations::ConvertToNumber,
     utilities::string_operations::ConvertToNumbers,
@@ -50,22 +50,29 @@ SplineEntry CreateSpline(Node const& spline_entry);
 template<int parametric_dimensionality, int dimensionality>
 SplineEntry CreateSpline(
     SharedPointer<ParameterSpace<parametric_dimensionality>> parameter_space,
-    Node const& spline_entry);
+    Node const& spline_entry
+);
 
 template<int parametric_dimensionality>
-void Write(Node& spline_node,
-           SplineEntry const& spline,
-           Precision const& precision);
+void Write(
+    Node& spline_node,
+    SplineEntry const& spline,
+    Precision const& precision
+);
 template<int parametric_dimensionality, int dimensionality>
-void Write(Node& spline_node,
-           SplineEntry const& spline,
-           String const& names,
-           Precision const& precision);
+void Write(
+    Node& spline_node,
+    SplineEntry const& spline,
+    String const& names,
+    Precision const& precision
+);
 template<bool is_rational, typename SplineType>
-void Write(Node& spline_node,
-           SplineType const& spline,
-           String const& names,
-           Precision const& precision);
+void Write(
+    Node& spline_node,
+    SplineType const& spline,
+    String const& names,
+    Precision const& precision
+);
 
 } // namespace
 
@@ -86,7 +93,8 @@ Splines Read(String const& file_name) {
         spline_list.end(),
         [&](Node const& spline_entry) {
           int const& parametric_dimensionality = ConvertToNumber<int>(
-              TrimCharacter(spline_entry.attribute("splDim").value(), ' '));
+              TrimCharacter(spline_entry.attribute("splDim").value(), ' ')
+          );
           SplineEntry spline;
           switch (parametric_dimensionality) {
           case 1:
@@ -103,15 +111,18 @@ Splines Read(String const& file_name) {
             break;
           default:
 #ifndef NDEBUG
-            throw RuntimeError("The parametric dimensionality ("
-                               + to_string(parametric_dimensionality)
-                               + ") must be "
-                                 "greater than 0 and currently less than 5.");
+            throw RuntimeError(
+                "The parametric dimensionality ("
+                + to_string(parametric_dimensionality)
+                + ") must be "
+                  "greater than 0 and currently less than 5."
+            );
 #endif
             break;
           }
           splines.emplace_back(spline);
-        });
+        }
+    );
 #ifndef NDEBUG
   } catch (RuntimeError const& exception) {
     Throw(exception, "splinelib::sources::input_output::xml::Read");
@@ -120,9 +131,11 @@ Splines Read(String const& file_name) {
   return splines;
 }
 
-void Write(Splines const& splines,
-           String const& file_name,
-           Precision const& precision) {
+void Write(
+    Splines const& splines,
+    String const& file_name,
+    Precision const& precision
+) {
 #ifndef NDEBUG
   try {
 #endif
@@ -154,7 +167,8 @@ void Write(Splines const& splines,
             "The spline's parametric dimensionality ("
             + to_string(parametric_dimensionality)
             + ") "
-              "must be greater than 0 and currently less than 5.");
+              "must be greater than 0 and currently less than 5."
+        );
 #endif
         break;
       }
@@ -180,47 +194,64 @@ SplineEntry CreateSpline(Node const& spline_entry) {
 
   Node child{spline_entry.child("kntVecs").first_child()};
   KnotVectors knot_vectors;
-  Dimension::ForEach(0,
-                     parametric_dimensionality,
-                     [&](Dimension const& dimension) {
-                       knot_vectors[dimension.Get()] = make_shared<KnotVector>(
-                           ConvertToNumbers<typename KnotVector::Knot_>(
-                               child.first_child().value(),
-                               ' '));
-                       child = child.next_sibling();
-                     });
+  Dimension::ForEach(
+      0,
+      parametric_dimensionality,
+      [&](Dimension const& dimension) {
+        knot_vectors[dimension.Get()] = make_shared<KnotVector>(
+            ConvertToNumbers<typename KnotVector::Knot_>(
+                child.first_child().value(),
+                ' '
+            )
+        );
+        child = child.next_sibling();
+      }
+  );
   SharedPointer<ParameterSpace> parameter_space{make_shared<ParameterSpace>(
       move(knot_vectors),
       move(utilities::std_container_operations::TransformNamedTypes<Degrees>(
           ConvertToNumbers<typename Degrees::value_type>(
               spline_entry.child("deg").first_child().value(),
-              ' '))))};
+              ' '
+          )
+      ))
+  )};
   SplineEntry spline;
   int const& dimensionality = ConvertToNumber<int>(
-      TrimCharacter(spline_entry.attribute("spaceDim").value(), ' '));
+      TrimCharacter(spline_entry.attribute("spaceDim").value(), ' ')
+  );
   switch (dimensionality) {
   case 1:
-    spline = CreateSpline<parametric_dimensionality, 1>(move(parameter_space),
-                                                        spline_entry);
+    spline = CreateSpline<parametric_dimensionality, 1>(
+        move(parameter_space),
+        spline_entry
+    );
     break;
   case 2:
-    spline = CreateSpline<parametric_dimensionality, 2>(move(parameter_space),
-                                                        spline_entry);
+    spline = CreateSpline<parametric_dimensionality, 2>(
+        move(parameter_space),
+        spline_entry
+    );
     break;
   case 3:
-    spline = CreateSpline<parametric_dimensionality, 3>(move(parameter_space),
-                                                        spline_entry);
+    spline = CreateSpline<parametric_dimensionality, 3>(
+        move(parameter_space),
+        spline_entry
+    );
     break;
   case 4:
-    spline = CreateSpline<parametric_dimensionality, 4>(move(parameter_space),
-                                                        spline_entry);
+    spline = CreateSpline<parametric_dimensionality, 4>(
+        move(parameter_space),
+        spline_entry
+    );
     break;
   default:
 #ifndef NDEBUG
-    throw RuntimeError("The spline's dimensionality ("
-                       + to_string(dimensionality)
-                       + ") must be greater than 0 and "
-                         "currently less than 10.");
+    throw RuntimeError(
+        "The spline's dimensionality (" + to_string(dimensionality)
+        + ") must be greater than 0 and "
+          "currently less than 10."
+    );
 #endif
     break;
   }
@@ -230,7 +261,8 @@ SplineEntry CreateSpline(Node const& spline_entry) {
 template<int parametric_dimensionality, int dimensionality>
 SplineEntry CreateSpline(
     SharedPointer<ParameterSpace<parametric_dimensionality>> parameter_space,
-    Node const& spline_entry) {
+    Node const& spline_entry
+) {
   using BSpline = BSpline<parametric_dimensionality, dimensionality>;
   using Nurbs = Nurbs<parametric_dimensionality, dimensionality>;
   using VectorSpace = typename BSpline::VectorSpace_;
@@ -241,7 +273,8 @@ SplineEntry CreateSpline(
 
   StringVector const& names = utilities::string_operations::SplitAtDelimiter(
       spline_entry.child("cntrlPntVarNames").first_child().value(),
-      ' ');
+      ' '
+  );
   utilities::string_operations::StringVectorConstIterator const
       &names_begin = names.begin(),
       &names_end = names.end(), &x = std::find(names_begin, names.end(), "x");
@@ -249,11 +282,13 @@ SplineEntry CreateSpline(
       (x != names_end ? static_cast<int>(std::distance(names_begin, x)) : 0);
   Coordinates const& coordinates_raw = ConvertToNumbers<ScalarCoordinate>(
       spline_entry.child("cntrlPntVars").first_child().value(),
-      ' ');
+      ' '
+  );
   typename Coordinates::const_iterator scalar_coordinate_raw{
       coordinates_raw.begin() + start};
   int const& total_number_of_coordinates = ConvertToNumber<int>(
-      TrimCharacter(spline_entry.attribute("numCntrlPnts").value(), ' '));
+      TrimCharacter(spline_entry.attribute("numCntrlPnts").value(), ' ')
+  );
   typename VectorSpace::Coordinates_ coordinates{};
   coordinates.reserve(total_number_of_coordinates);
   Index::ForEach(0, total_number_of_coordinates, [&](Index const&) {
@@ -264,14 +299,17 @@ SplineEntry CreateSpline(
     });
     coordinates.emplace_back(scalar_coordinates);
     scalar_coordinate_raw +=
-        (ConvertToNumber<int>(
-             TrimCharacter(spline_entry.attribute("numOfCntrlPntVars").value(),
-                           ' '))
+        (ConvertToNumber<int>(TrimCharacter(
+             spline_entry.attribute("numOfCntrlPntVars").value(),
+             ' '
+         ))
          - dimensionality);
   });
   if (spline_entry.child("wght").empty()) {
-    return make_shared<BSpline>(move(parameter_space),
-                                make_shared<VectorSpace>(move(coordinates)));
+    return make_shared<BSpline>(
+        move(parameter_space),
+        make_shared<VectorSpace>(move(coordinates))
+    );
   } else {
     return make_shared<Nurbs>(
         move(parameter_space),
@@ -280,14 +318,19 @@ SplineEntry CreateSpline(
             move(ConvertToNumbers<
                  typename WeightedVectorSpace::Weights_::value_type>(
                 spline_entry.child("wght").first_child().value(),
-                ' '))));
+                ' '
+            ))
+        )
+    );
   }
 }
 
 template<int parametric_dimensionality>
-void Write(Node& spline_node,
-           SplineEntry const& spline,
-           Precision const& precision) {
+void Write(
+    Node& spline_node,
+    SplineEntry const& spline,
+    Precision const& precision
+) {
   int const& dimensionality = spline->dimensionality_;
   spline_node.append_attribute("spaceDim") = dimensionality;
   spline_node.append_attribute("numOfCntrlPntVars") = dimensionality;
@@ -299,33 +342,40 @@ void Write(Node& spline_node,
     Write<parametric_dimensionality, 2>(spline_node, spline, "x y", precision);
     break;
   case 3:
-    Write<parametric_dimensionality, 3>(spline_node,
-                                        spline,
-                                        "x y z",
-                                        precision);
+    Write<parametric_dimensionality, 3>(
+        spline_node,
+        spline,
+        "x y z",
+        precision
+    );
     break;
   case 4:
-    Write<parametric_dimensionality, 4>(spline_node,
-                                        spline,
-                                        "x y z t",
-                                        precision);
+    Write<parametric_dimensionality, 4>(
+        spline_node,
+        spline,
+        "x y z t",
+        precision
+    );
     break;
   default:
 #ifndef NDEBUG
-    throw RuntimeError("The spline's dimensionality ("
-                       + to_string(dimensionality)
-                       + ") must be greater than 0 and "
-                         "currently less than 5.");
+    throw RuntimeError(
+        "The spline's dimensionality (" + to_string(dimensionality)
+        + ") must be greater than 0 and "
+          "currently less than 5."
+    );
 #endif
     break;
   }
 }
 
 template<int parametric_dimensionality, int dimensionality>
-void Write(Node& spline_node,
-           SplineEntry const& spline,
-           String const& names,
-           Precision const& precision) {
+void Write(
+    Node& spline_node,
+    SplineEntry const& spline,
+    String const& names,
+    Precision const& precision
+) {
   using std::static_pointer_cast;
 
   spline->is_rational_
@@ -334,20 +384,24 @@ void Write(Node& spline_node,
           *static_pointer_cast<
               Nurbs<parametric_dimensionality, dimensionality>>(spline),
           names,
-          precision)
+          precision
+      )
       : Write<false>(
           spline_node,
           *static_pointer_cast<
               BSpline<parametric_dimensionality, dimensionality>>(spline),
           names,
-          precision);
+          precision
+      );
 }
 
 template<bool is_rational, typename SplineType>
-void Write(Node& spline_node,
-           SplineType const& spline,
-           String const& names,
-           Precision const& precision) {
+void Write(
+    Node& spline_node,
+    SplineType const& spline,
+    String const& names,
+    Precision const& precision
+) {
   using OutputInformation = typename SplineType::OutputInformation_;
   using std::tuple_element_t;
   using ParameterSpace = tuple_element_t<0, OutputInformation>;
@@ -363,14 +417,17 @@ void Write(Node& spline_node,
   spline_node.append_child("cntrlPntVarNames").text() =
       ("\n      " + names + "\n    ").c_str();
   String coordinates_written;
-  for_each(coordinates.begin(),
-           coordinates.end(),
-           [&](typename Coordinates::value_type const& coordinate) {
-             utilities::string_operations::Append(coordinates_written +=
-                                                  "\n     ",
-                                                  " ",
-                                                  coordinate);
-           });
+  for_each(
+      coordinates.begin(),
+      coordinates.end(),
+      [&](typename Coordinates::value_type const& coordinate) {
+        utilities::string_operations::Append(
+            coordinates_written += "\n     ",
+            " ",
+            coordinate
+        );
+      }
+  );
   spline_node.append_child("cntrlPntVars").text() =
       (coordinates_written + "\n    ").c_str();
   if constexpr (is_rational) {
@@ -389,11 +446,13 @@ void Write(Node& spline_node,
   Node knot_vectors{spline_node.append_child("kntVecs")};
   for (KnotVector const& knot_vector : get<0>(parameter_space)) {
     String knot_vector_written{};
-    for_each(knot_vector.begin(),
-             knot_vector.end(),
-             [&](typename KnotVector::value_type const& knot) {
-               knot_vector_written += ("\n        " + knot);
-             });
+    for_each(
+        knot_vector.begin(),
+        knot_vector.end(),
+        [&](typename KnotVector::value_type const& knot) {
+          knot_vector_written += ("\n        " + knot);
+        }
+    );
     knot_vectors.append_child("kntVec").text() =
         (knot_vector_written + "\n      ").c_str();
   }

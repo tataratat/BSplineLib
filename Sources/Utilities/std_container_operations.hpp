@@ -108,55 +108,62 @@ constexpr bool DoesContainEqualValues(
     ContainerType const& rhs,
     typename ContainerType::value_type::Type_ const& tolerance =
         numeric_operations::GetEpsilon<
-            typename ContainerType::value_type::Type_>());
+            typename ContainerType::value_type::Type_>()
+);
 template<typename ContainerType>
 constexpr bool DoesContainPointersToEqualValues(
     ContainerType const& lhs,
     ContainerType const& rhs,
     typename ContainerType::value_type::element_type::Type_ const& tolerance =
         numeric_operations::GetEpsilon<
-            typename ContainerType::value_type::element_type::Type_>());
+            typename ContainerType::value_type::element_type::Type_>()
+);
 
 template<typename ContainerType>
-constexpr ContainerType& AddAndAssignToFirst(ContainerType& lhs,
-                                             ContainerType const& rhs);
-template<typename ContainerType, typename... ContainerTypes>
 constexpr ContainerType&
-AddAndAssignToFirst(ContainerType& lhs,
-                    ContainerType const& rhs,
-                    ContainerTypes const&... further_rhs);
+AddAndAssignToFirst(ContainerType& lhs, ContainerType const& rhs);
 template<typename ContainerType, typename... ContainerTypes>
-constexpr ContainerType Add(ContainerType const& lhs,
-                            ContainerTypes const&... rhs);
-template<typename ContainerType>
-constexpr ContainerType& SubtractAndAssignToFirst(ContainerType& lhs,
-                                                  ContainerType const& rhs);
+constexpr ContainerType& AddAndAssignToFirst(
+    ContainerType& lhs,
+    ContainerType const& rhs,
+    ContainerTypes const&... further_rhs
+);
 template<typename ContainerType, typename... ContainerTypes>
-constexpr ContainerType&
-SubtractAndAssignToFirst(ContainerType& lhs,
-                         ContainerType const& rhs,
-                         ContainerTypes const&... further_rhs);
-template<typename ContainerType, typename... ContainerTypes>
-constexpr ContainerType Subtract(ContainerType const& lhs,
-                                 ContainerTypes const&... rhs);
-template<typename ContainerType>
 constexpr ContainerType
-Multiply(ContainerType const& container,
-         typename ContainerType::value_type::Type_ const& factor);
+Add(ContainerType const& lhs, ContainerTypes const&... rhs);
+template<typename ContainerType>
+constexpr ContainerType&
+SubtractAndAssignToFirst(ContainerType& lhs, ContainerType const& rhs);
+template<typename ContainerType, typename... ContainerTypes>
+constexpr ContainerType& SubtractAndAssignToFirst(
+    ContainerType& lhs,
+    ContainerType const& rhs,
+    ContainerTypes const&... further_rhs
+);
+template<typename ContainerType, typename... ContainerTypes>
+constexpr ContainerType
+Subtract(ContainerType const& lhs, ContainerTypes const&... rhs);
+template<typename ContainerType>
+constexpr ContainerType Multiply(
+    ContainerType const& container,
+    typename ContainerType::value_type::Type_ const& factor
+);
 template<typename ContainerType>
 ContainerType& DivideAndAssignToFirst(
     ContainerType& container,
     typename ContainerType::value_type::Type_ const& divisor,
     typename ContainerType::value_type::Type_ const& tolerance =
         numeric_operations::GetEpsilon<
-            typename ContainerType::value_type::Type_>());
+            typename ContainerType::value_type::Type_>()
+);
 template<typename ContainerType>
-constexpr ContainerType
-Divide(ContainerType const& container,
-       typename ContainerType::value_type::Type_ const& divisor,
-       typename ContainerType::value_type::Type_ const& tolerance =
-           numeric_operations::GetEpsilon<
-               typename ContainerType::value_type::Type_>());
+constexpr ContainerType Divide(
+    ContainerType const& container,
+    typename ContainerType::value_type::Type_ const& divisor,
+    typename ContainerType::value_type::Type_ const& tolerance =
+        numeric_operations::GetEpsilon<
+            typename ContainerType::value_type::Type_>()
+);
 
 template<typename ContainerType>
 constexpr typename ContainerType::value_type
@@ -170,8 +177,10 @@ EuclidianDistance(ContainerType const& lhs, ContainerType const& rhs);
 
 #ifndef NDEBUG
 template<typename ContainerTypeLhs, typename ContainerTypeRhs>
-void ThrowIfContainerSizesDiffer(ContainerTypeLhs const& lhs,
-                                 ContainerTypeRhs const& rhs);
+void ThrowIfContainerSizesDiffer(
+    ContainerTypeLhs const& lhs,
+    ContainerTypeRhs const& rhs
+);
 #endif
 
 #include "Sources/Utilities/std_container_operations.inc"

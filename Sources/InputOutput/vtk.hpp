@@ -41,7 +41,8 @@ void Sample(
     String const& file_name,
     NumbersOfParametricCoordinates const& numbers_of_parametric_coordinates,
     Tolerance const& tolerance = kEpsilon,
-    Precision const& precision = kPrecision);
+    Precision const& precision = kPrecision
+);
 
 } // namespace splinelib::sources::input_output::vtk
 

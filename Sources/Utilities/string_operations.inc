@@ -18,9 +18,11 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 template<typename SingleStringOrMultipleStrings>
-void Append(String& string,
-            String const& delimiter,
-            SingleStringOrMultipleStrings const string_or_strings) {
+void Append(
+    String& string,
+    String const& delimiter,
+    SingleStringOrMultipleStrings const string_or_strings
+) {
   using std::is_same_v;
 
   if constexpr (std::is_pointer_v<SingleStringOrMultipleStrings> || // Character
@@ -32,19 +34,24 @@ void Append(String& string,
     using ContainedType = typename SingleStringOrMultipleStrings::value_type;
     using std::for_each;
 
-    if constexpr (is_same_v<String,
-                            ContainedType>) { // Standard container of strings.
-      for_each(string_or_strings.begin(),
-               string_or_strings.end(),
-               [&](String const& current_string) {
-                 string += (delimiter + current_string);
-               });
+    if constexpr (is_same_v<
+                      String,
+                      ContainedType>) { // Standard container of strings.
+      for_each(
+          string_or_strings.begin(),
+          string_or_strings.end(),
+          [&](String const& current_string) {
+            string += (delimiter + current_string);
+          }
+      );
     } else { // Nested standard containers of strings.
-      for_each(string_or_strings.begin(),
-               string_or_strings.end(),
-               [&](ContainedType const& current_strings) {
-                 Append(string, delimiter, current_strings);
-               });
+      for_each(
+          string_or_strings.begin(),
+          string_or_strings.end(),
+          [&](ContainedType const& current_strings) {
+            Append(string, delimiter, current_strings);
+          }
+      );
     }
   }
 }
@@ -70,7 +77,8 @@ Type ConvertToNumber(String const& string) {
   } else {
     static_assert(
         error_handling::is_false<Type>,
-        "Only int, long, long long, float, double, long double are supported.");
+        "Only int, long, long long, float, double, long double are supported."
+    );
   }
 }
 
@@ -96,8 +104,8 @@ String Write(Type const& value, Precision const& precision) {
 }
 
 template<typename ContainerTypeTo, typename ContainerTypeFrom>
-ContainerTypeTo Write(ContainerTypeFrom const& from,
-                      Precision const& precision) {
+ContainerTypeTo
+Write(ContainerTypeFrom const& from, Precision const& precision) {
   using TypeFrom = typename ContainerTypeFrom::value_type;
   using error_handling::is_false, std::transform,
       std_container_operations::is_array, std_container_operations::is_vector;
@@ -128,13 +136,17 @@ ContainerTypeTo Write(ContainerTypeFrom const& from,
         }
       });
     } else {
-      static_assert(is_false<TypeFrom>,
-                    "Only NamedTypes and nested std::arrays or std::vectors "
-                    "are supported.");
+      static_assert(
+          is_false<TypeFrom>,
+          "Only NamedTypes and nested std::arrays or std::vectors "
+          "are supported."
+      );
     }
     return to;
   } else {
-    static_assert(is_false<ContainerTypeTo>,
-                  "Only std::array and std::vector are supported.");
+    static_assert(
+        is_false<ContainerTypeTo>,
+        "Only std::array and std::vector are supported."
+    );
   }
 }

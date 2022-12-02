@@ -41,12 +41,16 @@ template<int parametric_dimensionality, int dimensionality>
 class Nurbs;
 
 template<int parametric_dimensionality, int dimensionality>
-bool IsEqual(Nurbs<parametric_dimensionality, dimensionality> const& lhs,
-             Nurbs<parametric_dimensionality, dimensionality> const& rhs,
-             Tolerance const& tolerance = kEpsilon);
+bool IsEqual(
+    Nurbs<parametric_dimensionality, dimensionality> const& lhs,
+    Nurbs<parametric_dimensionality, dimensionality> const& rhs,
+    Tolerance const& tolerance = kEpsilon
+);
 template<int parametric_dimensionality, int dimensionality>
-bool operator==(Nurbs<parametric_dimensionality, dimensionality> const& lhs,
-                Nurbs<parametric_dimensionality, dimensionality> const& rhs);
+bool operator==(
+    Nurbs<parametric_dimensionality, dimensionality> const& lhs,
+    Nurbs<parametric_dimensionality, dimensionality> const& rhs
+);
 
 // NURBSs are rational B-splines.  Currently only single-patch NURBSs are
 // supported.
@@ -68,13 +72,15 @@ public:
   using ParametricCoordinate_ = typename Base_::ParametricCoordinate_;
   using WeightedVectorSpace_ =
       vector_spaces::WeightedVectorSpace<dimensionality>;
-  using OutputInformation_ =
-      Tuple<typename ParameterSpace_::OutputInformation_,
-            typename WeightedVectorSpace_::OutputInformation_>;
+  using OutputInformation_ = Tuple<
+      typename ParameterSpace_::OutputInformation_,
+      typename WeightedVectorSpace_::OutputInformation_>;
 
   Nurbs();
-  Nurbs(SharedPointer<ParameterSpace_> parameter_space,
-        SharedPointer<WeightedVectorSpace_> weighted_vector_space);
+  Nurbs(
+      SharedPointer<ParameterSpace_> parameter_space,
+      SharedPointer<WeightedVectorSpace_> weighted_vector_space
+  );
   Nurbs(Nurbs const& other);
   Nurbs(Nurbs&& other) noexcept = default;
   Nurbs& operator=(Nurbs const& rhs);
@@ -85,36 +91,51 @@ public:
   friend bool IsEqual<parametric_dimensionality, dimensionality>(
       Nurbs const& lhs,
       Nurbs const& rhs,
-      Tolerance const& tolerance);
+      Tolerance const& tolerance
+  );
   // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
-  friend bool
-  operator==<parametric_dimensionality, dimensionality>(Nurbs const& lhs,
-                                                        Nurbs const& rhs);
-  Coordinate_ operator()(ParametricCoordinate_ const& parametric_coordinate,
-                         Tolerance const& tolerance = kEpsilon) const final;
-  Coordinate_ operator()(ParametricCoordinate_ const& parametric_coordinate,
-                         Derivative_ const& derivative,
-                         Tolerance const& tolerance = kEpsilon) const final;
+  friend bool operator==<parametric_dimensionality, dimensionality>(
+      Nurbs const& lhs,
+      Nurbs const& rhs
+  );
+  Coordinate_ operator()(
+      ParametricCoordinate_ const& parametric_coordinate,
+      Tolerance const& tolerance = kEpsilon
+  ) const final;
+  Coordinate_ operator()(
+      ParametricCoordinate_ const& parametric_coordinate,
+      Derivative_ const& derivative,
+      Tolerance const& tolerance = kEpsilon
+  ) const final;
 
-  void InsertKnot(Dimension const& dimension,
-                  Knot_ knot,
-                  Multiplicity const& multiplicity = kMultiplicity,
-                  Tolerance const& tolerance = kEpsilon) const final;
-  Multiplicity RemoveKnot(Dimension const& dimension,
-                          Knot_ const& knot,
-                          Tolerance const& tolerance_removal,
-                          Multiplicity const& multiplicity = kMultiplicity,
-                          Tolerance const& tolerance = kEpsilon) const final;
-  void ElevateDegree(Dimension const& dimension,
-                     Multiplicity const& multiplicity = kMultiplicity,
-                     Tolerance const& tolerance = kEpsilon) const final;
-  bool ReduceDegree(Dimension const& dimension,
-                    Tolerance const& tolerance_removal,
-                    Multiplicity const& multiplicity = kMultiplicity,
-                    Tolerance const& tolerance = kEpsilon) const final;
+  void InsertKnot(
+      Dimension const& dimension,
+      Knot_ knot,
+      Multiplicity const& multiplicity = kMultiplicity,
+      Tolerance const& tolerance = kEpsilon
+  ) const final;
+  Multiplicity RemoveKnot(
+      Dimension const& dimension,
+      Knot_ const& knot,
+      Tolerance const& tolerance_removal,
+      Multiplicity const& multiplicity = kMultiplicity,
+      Tolerance const& tolerance = kEpsilon
+  ) const final;
+  void ElevateDegree(
+      Dimension const& dimension,
+      Multiplicity const& multiplicity = kMultiplicity,
+      Tolerance const& tolerance = kEpsilon
+  ) const final;
+  bool ReduceDegree(
+      Dimension const& dimension,
+      Tolerance const& tolerance_removal,
+      Multiplicity const& multiplicity = kMultiplicity,
+      Tolerance const& tolerance = kEpsilon
+  ) const final;
 
   Coordinate ComputeUpperBoundForMaximumDistanceFromOrigin(
-      Tolerance const& tolerance = kEpsilon) const final;
+      Tolerance const& tolerance = kEpsilon
+  ) const final;
   OutputInformation_ Write(Precision const& precision = kPrecision) const;
   OutputInformation_
   WriteWeighted(Precision const& precision = kPrecision) const;

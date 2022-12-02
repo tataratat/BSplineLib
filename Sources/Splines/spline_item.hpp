@@ -39,9 +39,11 @@ public:
 
   virtual ~SplineItem() = default;
 
-  friend bool IsEqual(SplineItem const& lhs,
-                      SplineItem const& rhs,
-                      Tolerance const& tolerance);
+  friend bool IsEqual(
+      SplineItem const& lhs,
+      SplineItem const& rhs,
+      Tolerance const& tolerance
+  );
   friend bool operator==(SplineItem const& lhs, SplineItem const& rhs);
 
   int dimensionality_, parametric_dimensionality_;
@@ -49,18 +51,22 @@ public:
 
 protected:
   SplineItem() = default;
-  SplineItem(int parametric_dimensionality,
-             int dimensionality,
-             bool is_rational);
+  SplineItem(
+      int parametric_dimensionality,
+      int dimensionality,
+      bool is_rational
+  );
   SplineItem(SplineItem const& other) = default;
   SplineItem(SplineItem&& other) noexcept = default;
   SplineItem& operator=(SplineItem const& rhs) = default;
   SplineItem& operator=(SplineItem&& rhs) noexcept = default;
 };
 
-bool IsEqual(SplineItem const& lhs,
-             SplineItem const& rhs,
-             Tolerance const& tolerance = kEpsilon);
+bool IsEqual(
+    SplineItem const& lhs,
+    SplineItem const& rhs,
+    Tolerance const& tolerance = kEpsilon
+);
 bool operator==(SplineItem const& lhs, SplineItem const& rhs);
 
 } // namespace splinelib::sources::splines

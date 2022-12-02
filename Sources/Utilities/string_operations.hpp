@@ -62,9 +62,11 @@ bool EndsWith(String const& string, String const& pattern);
 bool StartsWith(String const& string, String const& pattern);
 
 template<typename SingleStringOrMultipleStrings>
-void Append(String& string,
-            String const& delimiter,
-            SingleStringOrMultipleStrings strings);
+void Append(
+    String& string,
+    String const& delimiter,
+    SingleStringOrMultipleStrings strings
+);
 String TrimCharacter(String string, char const& character);
 
 StringVector SplitAtDelimiter(String string, char const& delimiter);
@@ -73,14 +75,17 @@ Type ConvertToNumber(String const& string);
 template<typename Type>
 Numbers<Type> ConvertToNumbers(String delimited_string, char const& delimiter);
 template<typename Type>
-String Write(Type const& value,
-             Precision const& precision = Precision{
-                 numeric_operations::GetPrecision<typename Type::Type_>()});
+String Write(
+    Type const& value,
+    Precision const& precision =
+        Precision{numeric_operations::GetPrecision<typename Type::Type_>()}
+);
 template<typename ContainerTypeTo, typename ContainerTypeFrom>
-ContainerTypeTo
-Write(ContainerTypeFrom const& from,
-      Precision const& precision = Precision{numeric_operations::GetPrecision<
-          typename ContainerTypeFrom::value_type::Type_>()});
+ContainerTypeTo Write(
+    ContainerTypeFrom const& from,
+    Precision const& precision = Precision{numeric_operations::GetPrecision<
+        typename ContainerTypeFrom::value_type::Type_>()}
+);
 
 #include "Sources/Utilities/string_operations.inc"
 

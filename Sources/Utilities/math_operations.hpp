@@ -28,8 +28,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 //   binomial coefficient "4 choose 2" equals 6.
 namespace splinelib::sources::utilities::math_operations {
 
-int ComputeBinomialCoefficient(int const& number_of_elements_in_set,
-                               int const& number_of_elements_in_subset);
+int ComputeBinomialCoefficient(
+    int const& number_of_elements_in_set,
+    int const& number_of_elements_in_subset
+);
 
 } // namespace splinelib::sources::utilities::math_operations
 

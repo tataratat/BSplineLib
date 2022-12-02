@@ -163,8 +163,8 @@ Index<size>& Index<size>::Decrement(Dimension const& dimension) {
 }
 
 template<int size>
-Index<size> operator+(Index<size> const& lhs,
-                      typename Index<size>::Value_ const& rhs) {
+Index<size>
+operator+(Index<size> const& lhs, typename Index<size>::Value_ const& rhs) {
   Index sum{lhs};
 #ifndef NDEBUG
   Message const kName{"splinelib::sources::utilities::operator+::Index"};
@@ -183,8 +183,8 @@ Index<size> operator+(Index<size> const& lhs,
 }
 
 template<int size>
-Index<size> operator-(Index<size> const& lhs,
-                      typename Index<size>::Value_ const& rhs) {
+Index<size>
+operator-(Index<size> const& lhs, typename Index<size>::Value_ const& rhs) {
   Index difference{lhs};
 #ifndef NDEBUG
   Message const kName{"splinelib::sources::utilities::operator-::Index"};
@@ -204,8 +204,10 @@ Index<size> operator-(Index<size> const& lhs,
 
 template<int size>
 bool operator==(Index<size> const& lhs, Index<size> const& rhs) {
-  return ((lhs.invalid_ == rhs.invalid_) && (lhs.length_ == rhs.length_)
-          && (lhs.value_ == rhs.value_));
+  return (
+      (lhs.invalid_ == rhs.invalid_) && (lhs.length_ == rhs.length_)
+      && (lhs.value_ == rhs.value_)
+  );
 }
 
 template<int size>
@@ -214,8 +216,8 @@ bool operator!=(Index<size> const& lhs, Index<size> const& rhs) {
 }
 
 template<int size>
-splinelib::Index const&
-Index<size>::operator[](Dimension const& dimension) const {
+splinelib::Index const& Index<size>::operator[](Dimension const& dimension
+) const {
   Dimension::Type_ const& dimension_value = dimension.Get();
 #ifndef NDEBUG
   Message const kName{"splinelib::sources::utilities::Index::operator[]"};
@@ -241,17 +243,19 @@ Index<size> Index<size>::Last(Length_ length) {
   using std::move;
 
   Value_ value;
-  std::transform(length.begin(),
-                 length.end(),
-                 value.begin(),
-                 [](Length const& length_for_dimension) {
-                   Index_::Type_ const& length = length_for_dimension.Get();
-                   if (length == 0) {
-                     return Index_{};
-                   } else {
-                     return Index_{length - 1};
-                   }
-                 });
+  std::transform(
+      length.begin(),
+      length.end(),
+      value.begin(),
+      [](Length const& length_for_dimension) {
+        Index_::Type_ const& length = length_for_dimension.Get();
+        if (length == 0) {
+          return Index_{};
+        } else {
+          return Index_{length - 1};
+        }
+      }
+  );
   return Index{
       move(length),
       move(value),
@@ -288,34 +292,41 @@ splinelib::Index Index<size>::GetIndex1d() const {
 }
 
 template<int size>
-int Index<size>::DetermineStride(Length_ const& length,
-                                 Dimension const& dimension) const {
+int Index<size>::DetermineStride(
+    Length_ const& length,
+    Dimension const& dimension
+) const {
   typename Length_::const_iterator const& begin = length.begin();
-  return std::transform_reduce(begin,
-                               begin + dimension.Get(),
-                               1,
-                               std::multiplies{},
-                               [](Length const& length) {
-                                 if (length == Length{}) {
-                                   return 1;
-                                 } else {
-                                   return length.Get();
-                                 }
-                               });
+  return std::transform_reduce(
+      begin,
+      begin + dimension.Get(),
+      1,
+      std::multiplies{},
+      [](Length const& length) {
+        if (length == Length{}) {
+          return 1;
+        } else {
+          return length.Get();
+        }
+      }
+  );
 }
 
 #ifndef NDEBUG
 template<int size>
-void Index<size>::ThrowIfValueIsInvalid(Length_ const& length,
-                                        Value_ const& value) {
+void Index<size>::ThrowIfValueIsInvalid(
+    Length_ const& length,
+    Value_ const& value
+) {
   Dimension::ForEach(0, size, [&](Dimension const& dimension) {
     Dimension::Type_ const& current_dimension = dimension.Get();
-    Message const dimension_string{"for dimension "
-                                   + std::to_string(current_dimension) + ": "};
+    Message const dimension_string{
+        "for dimension " + std::to_string(current_dimension) + ": "};
     try {
       Index_::ThrowIfNamedIntegerIsOutOfBounds(
           value[current_dimension],
-          std::max(0, length[current_dimension].Get() - 1));
+          std::max(0, length[current_dimension].Get() - 1)
+      );
     } catch (DomainError const& exception) {
       throw DomainError(dimension_string + exception.what());
     } catch (OutOfRange const& exception) {
