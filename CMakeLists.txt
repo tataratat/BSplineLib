@@ -80,7 +80,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Intel")
     set(RUNTIME_CHECKS_DEBUG -fp-trap=all -fp-trap-all=all -ftrapuv)
     set(WARNING_FLAGS -Wall -Wextra -Wcheck -Weffc++)
 else()
-    message(ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
+    message(WARNING "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
 set(COMPILE_DEFINITIONS
         $<$<BOOL:${SPLINELIB_SHARED}>:SPLINELIB_SHARED>
