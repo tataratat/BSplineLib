@@ -101,6 +101,7 @@ ContainerTypeTo Write(ContainerTypeFrom const& from,
   using TypeFrom = typename ContainerTypeFrom::value_type;
   using error_handling::is_false, std::transform,
       std_container_operations::is_array, std_container_operations::is_vector;
+  using Index = splinelib::Index;
 
   ContainerTypeTo to;
   constexpr bool const is_container_vector = is_vector<ContainerTypeTo>;
