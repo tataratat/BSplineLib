@@ -30,6 +30,11 @@ if(SPLINEPY_BUILD_SPLINELIB)
     set(SPLINELIB_GOOGLETEST OFF)
     set(SPLINELIB_BUILD_TOOLS OFF)
     set(SPLINELIB_BUILD_PUGIXML ON)
+
+    # add case for MSVC
+    if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+        set(OPTIMIZATION_FLAGS $<$<NOT:$<CONFIG:Debug>>:/O2>)
+    endif()
 endif()
 
 # Setup
