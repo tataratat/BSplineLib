@@ -113,7 +113,7 @@ WeightedVectorSpace<dimensionality>::WriteProjected(
   using utilities::string_operations::Write;
 
   HomogeneousCoordinates_ const& homogeneous_coordinates = Base_::coordinates_;
-  int const& number_of_homogeneous_coordinates = homogeneous_coordinates.size();
+  int const number_of_homogeneous_coordinates = homogeneous_coordinates.size();
   ProjectedCoordinatesOutput coordinates;
   coordinates.reserve(number_of_homogeneous_coordinates);
   tuple_element_t<1, OutputInformation_> weights;
@@ -140,7 +140,7 @@ WeightedVectorSpace<dimensionality>::WriteWeighted(
   using utilities::string_operations::Write;
 
   HomogeneousCoordinates_ const& homogeneous_coordinates = Base_::coordinates_;
-  int const& number_of_homogeneous_coordinates = homogeneous_coordinates.size();
+  int const number_of_homogeneous_coordinates = homogeneous_coordinates.size();
   ProjectedCoordinatesOutput coordinates;
   coordinates.reserve(number_of_homogeneous_coordinates);
   tuple_element_t<1, OutputInformation_> weights;
@@ -172,9 +172,9 @@ WeightedVectorSpace<dimensionality>::HomogenizeCoordinates(
     Weights_ const& weights) const {
   using std::to_string;
 
-  int const& number_of_coordinates = coordinates.size();
+  int const number_of_coordinates = coordinates.size();
 #ifndef NDEBUG
-  int const& number_of_weights = weights.size();
+  int const number_of_weights = weights.size();
   if (number_of_coordinates != number_of_weights)
     throw DomainError(
         to_string(number_of_weights) + " weights were provided but "

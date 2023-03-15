@@ -75,12 +75,12 @@ Splines Read(String const& file_name) {
   try {
 #endif
     File file;
-    pugi::xml_parse_result const& result = file.load_file(file_name.c_str());
+    pugi::xml_parse_result const result = file.load_file(file_name.c_str());
 #ifndef NDEBUG
     if (!result)
       throw RuntimeError("XML file " + file_name + " cannot be parsed.");
 #endif
-    Node const& spline_list = file.child("SplineList");
+    Node const spline_list = file.child("SplineList");
     for_each(
         spline_list.begin(),
         spline_list.end(),
@@ -356,7 +356,7 @@ void Write(Node& spline_node,
   using Coordinates = tuple_element_t<0, VectorSpace>;
   using std::get;
 
-  OutputInformation const& spline_written = spline.Write(precision);
+  OutputInformation const spline_written = spline.Write(precision);
   VectorSpace const& vector_space = get<1>(spline_written);
   Coordinates const& coordinates = get<0>(vector_space);
   spline_node.append_attribute("numCntrlPnts") = coordinates.size();

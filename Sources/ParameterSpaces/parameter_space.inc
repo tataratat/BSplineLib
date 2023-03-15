@@ -226,7 +226,7 @@ ParameterSpace<parametric_dimensionality>::DetermineBezierExtractionKnots(
                                             (unique_knots.begin() + 1),
                                         &last_knot =
                                             std::prev(unique_knots.end());
-  int const& number_of_interior_knots = (last_knot - first_interior_knot);
+  int const number_of_interior_knots = (last_knot - first_interior_knot);
   Knots_ bezier_extraction_knots;
   bezier_extraction_knots.reserve(number_of_interior_knots);
   std::for_each(
@@ -821,7 +821,7 @@ ParameterSpace<parametric_dimensionality>::DetermineElevationInformation(
 
   Degree::Type_ const& degree = degrees_[dimension.Get()].Get();
   MultiplicityType_ const& multiplicity_value = multiplicity.Get();
-  Index::Type_ const& maximum_bezier_coordinate = (degree + multiplicity_value);
+  Index::Type_ const maximum_bezier_coordinate = (degree + multiplicity_value);
   ElevationCoefficients_ bezier_coefficients;
   bezier_coefficients.reserve(maximum_bezier_coordinate - 1);
   Index::ForEach(

@@ -257,9 +257,9 @@ Multiplicity KnotVector::Remove(Knot_ const& knot,
   if (Multiplicity::Type_ const number_of_removals{
           std::min(multiplicity, DetermineMultiplicity(knot, tolerance)).Get()};
       number_of_removals != 0) {
-    KnotSpan const& knot_span = FindSpan(knot, tolerance);
+    KnotSpan const knot_span = FindSpan(knot, tolerance);
     if (DoesParametricCoordinateEqualBack(knot, tolerance)) {
-      ConstIterator_ const& end = knots_.end();
+      ConstIterator_ const end = knots_.end();
       knots_.erase(end - number_of_removals, end);
     } else {
       ConstIterator_ const& first_knot = (knots_.begin() + knot_span.Get());
@@ -307,7 +307,7 @@ void KnotVector::ThrowIfParametricCoordinateIsOutsideScope(
 
 void KnotVector::ThrowIfTooSmallOrNotNonDecreasing(
     Tolerance const& tolerance) const {
-  int const& number_of_knots = knots_.size();
+  int const number_of_knots = knots_.size();
   if (number_of_knots < 2)
     throw DomainError(
         "The knot vector has to contain at least 2 knots but only contains "

@@ -22,7 +22,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 namespace splinelib::sources::utilities::system_operations {
 
 LocalTime GetLocalTime() {
-  std::time_t const& calendar_time = std::time(nullptr);
+  std::time_t const calendar_time = std::time(nullptr);
   return *std::localtime(&calendar_time);
 }
 

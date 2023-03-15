@@ -86,7 +86,7 @@ Splines Read(String const& file_name) {
         utilities::string_operations::SplitAtDelimiter(content, ' ');
     StringVectorConstIterator entry{entries.begin()};
     while (entry != std::prev(entries.end())) {
-      String const& geometrical_type = TrimCharacter(*(entry++), '[');
+      String const geometrical_type = TrimCharacter(*(entry++), '[');
       if (*entry == "BSPLINE") {
         SkipAttributes(++entry);
         if (geometrical_type == "CURVE") {
@@ -188,7 +188,7 @@ SplineEntry CreateSpline(StringVectorConstIterator& entry) {
                        degrees[dimension.Get()] =
                            --ConvertToNumber<Degree>(*(entry++));
                      });
-  String const& point_type = *(entry++);
+  String const point_type = *(entry++);
   KnotVectors knot_vectors;
   Dimension::ForEach(
       0,
@@ -214,7 +214,7 @@ SplineEntry CreateSpline(StringVectorConstIterator& entry) {
   SplineEntry spline;
   DimensionType const& dimensionality =
       ConvertToNumber<DimensionType>(point_type.substr(1, 1));
-  bool const& is_non_rational = StartsWith(point_type, "E");
+  bool const is_non_rational = StartsWith(point_type, "E");
   switch (dimensionality) {
   case 1:
     spline = CreateSpline<parametric_dimensionality, 1>(move(parameter_space),
@@ -337,7 +337,7 @@ void WriteSpline(OutputStream& file,
                  Precision const& precision) {
   using std::static_pointer_cast;
 
-  String const& dimensionality_string = to_string(dimensionality);
+  String const dimensionality_string = to_string(dimensionality);
   spline->is_rational_
       ? WriteSpline<true>(
           file,

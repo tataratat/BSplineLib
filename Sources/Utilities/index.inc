@@ -290,7 +290,7 @@ splinelib::Index Index<size>::GetIndex1d() const {
 template<int size>
 int Index<size>::DetermineStride(Length_ const& length,
                                  Dimension const& dimension) const {
-  typename Length_::const_iterator const& begin = length.begin();
+  typename Length_::const_iterator const begin = length.begin();
   return std::transform_reduce(begin,
                                begin + dimension.Get(),
                                1,

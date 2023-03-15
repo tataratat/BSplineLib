@@ -76,7 +76,7 @@ Type ConvertToNumber(String const& string) {
 
 template<typename Type>
 Numbers<Type> ConvertToNumbers(String delimited_string, char const& delimiter) {
-  StringVector const& strings = SplitAtDelimiter(delimited_string, delimiter);
+  StringVector const strings = SplitAtDelimiter(delimited_string, delimiter);
   Numbers<Type> converted_vector{};
   converted_vector.reserve(strings.size());
   std::for_each(strings.begin(), strings.end(), [&](String const& string) {
@@ -106,7 +106,7 @@ ContainerTypeTo Write(ContainerTypeFrom const& from,
   ContainerTypeTo to;
   constexpr bool const is_container_vector = is_vector<ContainerTypeTo>;
   if constexpr (is_array<ContainerTypeTo> || is_container_vector) {
-    int const& from_size = from.size();
+    int const from_size = from.size();
     if constexpr (is_container_vector)
       to.reserve(from_size);
     if constexpr (is_named_type<TypeFrom>) {

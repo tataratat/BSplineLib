@@ -104,7 +104,7 @@ Splines Read(String const& file_name) {
   do {
   } while (getline(file, line) && (GetValue(line, Index{72}) != 'D'));
   do {
-    int const& entry_type = ConvertToNumber<int>(line.substr(5, 3));
+    int const entry_type = ConvertToNumber<int>(line.substr(5, 3));
     if ((entry_type == 126) || (entry_type == 128)) {
       Index const start{
           --ConvertToNumber<Index>(TrimCharacter(line.substr(8, 8), ' '))};
@@ -455,7 +455,7 @@ Coordinate WriteSpline(SplineEntry const& spline,
   if (spline->is_rational_) {
     using Nurbs = Nurbs<parametric_dimensionality, dimensionality>;
 
-    SharedPointer<Nurbs> const& nurbs = static_pointer_cast<Nurbs>(spline);
+    SharedPointer<Nurbs> const nurbs = static_pointer_cast<Nurbs>(spline);
     WriteSpline<parametric_dimensionality, dimensionality, true>(
         *nurbs,
         delimiter,
@@ -491,7 +491,7 @@ void WriteSpline(SplineType const& spline,
   using KnotVectors = tuple_element_t<0, ParameterSpace>;
   using std::get;
 
-  OutputInformation const& spline_written = spline.Write(precision);
+  OutputInformation const spline_written = spline.Write(precision);
   ParameterSpace const& parameter_space = get<0>(spline_written);
   for (typename tuple_element_t<2, ParameterSpace>::value_type const&
            number_of_basis_functions : get<2>(parameter_space))

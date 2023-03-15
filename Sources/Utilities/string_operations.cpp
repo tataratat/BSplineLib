@@ -38,7 +38,7 @@ bool EndsWith(String const& string, String const& pattern) {
 }
 
 bool StartsWith(String const& string, String const& pattern) {
-  size_t const& length_of_pattern = pattern.length();
+  size_t const length_of_pattern = pattern.length();
   return string.length() >= length_of_pattern
              ? string.compare(0, length_of_pattern, pattern) == 0
              : false;
@@ -47,7 +47,7 @@ bool StartsWith(String const& string, String const& pattern) {
 String TrimCharacter(String string, char const& character) {
   using std::find_if;
 
-  String::iterator const& string_begin = string.begin();
+  String::iterator const string_begin = string.begin();
   std::function<bool(char const&)> const& is_not_character =
       [&](char const& current_character) {
         return (current_character != character);

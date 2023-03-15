@@ -346,7 +346,7 @@ Multiplicity BSpline<parametric_dimensionality, dimensionality>::RemoveKnot(
       parameter_space.GetNumberOfBasisFunctions()};
   auto const& [start_value, coefficients] =
       parameter_space.RemoveKnot(dimension, knot, multiplicity, tolerance);
-  Multiplicity::Type_ const& removals = coefficients.size();
+  Multiplicity::Type_ const removals = coefficients.size();
   for (Multiplicity removal{removals}; removal > Multiplicity{}; --removal) {
     VectorSpace_& vector_space = *vector_space_;
     VectorSpace_ const vector_space_backup{vector_space};
@@ -396,7 +396,7 @@ Multiplicity BSpline<parametric_dimensionality, dimensionality>::RemoveKnot(
               Coordinate{tolerance_removal})) {
         vector_space.Erase(coordinate_index);
       } else {
-        Multiplicity const& successful_removals = (multiplicity - removal);
+        Multiplicity const successful_removals = (multiplicity - removal);
         parameter_space_backup.RemoveKnot(dimension,
                                           knot,
                                           successful_removals,
@@ -554,7 +554,7 @@ bool BSpline<parametric_dimensionality, dimensionality>::ReduceDegree(
       parameter_space.GetNumberOfBasisFunctions()};
   auto const& [last_segment_coordinate, coefficients] =
       parameter_space.ReduceDegree(dimension, multiplicity);
-  Degree::Type_ const& elevatetd_degree = (coefficients.size() + 1);
+  Degree::Type_ const elevatetd_degree = (coefficients.size() + 1);
   IndexLength_ number_of_coordinates_in_slice{number_of_coordinates};
   number_of_coordinates_in_slice[dimension_value] = Length{};
   for (int segment{number_of_segments - 1}; segment >= 0; --segment) {
