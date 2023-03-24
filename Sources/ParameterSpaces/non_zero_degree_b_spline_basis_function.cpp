@@ -191,18 +191,24 @@ NonZeroDegreeBSplineBasisFunction::operator()(
   }
   // it is your duty to compute.
   // this means you are either at the top-level node or right branch.
-  auto& computed_basis = unique_evaluations[id + entry_offset];
-  computed_basis =
-      ((parametric_coordinate - start_knot_).Get() * left_denominator_inverse_
-       * (*left_lower_degree_basis_function_)(parametric_coordinate,
+  // explicitly compute left first then right.
+  // => fix for windows, as it would compute right first
+  auto left_contribution =
+      (parametric_coordinate - start_knot_).Get() * left_denominator_inverse_
+      * (*left_lower_degree_basis_function_)(parametric_coordinate,
+                                             unique_evaluations,
+                                             -2,
+                                             tolerance);
+  auto right_contribution =
+      (end_knot_ - parametric_coordinate).Get() * right_denominator_inverse_
+      * (*right_lower_degree_basis_function_)(parametric_coordinate,
                                               unique_evaluations,
-                                              -2,
-                                              tolerance))
-      + ((end_knot_ - parametric_coordinate).Get() * right_denominator_inverse_
-         * (*right_lower_degree_basis_function_)(parametric_coordinate,
-                                                 unique_evaluations,
-                                                 -1,
-                                                 tolerance));
+                                              -1,
+                                              tolerance);
+
+  // add
+  auto& computed_basis = unique_evaluations[id + entry_offset];
+  computed_basis = left_contribution + right_contribution;
 
   return computed_basis;
 }
@@ -303,24 +309,28 @@ NonZeroDegreeBSplineBasisFunction::operator()(
     Derivative const lower_derivative = (derivative - Derivative{1});
     // same idea as evaluation.
     // top-level-derivative and all right ones
-    auto& computed_basis = unique_derivatives[derivative.Get() + entry_offset];
-    computed_basis =
-        (left_quotient_derivative_
-         * (*left_lower_degree_basis_function_)(parametric_coordinate,
+    // explicitly compute left first then right.
+    // => fix for windows, as it would compute right first
+    const auto left_contribution =
+        left_quotient_derivative_
+        * (*left_lower_degree_basis_function_)(parametric_coordinate,
+                                               lower_derivative,
+                                               unique_derivatives,
+                                               unique_evaluations,
+                                               top_level_computed,
+                                               -2,
+                                               tolerance);
+    const auto right_contribution =
+        right_quotient_derivative_
+        * (*right_lower_degree_basis_function_)(parametric_coordinate,
                                                 lower_derivative,
                                                 unique_derivatives,
                                                 unique_evaluations,
                                                 top_level_computed,
-                                                -2,
-                                                tolerance))
-        - (right_quotient_derivative_
-           * (*right_lower_degree_basis_function_)(parametric_coordinate,
-                                                   lower_derivative,
-                                                   unique_derivatives,
-                                                   unique_evaluations,
-                                                   top_level_computed,
-                                                   -1,
-                                                   tolerance));
+                                                -1,
+                                                tolerance);
+    auto& computed_basis = unique_derivatives[derivative.Get() + entry_offset];
+    computed_basis = left_contribution - right_contribution;
 
     // here would be a good alternative place to set top-level computed flag.
     return computed_basis;
