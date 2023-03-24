@@ -99,13 +99,15 @@ BSpline<parametric_dimensionality, dimensionality>::operator()(
   parameter_space.template InitializeUniqueEvaluations<false>(
       unique_evaluations);
 
+  const auto beginning =
+      parameter_space.FindFirstNonZeroBasisFunction(parametric_coordinate);
+
   for (Index_ non_zero_basis_function{parameter_space.First()};
        non_zero_basis_function != parameter_space.Behind();
        ++non_zero_basis_function) {
 
     Index_ const& basis_function =
-        (parameter_space.FindFirstNonZeroBasisFunction(parametric_coordinate)
-         + non_zero_basis_function.GetIndex());
+        beginning + non_zero_basis_function.GetIndex();
 
     utilities::std_container_operations::AddAndAssignToFirst(
         evaluated_b_spline,
@@ -148,12 +150,14 @@ BSpline<parametric_dimensionality, dimensionality>::operator()(
       unique_derivatives,
       unique_evaluations);
 
+  const auto beginning =
+      parameter_space.FindFirstNonZeroBasisFunction(parametric_coordinate);
+
   for (Index_ non_zero_basis_function{parameter_space.First()};
        non_zero_basis_function != parameter_space.Behind();
        ++non_zero_basis_function) {
     Index_ const& basis_function =
-        parameter_space.FindFirstNonZeroBasisFunction(parametric_coordinate)
-        + non_zero_basis_function.GetIndex();
+        beginning + non_zero_basis_function.GetIndex();
 
     utilities::std_container_operations::AddAndAssignToFirst(
         evaluated_b_spline_derivative,
