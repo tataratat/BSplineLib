@@ -394,6 +394,87 @@ ParameterSpace<parametric_dimensionality>::EvaluateBasisFunction(
 }
 
 template<int parametric_dimensionality>
+typename ParameterSpace<parametric_dimensionality>::BasisValuesPerDimension_
+ParameterSpace<parametric_dimensionality>::EvaluateBasisValuesPerDimension(
+    ParametricCoordinate_ const& parametric_coordinate,
+    Tolerance const& tolerance) const {
+
+  // prepare related info
+  const auto first_non_zeros =
+      FindFirstNonZeroBasisFunction(parametric_coordinate);
+
+  // prepare output
+  BasisValuesPerDimension_ output;
+
+  for (int i{}; i < parametric_dimensionality; ++i) {
+
+    // get this dim's info
+    const auto& this_dim_degree = degrees_[i].Get();
+    const auto& this_dim_basis = basis_functions_[i];
+    const auto& this_dim_start_support =
+        first_non_zeros[splinelib::Dimension{i}].Get();
+    const auto this_dim_end_support = this_dim_start_support + this_dim_degree;
+    const auto this_dim_n_basis = this_dim_degree + 1;
+    const auto& this_dim_parametric_coordinate = parametric_coordinate[i];
+
+    // this dim's output
+    auto& this_dim_output = output[i];
+    this_dim_output.reserve(this_dim_n_basis);
+
+    // prepare lookup
+    auto evaluation_lookup = EvaluationLookUp(new Type_[this_dim_degree]);
+
+    // first node visit - even 0 degree should be visited at least once
+    this_dim_output.emplace_back(
+        this_dim_basis[this_dim_start_support]->ConsecutiveTopNodeEvaluation(
+            this_dim_parametric_coordinate,
+            evaluation_lookup,
+            this_dim_end_support,
+            true,
+            false,
+            tolerance));
+
+    // special case -> in case this one is zero, we exit this dim now
+    if (this_dim_degree == 0) {
+      continue;
+    }
+
+    // mid visit - without the last one
+    for (int j{1}; j < this_dim_degree; ++j) {
+      this_dim_output.emplace_back(
+          this_dim_basis[this_dim_start_support + j]
+              ->ConsecutiveTopNodeEvaluation(this_dim_parametric_coordinate,
+                                             evaluation_lookup,
+                                             this_dim_end_support,
+                                             false,
+                                             false,
+                                             tolerance));
+    }
+
+    // last visit - we should only reach here if this dim's degree is > 0
+    this_dim_output.emplace_back(
+        this_dim_basis[this_dim_end_support]->ConsecutiveTopNodeEvaluation(
+            this_dim_parametric_coordinate,
+            evaluation_lookup,
+            this_dim_end_support,
+            false,
+            true,
+            tolerance));
+  }
+
+  return output;
+}
+
+template<int parametric_dimensionality>
+typename ParameterSpace<parametric_dimensionality>::BasisValues_
+ParameterSpace<parametric_dimensionality>::EvaluateBasisValues(
+    ParametricCoordinate_ const& parametric_coordinate,
+    Tolerance const& tolerance) const {
+  return RecursiveCombine(
+      EvaluateBasisValuesPerDimension(parametric_coordinate, tolerance));
+}
+
+template<int parametric_dimensionality>
 typename ParameterSpace<parametric_dimensionality>::Type_
 ParameterSpace<parametric_dimensionality>::EvaluateBasisFunctionDerivative(
     Index_ const& basis_function_index,

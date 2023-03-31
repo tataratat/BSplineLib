@@ -104,6 +104,29 @@ ZeroDegreeBSplineBasisFunction::operator()(
 }
 
 ZeroDegreeBSplineBasisFunction::Type_
+ZeroDegreeBSplineBasisFunction::ConsecutiveTopNodeEvaluation(
+    ParametricCoordinate const& parametric_coordinate,
+    EvaluationLookUp& evaluation_look_up,
+    const int& end_support,
+    const bool& is_first_support,
+    const bool& check_right,
+    Tolerance const& tolerance) const {
+
+  using ReturnType = ZeroDegreeBSplineBasisFunction::Type_;
+
+  // first support node and its children. has very distinctive behavior
+  if (is_first_support) {
+    return ReturnType{1.0};
+  } else {
+    // the fact that check_right is even true is that this is out of bound.
+    return ReturnType{};
+  }
+
+  // happy compiler
+  // return ReturnType{};
+}
+
+ZeroDegreeBSplineBasisFunction::Type_
 ZeroDegreeBSplineBasisFunction::operator()(
     ParametricCoordinate const& parametric_coordinate,
     Derivative const& derivative,

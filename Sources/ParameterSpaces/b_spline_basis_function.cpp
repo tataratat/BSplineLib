@@ -116,7 +116,8 @@ BSplineBasisFunction::BSplineBasisFunction(KnotVector const& knot_vector,
                                            Degree degree,
                                            Tolerance const& tolerance)
     : degree_(move(degree)) {
-  Index const start{start_of_support.Get()};
+  start_of_support_ = start_of_support.Get();
+  Index const start{start_of_support_};
   start_knot_ = knot_vector[start];
   end_knot_ = knot_vector[start + Index{degree_.Get() + 1}];
   end_knot_equals_last_knot_ =

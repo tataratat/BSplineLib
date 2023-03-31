@@ -92,6 +92,14 @@ public:
                    int const& tree_info,
                    Tolerance const& tolerance = kEpsilon) const override;
 
+  Type_ ConsecutiveTopNodeEvaluation(
+      ParametricCoordinate const& parametric_coordinate,
+      EvaluationLookUp& evaluation_lookup,
+      const int& end_support,
+      const bool& is_first_support,
+      const bool& check_right,
+      Tolerance const& tolerance = kEpsilon) const override;
+
 protected:
   Type_ left_denominator_inverse_, right_denominator_inverse_,
       left_quotient_derivative_, right_quotient_derivative_;

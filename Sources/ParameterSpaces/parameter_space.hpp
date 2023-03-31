@@ -22,6 +22,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include <algorithm>
 #include <functional>
+#include <iostream>
 #include <iterator>
 #include <numeric>
 #include <utility>
@@ -49,6 +50,113 @@ template<int parametric_dimensionality>
 bool operator==(ParameterSpace<parametric_dimensionality> const& lhs,
                 ParameterSpace<parametric_dimensionality> const& rhs);
 
+/// recursive combime adapted from bezman
+template<std::size_t depth, typename ValueType, std::size_t array_dim>
+constexpr void
+RecursiveCombine_(const Array<Vector<ValueType>, array_dim>& factors,
+                  Vector<ValueType>& result,
+                  const ValueType& c_value) {
+  static_assert(depth < array_dim,
+                "Implementation error, recursion loop to deep!");
+
+  for (std::size_t i{}; i < factors[depth].size(); ++i) {
+    if constexpr (depth == 0) {
+      result.push_back(c_value * factors[depth][i]);
+    } else {
+      RecursiveCombine_<static_cast<std::size_t>(depth - 1)>(
+          factors,
+          result,
+          c_value * factors[depth][i]);
+    }
+  }
+};
+
+/// recursive combime adapted from bezman
+template<typename ValueType, std::size_t array_dim>
+constexpr Vector<ValueType>
+RecursiveCombine(const Array<Vector<ValueType>, array_dim>& factors) {
+  // Precalculate required entries
+  int n_entries{1};
+  std::for_each(factors.begin(),
+                factors.end(),
+                [&](const std::vector<double>& ii) { n_entries *= ii.size(); });
+
+  // Init return type and reserve memory
+  Vector<ValueType> result{};
+  result.reserve(n_entries);
+
+  // Start computation
+  RecursiveCombine_<array_dim - 1>(factors, result, static_cast<ValueType>(1));
+  return result;
+};
+
+/// recursive combime taken from bezman
+template<std::size_t depth,
+         typename BasisValueType,
+         std::size_t array_dim,
+         typename ValueType,
+         typename SplineLibIndex,
+         typename CoeffType,
+         typename ReturnType>
+constexpr void
+RecursiveCombine_(const Array<Vector<BasisValueType>, array_dim>& factors,
+                  const SplineLibIndex& index,
+                  SplineLibIndex& index_offset,
+                  const CoeffType& coeffs,
+                  const ValueType& c_value,
+                  ReturnType& result) {
+  static_assert(depth < array_dim,
+                "Implementation error, recursion loop to deep!");
+
+  for (const auto& factor : factors[depth]) {
+    if constexpr (depth == 0) {
+      // get basis
+      const auto fac = c_value * factor;
+      // get coeff
+      const auto& coeff =
+          coeffs[(index + index_offset.GetIndex()).GetIndex1d().Get()];
+      // contribute to each dim
+      int j{};
+      for (auto& r : result) {
+        r += typename ReturnType::value_type{static_cast<ValueType>(coeff[j])
+                                             * fac};
+        ++j;
+      }
+
+      ++index_offset;
+    } else {
+      RecursiveCombine_<static_cast<std::size_t>(depth - 1)>(factors,
+                                                             index,
+                                                             index_offset,
+                                                             coeffs,
+                                                             c_value * factor,
+                                                             result);
+    }
+  }
+};
+
+/// recursive combime adapted from bezman
+template<typename ValueType,
+         std::size_t array_dim,
+         typename SplineLibIndex,
+         typename CoeffType,
+         typename ReturnType>
+constexpr void
+RecursiveCombine(const Array<Vector<ValueType>, array_dim>& factors,
+                 const SplineLibIndex& index,
+                 SplineLibIndex& index_offset,
+                 const CoeffType& coeffs,
+                 ReturnType& result) {
+
+  // Start computation
+  RecursiveCombine_<array_dim - 1>(factors,
+                                   index,
+                                   index_offset,
+                                   coeffs,
+                                   static_cast<ValueType>(1),
+                                   result);
+};
+
 // ParameterSpaces provide the B-spline basis functions corresponding to given
 // knot vectors and degrees.  Only clamped knot vectors of degree p — i.e., both
 // the first knot a and last knot b have multiplicity p+1 (each of them is
@@ -60,8 +168,7 @@ bool operator==(ParameterSpace<parametric_dimensionality> const& lhs,
 //   using ParameterSpace2d = ParameterSpace<2>;
 //   ParameterSpace2d::Knot_ const k0_0{0.0}, k1_0{1.0};
 //   ParameterSpace2d::KnotVectors_::value_type const &kKnotVector =
-//   std::make_shared<KnotVector>({k0_0, k0_0, k0_0,
-//                                                                                                 k1_0, k1_0, k1_0});
+//   std::make_shared<KnotVector>({k0_0, k0_0, k0_0, k1_0, k1_0, k1_0});
 //   ParameterSpace2d parameter_space{{kKnotVector, kKnotVector}, {Degree{2},
 //   Degree{2}}}}; constexpr ParametricCoordinate const k0_5{0.5};
 //   ParameterSpace2d::ParametricCoordinate_ const kParametricCoordinate{k0_5,
@@ -122,6 +229,12 @@ public:
   using IsTopLevelComputed_ =
       IsTopLevelComputedArray<parametric_dimensionality>;
 
+  // for evaluated basis values
+  using BasisValues_ = Vector<Type_>;
+  using BasisValueType_ = typename BasisValues_::value_type;
+  using BasisValuesPerDimension_ =
+      Array<BasisValues_, parametric_dimensionality>;
+
   ParameterSpace() = default;
   ParameterSpace(KnotVectors_ knot_vectors,
                  Degrees_ degrees,
@@ -173,6 +286,12 @@ public:
                         ParametricCoordinate_ const& parametric_coordinate,
                         UniqueEvaluations_& unique_evaluations,
                         Tolerance const& tolerance = kEpsilon) const;
+  virtual BasisValuesPerDimension_ EvaluateBasisValuesPerDimension(
+      ParametricCoordinate_ const& parametric_coordinate,
+      Tolerance const& tolerance = kEpsilon) const;
+  virtual BasisValues_
+  EvaluateBasisValues(ParametricCoordinate_ const& parametric_coordinate,
+                      Tolerance const& tolerance = kEpsilon) const;
   virtual Type_ EvaluateBasisFunctionDerivative(
       Index_ const& basis_function_index,
       ParametricCoordinate_ const& parametric_coordinate,

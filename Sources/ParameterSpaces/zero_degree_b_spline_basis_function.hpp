@@ -82,6 +82,13 @@ public:
                    IsTopLevelComputed& top_level_computed,
                    int const& tree_info,
                    Tolerance const& tolerance = kEpsilon) const override;
+  Type_ ConsecutiveTopNodeEvaluation(
+      ParametricCoordinate const& parametric_coordinate,
+      EvaluationLookUp& unique_evaluations,
+      const int& end_support,
+      const bool& is_first_support,
+      const bool& check_right,
+      Tolerance const& tolerance = kEpsilon) const override;
 };
 
 bool IsEqual(ZeroDegreeBSplineBasisFunction const& lhs,

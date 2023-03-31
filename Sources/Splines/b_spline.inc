@@ -94,32 +94,19 @@ BSpline<parametric_dimensionality, dimensionality>::operator()(
   ParameterSpace_ const& parameter_space = *Base_::parameter_space_;
   Coordinate_ evaluated_b_spline{};
 
-  // prepare vectors to hold unique evaluation values.
-  typename ParameterSpace_::UniqueEvaluations_ unique_evaluations;
-  parameter_space.template InitializeUniqueEvaluations<false>(
-      unique_evaluations);
-
+  const auto basis_per_dim =
+      parameter_space.EvaluateBasisValuesPerDimension(parametric_coordinate);
   const auto beginning =
       parameter_space.FindFirstNonZeroBasisFunction(parametric_coordinate);
+  auto offset = parameter_space.First();
 
-  for (Index_ non_zero_basis_function{parameter_space.First()};
-       non_zero_basis_function != parameter_space.Behind();
-       ++non_zero_basis_function) {
+  splinelib::sources::parameter_spaces::RecursiveCombine(
+      basis_per_dim,
+      beginning,
+      offset,
+      vector_space_->GetCoordinates(),
+      evaluated_b_spline);
 
-    Index_ const& basis_function =
-        beginning + non_zero_basis_function.GetIndex();
-
-    utilities::std_container_operations::AddAndAssignToFirst(
-        evaluated_b_spline,
-        utilities::std_container_operations::Multiply(
-            (*vector_space_)[basis_function.GetIndex1d()],
-            // non_zero_basis_function will provide entry id (tree_info) for
-            // top-level node evaluations.
-            parameter_space.EvaluateBasisFunction(basis_function,
-                                                  non_zero_basis_function,
-                                                  parametric_coordinate,
-                                                  unique_evaluations)));
-  }
   return evaluated_b_spline;
 }
 

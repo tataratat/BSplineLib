@@ -44,6 +44,9 @@ using UniqueEvaluations = Vector<ParametricCoordinate::Type_>;
 // turns out they both can have the same type.
 using UniqueDerivatives = UniqueEvaluations;
 
+// lookup
+using EvaluationLookUp = UniquePointer<ParametricCoordinate::Type_[]>;
+
 template<int parametric_dimensionality>
 using UniqueEvaluationsArray =
     Array<UniqueEvaluations, parametric_dimensionality>;
@@ -117,6 +120,7 @@ public:
                            UniqueEvaluations& unique_evaluations,
                            int const& tree_info,
                            Tolerance const& tolerance = kEpsilon) const = 0;
+
   virtual Type_ operator()(ParametricCoordinate const& parametric_coordinate,
                            Derivative const& derivative,
                            Tolerance const& tolerance = kEpsilon) const = 0;
@@ -127,6 +131,17 @@ public:
                            IsTopLevelComputed& top_level_computed,
                            int const& tree_info,
                            Tolerance const& tolerance = kEpsilon) const = 0;
+
+  /// basis function evaluation specifically designed for consecutive
+  /// evaluation of top node basis functions.
+  /// make sure to initialize unique_evaluations same as with top node's degree
+  virtual Type_ ConsecutiveTopNodeEvaluation(
+      ParametricCoordinate const& parametric_coordinate,
+      EvaluationLookUp& evaluation_look_up,
+      const int& end_support,
+      const bool& is_first_support,
+      const bool& check_right,
+      Tolerance const& tolerance = kEpsilon) const = 0;
 
 protected:
   BSplineBasisFunction() = default;
@@ -147,6 +162,7 @@ protected:
   Degree degree_;
   ParametricCoordinate start_knot_, end_knot_;
   bool end_knot_equals_last_knot_;
+  int start_of_support_;
 };
 
 bool IsEqual(BSplineBasisFunction const& lhs,

@@ -213,6 +213,76 @@ NonZeroDegreeBSplineBasisFunction::operator()(
   return computed_basis;
 }
 
+NonZeroDegreeBSplineBasisFunction::Type_
+NonZeroDegreeBSplineBasisFunction::ConsecutiveTopNodeEvaluation(
+    ParametricCoordinate const& parametric_coordinate,
+    EvaluationLookUp& evaluation_look_up,
+    const int& end_support,
+    const bool& is_first_support,
+    const bool& check_right,
+    Tolerance const& tolerance) const {
+
+  using ReturnType = NonZeroDegreeBSplineBasisFunction::Type_;
+
+  const auto& degree = degree_.Get();
+
+  // first support node and its children. has very distinctive behavior
+  if (is_first_support) {
+    // first support just need to compute right nodes
+    // look up should be allocated with same number as top level basis
+    // degree. that way, each contribution can be saved at the same id
+    // as source degree.
+    // contribution comes from one degree lower.
+
+    auto& right_contribution = evaluation_look_up[degree - 1];
+    right_contribution =
+        right_lower_degree_basis_function_->ConsecutiveTopNodeEvaluation(
+            parametric_coordinate,
+            evaluation_look_up,
+            end_support,
+            true,
+            false,
+            tolerance);
+
+    return right_contribution * (end_knot_ - parametric_coordinate).Get()
+           * right_denominator_inverse_;
+  }
+
+  // quite the same procedure for everything but the first.
+  // start by initializing return value for current node contribution
+
+  // add left support before it's overwritten by right visit
+  // get reference, as we can just write here afterwards
+  // at this point saved_contribution has previous tree's right contribution
+  auto& saved_contribution = evaluation_look_up[degree - 1];
+  const ReturnType left_contribution =
+      (parametric_coordinate - start_knot_).Get() * left_denominator_inverse_
+      * saved_contribution;
+
+  // check if this is out of support
+  if (check_right) {
+    // current start of the support bigger than the end support?
+    if (start_of_support_ > end_support) {
+      return ReturnType{0.0};
+    }
+  }
+
+  // assign right node contribution of this tree
+  saved_contribution =
+      right_lower_degree_basis_function_->ConsecutiveTopNodeEvaluation(
+          parametric_coordinate,
+          evaluation_look_up,
+          end_support,
+          false,
+          true,
+          tolerance);
+
+  return left_contribution
+         + (saved_contribution * (end_knot_ - parametric_coordinate).Get()
+            * right_denominator_inverse_);
+  // return saved_contribution;
+}
+
 // Based on recurrence formula due to DeBoor, Cox, and Mansfield (see NURBS book
 // Eq. (2.9)).
 NonZeroDegreeBSplineBasisFunction::Type_
