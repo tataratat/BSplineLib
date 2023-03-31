@@ -224,7 +224,7 @@ NonZeroDegreeBSplineBasisFunction::ConsecutiveTopNodeEvaluation(
 
   using ReturnType = NonZeroDegreeBSplineBasisFunction::Type_;
 
-  const auto& degree = degree_.Get();
+  const auto degree_minus_one = degree_.Get() - 1;
 
   // first support node and its children. has very distinctive behavior
   if (is_first_support) {
@@ -234,7 +234,7 @@ NonZeroDegreeBSplineBasisFunction::ConsecutiveTopNodeEvaluation(
     // as source degree.
     // contribution comes from one degree lower.
 
-    auto& right_contribution = evaluation_look_up[degree - 1];
+    auto& right_contribution = evaluation_look_up[degree_minus_one];
     right_contribution =
         right_lower_degree_basis_function_->ConsecutiveTopNodeEvaluation(
             parametric_coordinate,
@@ -254,7 +254,7 @@ NonZeroDegreeBSplineBasisFunction::ConsecutiveTopNodeEvaluation(
   // add left support before it's overwritten by right visit
   // get reference, as we can just write here afterwards
   // at this point saved_contribution has previous tree's right contribution
-  auto& saved_contribution = evaluation_look_up[degree - 1];
+  auto& saved_contribution = evaluation_look_up[degree_minus_one];
   const ReturnType left_contribution =
       (parametric_coordinate - start_knot_).Get() * left_denominator_inverse_
       * saved_contribution;
@@ -280,7 +280,6 @@ NonZeroDegreeBSplineBasisFunction::ConsecutiveTopNodeEvaluation(
   return left_contribution
          + (saved_contribution * (end_knot_ - parametric_coordinate).Get()
             * right_denominator_inverse_);
-  // return saved_contribution;
 }
 
 // Based on recurrence formula due to DeBoor, Cox, and Mansfield (see NURBS book
