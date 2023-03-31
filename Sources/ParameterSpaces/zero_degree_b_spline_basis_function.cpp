@@ -75,18 +75,6 @@ ZeroDegreeBSplineBasisFunction::operator()(
 ZeroDegreeBSplineBasisFunction::Type_
 ZeroDegreeBSplineBasisFunction::operator()(
     ParametricCoordinate const& parametric_coordinate,
-    UniqueEvaluations& unique_evaluations,
-    int const& tree_info,
-    Tolerance const& tolerance) const {
-
-  // At each Spline evaluation, this function will be called exactly 4 times
-  // per dim. So, let's just compute. It is also generally faster
-  return operator()(parametric_coordinate, tolerance);
-}
-
-ZeroDegreeBSplineBasisFunction::Type_
-ZeroDegreeBSplineBasisFunction::operator()(
-    ParametricCoordinate const& parametric_coordinate,
     Derivative const& derivative,
     Tolerance const& tolerance) const {
 #ifndef NDEBUG
@@ -124,34 +112,6 @@ ZeroDegreeBSplineBasisFunction::ConsecutiveTopNodeEvaluation(
 
   // happy compiler
   // return ReturnType{};
-}
-
-ZeroDegreeBSplineBasisFunction::Type_
-ZeroDegreeBSplineBasisFunction::operator()(
-    ParametricCoordinate const& parametric_coordinate,
-    Derivative const& derivative,
-    UniqueDerivatives& unique_derivatives,
-    UniqueEvaluations& unique_evaluations,
-    IsTopLevelComputed& top_level_computed,
-    int const& tree_info,
-    Tolerance const& tolerance) const {
-#ifndef NDEBUG
-  try {
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "splinelib::sources::parameter_spaces::"
-          "ZeroDegreeBSplineBasisFunction::operator()");
-  }
-#endif
-  if (derivative == Derivative{}) {
-    return operator()(parametric_coordinate,
-                      unique_derivatives,
-                      tree_info,
-                      tolerance);
-  } else {
-    return Type_{};
-  }
 }
 
 ZeroDegreeBSplineBasisFunction::Type_

@@ -69,19 +69,9 @@ public:
   Type_ operator()(ParametricCoordinate const& parametric_coordinate,
                    Tolerance const& tolerance = kEpsilon) const override;
   Type_ operator()(ParametricCoordinate const& parametric_coordinate,
-                   UniqueEvaluations& unique_evaluations,
-                   int const& tree_info,
-                   Tolerance const& tolerance = kEpsilon) const override;
-  Type_ operator()(ParametricCoordinate const& parametric_coordinate,
                    Derivative const& derivative,
                    Tolerance const& tolerance = kEpsilon) const override;
-  Type_ operator()(ParametricCoordinate const& parametric_coordinate,
-                   Derivative const& derivative,
-                   UniqueDerivatives& unique_derivatives,
-                   UniqueEvaluations& unique_evaluations,
-                   IsTopLevelComputed& top_level_computed,
-                   int const& tree_info,
-                   Tolerance const& tolerance = kEpsilon) const override;
+
   Type_ ConsecutiveTopNodeEvaluation(
       ParametricCoordinate const& parametric_coordinate,
       EvaluationLookUp& unique_evaluations,

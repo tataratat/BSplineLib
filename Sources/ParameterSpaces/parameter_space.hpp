@@ -223,12 +223,6 @@ public:
   using BezierInformation_ = Tuple<int, Knots_>;
   using Knot_ = typename Knots_::value_type;
 
-  // same reason as UniqueBSplineBasisFunctions_
-  using UniqueEvaluations_ = UniqueEvaluationsArray<parametric_dimensionality>;
-  using UniqueDerivatives_ = UniqueDerivativesArray<parametric_dimensionality>;
-  using IsTopLevelComputed_ =
-      IsTopLevelComputedArray<parametric_dimensionality>;
-
   // for evaluated basis values
   using BasisValues_ = Vector<Type_>;
   using BasisValueType_ = typename BasisValues_::value_type;
@@ -267,52 +261,33 @@ public:
   DetermineBezierExtractionKnots(Dimension const& dimension,
                                  Tolerance const& tolerance = kEpsilon) const;
 
-  template<bool clear_first = true>
-  void
-  InitializeUniqueEvaluations(UniqueEvaluations_& unique_evaluations) const;
-  template<bool clear_first = true>
-  void InitializeUniqueDerivativeContainers(
-      Derivative_ const& derivative,
-      IsTopLevelComputed_& top_levels_computed,
-      UniqueDerivatives_& unique_derivatives,
-      UniqueEvaluations_& unique_evaluations) const;
   virtual Type_
   EvaluateBasisFunction(Index_ const& basis_function_index,
                         ParametricCoordinate_ const& parametric_coordinate,
                         Tolerance const& tolerance = kEpsilon) const;
-  virtual Type_
-  EvaluateBasisFunction(Index_ const& basis_function_index,
-                        Index_ const& basis_function_index_without_offset,
-                        ParametricCoordinate_ const& parametric_coordinate,
-                        UniqueEvaluations_& unique_evaluations,
-                        Tolerance const& tolerance = kEpsilon) const;
+
   virtual BasisValuesPerDimension_ EvaluateBasisValuesPerDimension(
       ParametricCoordinate_ const& parametric_coordinate,
       Tolerance const& tolerance = kEpsilon) const;
+
   virtual BasisValues_
   EvaluateBasisValues(ParametricCoordinate_ const& parametric_coordinate,
                       Tolerance const& tolerance = kEpsilon) const;
+
+  virtual Type_ EvaluateBasisFunctionDerivative(
+      Index_ const& basis_function_index,
+      ParametricCoordinate_ const& parametric_coordinate,
+      Derivative_ const& derivative,
+      Tolerance const& tolerance = kEpsilon) const;
+
   virtual BasisValuesPerDimension_ EvaluateBasisDerivativeValuesPerDimension(
       ParametricCoordinate_ const& parametric_coordinate,
       Derivative_ const& derivative,
       Tolerance const& tolerance = kEpsilon) const;
+
   virtual BasisValues_ EvaluateBasisDerivativeValues(
       ParametricCoordinate_ const& parametric_coordinate,
       Derivative_ const& derivative,
-      Tolerance const& tolerance = kEpsilon) const;
-  virtual Type_ EvaluateBasisFunctionDerivative(
-      Index_ const& basis_function_index,
-      ParametricCoordinate_ const& parametric_coordinate,
-      Derivative_ const& derivative,
-      Tolerance const& tolerance = kEpsilon) const;
-  virtual Type_ EvaluateBasisFunctionDerivative(
-      Index_ const& basis_function_index,
-      Index_ const& basis_function_index_without_offset,
-      IsTopLevelComputed_& top_level_computed,
-      ParametricCoordinate_ const& parametric_coordinate,
-      Derivative_ const& derivative,
-      UniqueDerivatives_& unique_derivatives,
-      UniqueEvaluations_& unique_evaluations,
       Tolerance const& tolerance = kEpsilon) const;
 
   virtual InsertionInformation_

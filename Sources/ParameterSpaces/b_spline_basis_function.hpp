@@ -39,27 +39,8 @@ template<int parametric_dimensionality>
 using UniqueBSplineBasisFunctionsArray =
     Array<UniqueBSplineBasisFunctions, parametric_dimensionality>;
 
-// it is just a holder to lookup
-using UniqueEvaluations = Vector<ParametricCoordinate::Type_>;
-// turns out they both can have the same type.
-using UniqueDerivatives = UniqueEvaluations;
-
 // lookup
 using EvaluationLookUp = UniquePointer<ParametricCoordinate::Type_[]>;
-
-template<int parametric_dimensionality>
-using UniqueEvaluationsArray =
-    Array<UniqueEvaluations, parametric_dimensionality>;
-
-template<int parametric_dimensionality>
-using UniqueDerivativesArray =
-    Array<UniqueDerivatives, parametric_dimensionality>;
-
-using IsTopLevelComputed = Vector<bool>;
-
-template<int parametric_dimensionality>
-using IsTopLevelComputedArray =
-    Array<IsTopLevelComputed, parametric_dimensionality>;
 
 // BSplineBasisFunctions N_{i,p} are non-negative, piecewise polynomial
 // functions of degree p forming a basis of the vector space of all piecewise
@@ -110,33 +91,14 @@ public:
                          BSplineBasisFunction const& rhs);
   virtual Type_ operator()(ParametricCoordinate const& parametric_coordinate,
                            Tolerance const& tolerance = kEpsilon) const = 0;
-  // tree_info should tell you if requested basis function is ...
-  //   <tree_info value> : <info>
-  //                  -2 : left branch
-  //                  -1 : right branch
-  //         0 or bigger : top_node id. used to determine entry id for
-  //                       top level evaluations
-  virtual Type_ operator()(ParametricCoordinate const& parametric_coordinate,
-                           UniqueEvaluations& unique_evaluations,
-                           int const& tree_info,
-                           Tolerance const& tolerance = kEpsilon) const = 0;
-
   virtual Type_ operator()(ParametricCoordinate const& parametric_coordinate,
                            Derivative const& derivative,
                            Tolerance const& tolerance = kEpsilon) const = 0;
-  virtual Type_ operator()(ParametricCoordinate const& parametric_coordinate,
-                           Derivative const& derivative,
-                           UniqueDerivatives& unique_derivatives,
-                           UniqueEvaluations& unique_evaluations,
-                           IsTopLevelComputed& top_level_computed,
-                           int const& tree_info,
-                           Tolerance const& tolerance = kEpsilon) const = 0;
-
-  virtual const int& GetStartOfSupport() { return start_of_support_; }
 
   /// basis function evaluation specifically designed for consecutive
   /// evaluation of top node basis functions.
-  /// make sure to initialize unique_evaluations same as with top node's degree
+  /// make sure to initialize evaluation_look_up
+  /// at least as big as top node's degree
   virtual Type_ ConsecutiveTopNodeEvaluation(
       ParametricCoordinate const& parametric_coordinate,
       EvaluationLookUp& evaluation_look_up,
@@ -147,7 +109,10 @@ public:
 
   /// basis function derivative evaluation specifically designed for consecutive
   /// evaluation of top node basis functions.
-  /// make sure to initialize unique_evaluations same as with top node's degree
+  /// make sure to initialize evaluation_look_up
+  /// at least as big as (top node's degree - derivative)
+  /// and and derivative_look_up
+  /// at least as big as derivative
   virtual Type_ ConsecutiveTopNodeDerivativeEvaluation(
       ParametricCoordinate const& parametric_coordinate,
       Derivative const& derivative,
