@@ -100,6 +100,16 @@ public:
       const bool& check_right,
       Tolerance const& tolerance = kEpsilon) const override;
 
+  Type_ ConsecutiveTopNodeDerivativeEvaluation(
+      ParametricCoordinate const& parametric_coordinate,
+      Derivative const& derivative,
+      EvaluationLookUp& derivative_look_up,
+      EvaluationLookUp& evaluation_look_up,
+      const int& end_support,
+      const bool& is_first_support,
+      const bool& check_right,
+      Tolerance const& tolerance = kEpsilon) const override;
+
 protected:
   Type_ left_denominator_inverse_, right_denominator_inverse_,
       left_quotient_derivative_, right_quotient_derivative_;

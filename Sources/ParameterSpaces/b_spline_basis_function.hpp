@@ -132,11 +132,26 @@ public:
                            int const& tree_info,
                            Tolerance const& tolerance = kEpsilon) const = 0;
 
+  virtual const int& GetStartOfSupport() { return start_of_support_; }
+
   /// basis function evaluation specifically designed for consecutive
   /// evaluation of top node basis functions.
   /// make sure to initialize unique_evaluations same as with top node's degree
   virtual Type_ ConsecutiveTopNodeEvaluation(
       ParametricCoordinate const& parametric_coordinate,
+      EvaluationLookUp& evaluation_look_up,
+      const int& end_support,
+      const bool& is_first_support,
+      const bool& check_right,
+      Tolerance const& tolerance = kEpsilon) const = 0;
+
+  /// basis function derivative evaluation specifically designed for consecutive
+  /// evaluation of top node basis functions.
+  /// make sure to initialize unique_evaluations same as with top node's degree
+  virtual Type_ ConsecutiveTopNodeDerivativeEvaluation(
+      ParametricCoordinate const& parametric_coordinate,
+      Derivative const& derivative,
+      EvaluationLookUp& derivative_look_up,
       EvaluationLookUp& evaluation_look_up,
       const int& end_support,
       const bool& is_first_support,
@@ -160,9 +175,9 @@ protected:
                    Tolerance const& tolerance = kEpsilon) const;
 
   Degree degree_;
+  int start_of_support_;
   ParametricCoordinate start_knot_, end_knot_;
   bool end_knot_equals_last_knot_;
-  int start_of_support_;
 };
 
 bool IsEqual(BSplineBasisFunction const& lhs,

@@ -154,4 +154,23 @@ ZeroDegreeBSplineBasisFunction::operator()(
   }
 }
 
+ZeroDegreeBSplineBasisFunction::Type_
+ZeroDegreeBSplineBasisFunction::ConsecutiveTopNodeDerivativeEvaluation(
+    ParametricCoordinate const& parametric_coordinate,
+    Derivative const& derivative,
+    EvaluationLookUp& derivative_look_up,
+    EvaluationLookUp& evaluation_look_up,
+    const int& end_support,
+    const bool& is_first_support,
+    const bool& check_right,
+    Tolerance const& tolerance) const {
+  if (derivative == Derivative() && is_first_support) {
+    // this becomes quite simple
+    // we can either call eval or just return 1 for only first support
+    return Type_{1.0};
+  } else {
+    return Type_{0.0};
+  }
+}
+
 } // namespace splinelib::sources::parameter_spaces

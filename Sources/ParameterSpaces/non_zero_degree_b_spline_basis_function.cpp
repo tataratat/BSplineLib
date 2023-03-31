@@ -265,6 +265,12 @@ NonZeroDegreeBSplineBasisFunction::ConsecutiveTopNodeEvaluation(
     if (start_of_support_ > end_support) {
       return ReturnType{0.0};
     }
+
+    // let's try to avoid lower visit
+    if (start_of_support_ + 1 > end_support) {
+      saved_contribution = 0.0;
+      return left_contribution;
+    }
   }
 
   // assign right node contribution of this tree
@@ -425,6 +431,97 @@ NonZeroDegreeBSplineBasisFunction::operator()(
 
     return evaluation;
   }
+}
+
+NonZeroDegreeBSplineBasisFunction::Type_
+NonZeroDegreeBSplineBasisFunction::ConsecutiveTopNodeDerivativeEvaluation(
+    ParametricCoordinate const& parametric_coordinate,
+    Derivative const& derivative,
+    EvaluationLookUp& derivative_look_up,
+    EvaluationLookUp& evaluation_look_up,
+    const int& end_support,
+    const bool& is_first_support,
+    const bool& check_right,
+    Tolerance const& tolerance) const {
+
+  using ReturnType = NonZeroDegreeBSplineBasisFunction::Type_;
+
+  const auto lower_derivative = derivative - Derivative{1};
+
+  // zeroth step is to check if the query is actually zeroth derivative
+  // because it is then equivalent to evaluation query
+  if (derivative == Derivative{}) {
+    // always check right
+    auto zero_der = ConsecutiveTopNodeEvaluation(parametric_coordinate,
+                                                 evaluation_look_up,
+                                                 end_support,
+                                                 is_first_support,
+                                                 true,
+                                                 tolerance);
+    derivative_look_up[0] = zero_der;
+    return zero_der;
+  }
+
+  // first support node and its children have very distinctive behavior
+  if (is_first_support) {
+    // first support just need to compute right nodes
+    // look up should be allocated with same number as derivative
+    // query. that way, each contribution can be saved at the same id
+    // as source derivative.
+    // contribution comes from one derivative lower.
+    auto& right_contribution = derivative_look_up[lower_derivative.Get()];
+    right_contribution =
+        right_lower_degree_basis_function_
+            ->ConsecutiveTopNodeDerivativeEvaluation(parametric_coordinate,
+                                                     lower_derivative,
+                                                     derivative_look_up,
+                                                     evaluation_look_up,
+                                                     end_support,
+                                                     is_first_support,
+                                                     check_right,
+                                                     tolerance);
+
+    // returns left minus right, so minus here
+    return -(right_quotient_derivative_ * right_contribution);
+  }
+
+  // quite the same procedure for everything but the first.
+  // start by initializing return value for current node contribution
+
+  // add left support before it's overwritten by right visit.
+  // get reference, as we can just write here afterwards
+  // at this point saved_contribution has previous tree's right contribution
+  auto& saved_contribution = derivative_look_up[lower_derivative.Get()];
+  const ReturnType left_contribution =
+      left_quotient_derivative_ * saved_contribution;
+
+  // check if this is out of support
+  if (check_right) {
+    // current start of the support bigger than the end support?
+    if (start_of_support_ > end_support) {
+      return ReturnType{0.0};
+    }
+
+    // let's try to avoid lower visit
+    if (start_of_support_ + 1 > end_support) {
+      saved_contribution = 0.0;
+      return left_contribution;
+    }
+  }
+
+  // assign right node contribution of this tree
+  saved_contribution =
+      right_lower_degree_basis_function_
+          ->ConsecutiveTopNodeDerivativeEvaluation(parametric_coordinate,
+                                                   lower_derivative,
+                                                   derivative_look_up,
+                                                   evaluation_look_up,
+                                                   end_support,
+                                                   is_first_support,
+                                                   check_right,
+                                                   tolerance);
+
+  return left_contribution - (right_quotient_derivative_ * saved_contribution);
 }
 
 NonZeroDegreeBSplineBasisFunction::Type_

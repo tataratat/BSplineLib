@@ -89,6 +89,15 @@ public:
       const bool& is_first_support,
       const bool& check_right,
       Tolerance const& tolerance = kEpsilon) const override;
+  Type_ ConsecutiveTopNodeDerivativeEvaluation(
+      ParametricCoordinate const& parametric_coordinate,
+      Derivative const& derivative,
+      EvaluationLookUp& derivative_look_up,
+      EvaluationLookUp& evaluation_look_up,
+      const int& end_support,
+      const bool& is_first_support,
+      const bool& check_right,
+      Tolerance const& tolerance = kEpsilon) const override;
 };
 
 bool IsEqual(ZeroDegreeBSplineBasisFunction const& lhs,

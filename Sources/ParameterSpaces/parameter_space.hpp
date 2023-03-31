@@ -292,6 +292,14 @@ public:
   virtual BasisValues_
   EvaluateBasisValues(ParametricCoordinate_ const& parametric_coordinate,
                       Tolerance const& tolerance = kEpsilon) const;
+  virtual BasisValuesPerDimension_ EvaluateBasisDerivativeValuesPerDimension(
+      ParametricCoordinate_ const& parametric_coordinate,
+      Derivative_ const& derivative,
+      Tolerance const& tolerance = kEpsilon) const;
+  virtual BasisValues_ EvaluateBasisDerivativeValues(
+      ParametricCoordinate_ const& parametric_coordinate,
+      Derivative_ const& derivative,
+      Tolerance const& tolerance = kEpsilon) const;
   virtual Type_ EvaluateBasisFunctionDerivative(
       Index_ const& basis_function_index,
       ParametricCoordinate_ const& parametric_coordinate,
