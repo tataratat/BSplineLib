@@ -158,59 +158,78 @@ NonZeroDegreeBSplineBasisFunction::operator()(
 }
 
 NonZeroDegreeBSplineBasisFunction::Type_
-NonZeroDegreeBSplineBasisFunction::operator()(
+NonZeroDegreeBSplineBasisFunction::ConsecutiveTopNodeEvaluation(
     ParametricCoordinate const& parametric_coordinate,
-    UniqueEvaluations& unique_evaluations,
-    int const& tree_info,
+    EvaluationLookUp& evaluation_look_up,
+    const int& end_support,
+    const bool& is_first_support,
+    const bool& check_right,
     Tolerance const& tolerance) const {
 
-  // First, support check - exit if not
-  if (!IsInSupport(parametric_coordinate, tolerance)) {
-    return Type_{};
+  using ReturnType = NonZeroDegreeBSplineBasisFunction::Type_;
+
+  const auto degree_minus_one = degree_.Get() - 1;
+
+  // first support node and its children. has very distinctive behavior
+  if (is_first_support) {
+    // first support just need to compute right nodes
+    // look up should be allocated with same number as top level basis
+    // degree. that way, each contribution can be saved at the same id
+    // as source degree.
+    // contribution comes from one degree lower.
+
+    auto& right_contribution = evaluation_look_up[degree_minus_one];
+    right_contribution =
+        right_lower_degree_basis_function_->ConsecutiveTopNodeEvaluation(
+            parametric_coordinate,
+            evaluation_look_up,
+            end_support,
+            true,
+            false,
+            tolerance);
+
+    return right_contribution * (end_knot_ - parametric_coordinate).Get()
+           * right_denominator_inverse_;
   }
 
-  int entry_offset{};
-  const auto& id = degree_.Get();
-  // evaluation is quite deterministic: it is clear when to lookup
-  if (tree_info == -2) {
-    // lucky, just take a look.
-    // this is valid for all left branches.
-    return unique_evaluations[id];
+  // quite the same procedure for everything but the first.
+  // start by initializing return value for current node contribution
 
-  } else if (tree_info >= 0) {
-    // indicates this is top-level nodes
-    // check if this has been computed
-    const auto& top_level_evaluation = unique_evaluations[id + tree_info];
-    // values are initialized with negative value and if computed,
-    // it should be non-negative.
-    if (top_level_evaluation >= 0.0) {
-      return top_level_evaluation;
+  // add left support before it's overwritten by right visit
+  // get reference, as we can just write here afterwards
+  // at this point saved_contribution has previous tree's right contribution
+  auto& saved_contribution = evaluation_look_up[degree_minus_one];
+  const ReturnType left_contribution =
+      (parametric_coordinate - start_knot_).Get() * left_denominator_inverse_
+      * saved_contribution;
+
+  // check if this is out of support
+  if (check_right) {
+    // current start of the support bigger than the end support?
+    if (start_of_support_ > end_support) {
+      return ReturnType{0.0};
     }
 
-    entry_offset = tree_info;
+    // let's try to avoid lower visit
+    if (start_of_support_ + 1 > end_support) {
+      saved_contribution = 0.0;
+      return left_contribution;
+    }
   }
-  // it is your duty to compute.
-  // this means you are either at the top-level node or right branch.
-  // explicitly compute left first then right.
-  // => fix for windows, as it would compute right first
-  auto left_contribution =
-      (parametric_coordinate - start_knot_).Get() * left_denominator_inverse_
-      * (*left_lower_degree_basis_function_)(parametric_coordinate,
-                                             unique_evaluations,
-                                             -2,
-                                             tolerance);
-  auto right_contribution =
-      (end_knot_ - parametric_coordinate).Get() * right_denominator_inverse_
-      * (*right_lower_degree_basis_function_)(parametric_coordinate,
-                                              unique_evaluations,
-                                              -1,
-                                              tolerance);
 
-  // add
-  auto& computed_basis = unique_evaluations[id + entry_offset];
-  computed_basis = left_contribution + right_contribution;
+  // assign right node contribution of this tree
+  saved_contribution =
+      right_lower_degree_basis_function_->ConsecutiveTopNodeEvaluation(
+          parametric_coordinate,
+          evaluation_look_up,
+          end_support,
+          false,
+          true,
+          tolerance);
 
-  return computed_basis;
+  return left_contribution
+         + (saved_contribution * (end_knot_ - parametric_coordinate).Get()
+            * right_denominator_inverse_);
 }
 
 // Based on recurrence formula due to DeBoor, Cox, and Mansfield (see NURBS book
@@ -249,113 +268,94 @@ NonZeroDegreeBSplineBasisFunction::operator()(
 }
 
 NonZeroDegreeBSplineBasisFunction::Type_
-NonZeroDegreeBSplineBasisFunction::operator()(
+NonZeroDegreeBSplineBasisFunction::ConsecutiveTopNodeDerivativeEvaluation(
     ParametricCoordinate const& parametric_coordinate,
     Derivative const& derivative,
-    UniqueDerivatives& unique_derivatives,
-    UniqueEvaluations& unique_evaluations,
-    IsTopLevelComputed& top_level_computed,
-    int const& tree_info,
+    EvaluationLookUp& derivative_look_up,
+    EvaluationLookUp& evaluation_look_up,
+    const int& end_support,
+    const bool& is_first_support,
+    const bool& check_right,
     Tolerance const& tolerance) const {
-#ifndef NDEBUG
-  try {
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "splinelib::sources::parameter_spaces::"
-          "NonZeroDegreeBSplineBasisFunction::operator()");
-  }
-#endif
 
-  int entry_offset{}; /* will be zero, unless it is top-level node */
-  if (tree_info == -2) {
-    return unique_derivatives[derivative.Get()];
+  using ReturnType = NonZeroDegreeBSplineBasisFunction::Type_;
 
-  } else if (tree_info >= 0) {
-    // indicates this is top-level nodes.
-    // check if this has been computed
-    //
-    // for derivatives, there are no simple rule that tells us if
-    // it was evaluated.
-    // so, we look at an additional info
-    if (top_level_computed[tree_info]) {
-      // for 0-th derivative, look at evaluations.
-      if (derivative == Derivative{}) {
-        throw std::runtime_error(
-            String("CRITICAL ISSUE! Please help us by writing an issue at ")
-            + String("github.com/tataratat/SplineLib"));
-      }
-      return unique_derivatives[derivative.Get() + tree_info];
-    }
+  const auto lower_derivative = derivative - Derivative{1};
 
-    // save tree_info to place freshly computed value at the right place.
-    entry_offset = tree_info;
-
-    // we are here, because it wasn't computed and in following parts,
-    // it will be computed.
-    // warning: premature action.
-    // an alternative would be checking if entry_offset is >= 0 then set true.
-    top_level_computed[tree_info] = true;
+  // zeroth step is to check if the query is actually zeroth derivative
+  // because it is then equivalent to evaluation query
+  if (derivative == Derivative{}) {
+    // always check right
+    auto zero_der = ConsecutiveTopNodeEvaluation(parametric_coordinate,
+                                                 evaluation_look_up,
+                                                 end_support,
+                                                 is_first_support,
+                                                 true,
+                                                 tolerance);
+    derivative_look_up[0] = zero_der;
+    return zero_der;
   }
 
-  // it is your duty to compute
-  // top-level-degree derivatives and all right_lower ones.
-  if (derivative != Derivative{}) {
-    if (!IsInSupport(parametric_coordinate, tolerance)) {
-      // tschuess
-      return Type_{};
-    }
+  // first support node and its children have very distinctive behavior
+  if (is_first_support) {
+    // first support just need to compute right nodes
+    // look up should be allocated with same number as derivative
+    // query. that way, each contribution can be saved at the same id
+    // as source derivative.
+    // contribution comes from one derivative lower.
+    auto& right_contribution = derivative_look_up[lower_derivative.Get()];
+    right_contribution =
+        right_lower_degree_basis_function_
+            ->ConsecutiveTopNodeDerivativeEvaluation(parametric_coordinate,
+                                                     lower_derivative,
+                                                     derivative_look_up,
+                                                     evaluation_look_up,
+                                                     end_support,
+                                                     is_first_support,
+                                                     check_right,
+                                                     tolerance);
 
-    Derivative const lower_derivative = (derivative - Derivative{1});
-    // same idea as evaluation.
-    // top-level-derivative and all right ones
-    // explicitly compute left first then right.
-    // => fix for windows, as it would compute right first
-    const auto left_contribution =
-        left_quotient_derivative_
-        * (*left_lower_degree_basis_function_)(parametric_coordinate,
-                                               lower_derivative,
-                                               unique_derivatives,
-                                               unique_evaluations,
-                                               top_level_computed,
-                                               -2,
-                                               tolerance);
-    const auto right_contribution =
-        right_quotient_derivative_
-        * (*right_lower_degree_basis_function_)(parametric_coordinate,
-                                                lower_derivative,
-                                                unique_derivatives,
-                                                unique_evaluations,
-                                                top_level_computed,
-                                                -1,
-                                                tolerance);
-    auto& computed_basis = unique_derivatives[derivative.Get() + entry_offset];
-    computed_basis = left_contribution - right_contribution;
-
-    // here would be a good alternative place to set top-level computed flag.
-    return computed_basis;
-
-  } else {
-    // zeroth derivative evaluation. same as normal evaluation.
-    // treat it as normal evaluation <- need top level node info.
-    // could use an additional input if this takes too long.
-    int top_level_id{-1};
-    // compiler told me `bool` will be copied anyways. Hence, no auto&
-    for (const auto computed : top_level_computed) {
-      if (!computed)
-        break;
-      ++top_level_id;
-    }
-    const auto evaluation = operator()(parametric_coordinate,
-                                       unique_evaluations,
-                                       top_level_id,
-                                       tolerance);
-
-    // Here's always 0th derivative.
-    unique_derivatives[0] = evaluation;
-
-    return evaluation;
+    // returns left minus right, so minus here
+    return -(right_quotient_derivative_ * right_contribution);
   }
+
+  // quite the same procedure for everything but the first.
+  // start by initializing return value for current node contribution
+
+  // add left support before it's overwritten by right visit.
+  // get reference, as we can just write here afterwards
+  // at this point saved_contribution has previous tree's right contribution
+  auto& saved_contribution = derivative_look_up[lower_derivative.Get()];
+  const ReturnType left_contribution =
+      left_quotient_derivative_ * saved_contribution;
+
+  // check if this is out of support
+  if (check_right) {
+    // current start of the support bigger than the end support?
+    if (start_of_support_ > end_support) {
+      return ReturnType{0.0};
+    }
+
+    // let's try to avoid lower visit
+    if (start_of_support_ + 1 > end_support) {
+      saved_contribution = 0.0;
+      return left_contribution;
+    }
+  }
+
+  // assign right node contribution of this tree
+  saved_contribution =
+      right_lower_degree_basis_function_
+          ->ConsecutiveTopNodeDerivativeEvaluation(parametric_coordinate,
+                                                   lower_derivative,
+                                                   derivative_look_up,
+                                                   evaluation_look_up,
+                                                   end_support,
+                                                   is_first_support,
+                                                   check_right,
+                                                   tolerance);
+
+  return left_contribution - (right_quotient_derivative_ * saved_contribution);
 }
 
 NonZeroDegreeBSplineBasisFunction::Type_

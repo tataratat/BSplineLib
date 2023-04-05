@@ -115,12 +115,12 @@ BSplineBasisFunction::BSplineBasisFunction(KnotVector const& knot_vector,
                                            KnotSpan const& start_of_support,
                                            Degree degree,
                                            Tolerance const& tolerance)
-    : degree_(move(degree)) {
-  Index const start{start_of_support.Get()};
-  start_knot_ = knot_vector[start];
-  end_knot_ = knot_vector[start + Index{degree_.Get() + 1}];
-  end_knot_equals_last_knot_ =
-      knot_vector.DoesParametricCoordinateEqualBack(end_knot_, tolerance);
+    : degree_(move(degree)),
+      start_of_support_(start_of_support.Get()),
+      start_knot_(knot_vector[Index{start_of_support_}]),
+      end_knot_(knot_vector[Index{start_of_support_ + degree_.Get() + 1}]),
+      end_knot_equals_last_knot_(
+          knot_vector.DoesParametricCoordinateEqualBack(end_knot_, tolerance)) {
 }
 
 bool IsEqual(BSplineBasisFunction const& lhs,

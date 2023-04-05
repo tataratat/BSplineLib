@@ -43,6 +43,8 @@ namespace splinelib {
 template<typename Type, size_t size>
 using Array = std::array<Type, size>;
 template<typename Type>
+using UniquePointer = std::unique_ptr<Type>;
+template<typename Type>
 using SharedPointer = std::shared_ptr<Type>;
 template<typename... Types>
 using Tuple = std::tuple<Types...>;

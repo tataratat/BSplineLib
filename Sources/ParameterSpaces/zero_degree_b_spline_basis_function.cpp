@@ -75,18 +75,6 @@ ZeroDegreeBSplineBasisFunction::operator()(
 ZeroDegreeBSplineBasisFunction::Type_
 ZeroDegreeBSplineBasisFunction::operator()(
     ParametricCoordinate const& parametric_coordinate,
-    UniqueEvaluations& unique_evaluations,
-    int const& tree_info,
-    Tolerance const& tolerance) const {
-
-  // At each Spline evaluation, this function will be called exactly 4 times
-  // per dim. So, let's just compute. It is also generally faster
-  return operator()(parametric_coordinate, tolerance);
-}
-
-ZeroDegreeBSplineBasisFunction::Type_
-ZeroDegreeBSplineBasisFunction::operator()(
-    ParametricCoordinate const& parametric_coordinate,
     Derivative const& derivative,
     Tolerance const& tolerance) const {
 #ifndef NDEBUG
@@ -104,30 +92,44 @@ ZeroDegreeBSplineBasisFunction::operator()(
 }
 
 ZeroDegreeBSplineBasisFunction::Type_
-ZeroDegreeBSplineBasisFunction::operator()(
+ZeroDegreeBSplineBasisFunction::ConsecutiveTopNodeEvaluation(
+    ParametricCoordinate const& parametric_coordinate,
+    EvaluationLookUp& evaluation_look_up,
+    const int& end_support,
+    const bool& is_first_support,
+    const bool& check_right,
+    Tolerance const& tolerance) const {
+
+  using ReturnType = ZeroDegreeBSplineBasisFunction::Type_;
+
+  // first support node and its children. has very distinctive behavior
+  if (is_first_support) {
+    return ReturnType{1.0};
+  } else {
+    // the fact that check_right is even true is that this is out of bound.
+    return ReturnType{};
+  }
+
+  // happy compiler
+  // return ReturnType{};
+}
+
+ZeroDegreeBSplineBasisFunction::Type_
+ZeroDegreeBSplineBasisFunction::ConsecutiveTopNodeDerivativeEvaluation(
     ParametricCoordinate const& parametric_coordinate,
     Derivative const& derivative,
-    UniqueDerivatives& unique_derivatives,
-    UniqueEvaluations& unique_evaluations,
-    IsTopLevelComputed& top_level_computed,
-    int const& tree_info,
+    EvaluationLookUp& derivative_look_up,
+    EvaluationLookUp& evaluation_look_up,
+    const int& end_support,
+    const bool& is_first_support,
+    const bool& check_right,
     Tolerance const& tolerance) const {
-#ifndef NDEBUG
-  try {
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "splinelib::sources::parameter_spaces::"
-          "ZeroDegreeBSplineBasisFunction::operator()");
-  }
-#endif
-  if (derivative == Derivative{}) {
-    return operator()(parametric_coordinate,
-                      unique_derivatives,
-                      tree_info,
-                      tolerance);
+  if (derivative == Derivative() && is_first_support) {
+    // this becomes quite simple
+    // we can either call eval or just return 1 for only first support
+    return Type_{1.0};
   } else {
-    return Type_{};
+    return Type_{0.0};
   }
 }
 
