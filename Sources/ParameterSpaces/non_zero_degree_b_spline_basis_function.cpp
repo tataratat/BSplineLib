@@ -280,8 +280,6 @@ NonZeroDegreeBSplineBasisFunction::ConsecutiveTopNodeDerivativeEvaluation(
 
   using ReturnType = NonZeroDegreeBSplineBasisFunction::Type_;
 
-  const auto lower_derivative = derivative - Derivative{1};
-
   // zeroth step is to check if the query is actually zeroth derivative
   // because it is then equivalent to evaluation query
   if (derivative == Derivative{}) {
@@ -295,6 +293,8 @@ NonZeroDegreeBSplineBasisFunction::ConsecutiveTopNodeDerivativeEvaluation(
     derivative_look_up[0] = zero_der;
     return zero_der;
   }
+
+  const auto lower_derivative = derivative - Derivative{1};
 
   // first support node and its children have very distinctive behavior
   if (is_first_support) {
