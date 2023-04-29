@@ -19,7 +19,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "Sources/Utilities/math_operations.hpp"
 
-//#include <cmath> // NOLINT(whitespace/comments)
+// #include <cmath> // NOLINT(whitespace/comments)
 
 #include "Sources/Utilities/error_handling.hpp"
 

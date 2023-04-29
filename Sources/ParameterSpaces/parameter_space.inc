@@ -171,6 +171,38 @@ int ParameterSpace<parametric_dimensionality>::GetTotalNumberOfBasisFunctions()
 }
 
 template<int parametric_dimensionality>
+SharedPointer<ParameterSpace<parametric_dimensionality - 1>>
+ParameterSpace<parametric_dimensionality>::RemoveOneParametricDimension(
+    const int parametric_dimension) const {
+  if constexpr (parametric_dimensionality < 2) {
+    return nullptr;
+  } else {
+    // prepare output
+    auto out_pspace =
+        std::make_shared<ParameterSpace<parametric_dimensionality - 1>>();
+
+    auto& out_degrees = out_pspace->GetDegrees();
+    auto& out_knot_vectors = out_pspace->GetKnotVectors();
+    auto& out_basis = out_pspace->GetBSplineBasisFunctions();
+    auto& out_unique_basis = out_pspace->GetUniqueBSplineBasisFunctions();
+
+    int out_dim_id{};
+    for (int i{}; i < parametric_dimensionality; ++i) {
+      if (i == parametric_dimension) {
+        continue;
+      }
+      out_degrees[out_dim_id] = degrees_[i];
+      out_knot_vectors[out_dim_id] = knot_vectors_[i];
+      out_basis[out_dim_id] = basis_functions_[i];
+      out_unique_basis[out_dim_id] = unique_basis_functions_[i];
+      ++out_dim_id;
+    }
+
+    return out_pspace;
+  }
+}
+
+template<int parametric_dimensionality>
 typename ParameterSpace<parametric_dimensionality>::Index_
 ParameterSpace<parametric_dimensionality>::FindFirstNonZeroBasisFunction(
     ParametricCoordinate_ const& parametric_coordinate,
