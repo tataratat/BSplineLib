@@ -22,7 +22,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include <algorithm>
 // NOLINTNEXTLINE(whitespace/comments)
-//#include <format>  // TODO(all): C++20 library providing std::format to
+// #include <format>  // TODO(all): C++20 library providing std::format to
 // replace Write (not yet implemented).
 #include <functional>
 #include <iterator>

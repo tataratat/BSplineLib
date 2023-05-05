@@ -253,6 +253,9 @@ public:
   // Number of non-zero basis functions is equal to p+1 - see NURBS book P2.2.
   NumberOfBasisFunctions_ GetNumberOfNonZeroBasisFunctions() const;
 
+  virtual SharedPointer<ParameterSpace<parametric_dimensionality - 1>>
+  RemoveOneParametricDimension(const int parametric_dimension) const;
+
   virtual Index_ FindFirstNonZeroBasisFunction(
       ParametricCoordinate_ const& parametric_coordinate,
       Tolerance const& tolerance = kEpsilon) const;
@@ -294,17 +297,20 @@ public:
              Knot_ knot,
              Multiplicity const& multiplicity = kMultiplicity,
              Tolerance const& tolerance = kEpsilon);
+
   // Tries to interpret knot removal as the inverse process of knot insertion.
   virtual InsertionInformation_
   RemoveKnot(Dimension const& dimension,
              Knot_ const& knot,
              Multiplicity const& multiplicity = kMultiplicity,
              Tolerance const& tolerance = kEpsilon);
+
   // Elevation information refer to degree elevation of Bezier basis functions.
   virtual ElevationInformation_
   ElevateDegree(Dimension const& dimension,
                 Multiplicity const& multiplicity = kMultiplicity,
                 Tolerance const& tolerance = kEpsilon);
+
   // Tries to interpret degree reduction as the inverse process of degree
   // elevation.
   virtual ElevationInformation_
@@ -332,6 +338,14 @@ public:
   }
   virtual const UniqueBSplineBasisFunctions_&
   GetUniqueBSplineBasisFunctions() const {
+    return unique_basis_functions_;
+  }
+  virtual KnotVectors_& GetKnotVectors() { return knot_vectors_; }
+  virtual Degrees_& GetDegrees() { return degrees_; }
+  virtual BSplineBasisFunctions_& GetBSplineBasisFunctions() {
+    return basis_functions_;
+  }
+  virtual UniqueBSplineBasisFunctions_& GetUniqueBSplineBasisFunctions() {
     return unique_basis_functions_;
   }
 
