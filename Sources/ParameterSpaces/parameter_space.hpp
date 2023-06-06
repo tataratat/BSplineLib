@@ -68,7 +68,7 @@ RecursiveCombine_(const Array<Vector<ValueType>, array_dim>& factors,
           c_value * factors[depth][i]);
     }
   }
-};
+}
 
 /// recursive combime adapted from bezman
 template<typename ValueType, std::size_t array_dim>
@@ -87,7 +87,7 @@ RecursiveCombine(const Array<Vector<ValueType>, array_dim>& factors) {
   // Start computation
   RecursiveCombine_<array_dim - 1>(factors, result, static_cast<ValueType>(1));
   return result;
-};
+}
 
 /// recursive combime taken from bezman
 template<std::size_t depth,
@@ -132,7 +132,7 @@ RecursiveCombine_(const Array<Vector<BasisValueType>, array_dim>& factors,
                                                              result);
     }
   }
-};
+}
 
 /// recursive combime adapted from bezman
 template<typename ValueType,
@@ -154,7 +154,7 @@ RecursiveCombine(const Array<Vector<ValueType>, array_dim>& factors,
                                    coeffs,
                                    static_cast<ValueType>(1),
                                    result);
-};
+}
 
 // ParameterSpaces provide the B-spline basis functions corresponding to given
 // knot vectors and degrees.  Only clamped knot vectors of degree p — i.e., both
