@@ -15,8 +15,8 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 
 template<LogType log_type>
 LogInformation Read(String const name_log) {
-  namespace string_operations = splinelib::sources::utilities::string_operations;
-  namespace system_operations = splinelib::sources::utilities::system_operations;
+  namespace string_operations = bsplinelib::utilities::string_operations;
+  namespace system_operations = bsplinelib::utilities::system_operations;
   using std::get, std::tuple_element_t, string_operations::ConvertToNumbers, string_operations::StartsWith;
 
   constexpr bool const kIsSampler{log_type == LogType::kSampler};
@@ -95,7 +95,7 @@ LogInformation Read(String const name_log) {
     }
 #ifndef NDEBUG
   } catch (RuntimeError const &exception) {
-    Throw(exception, "splinelib::tools::sources::log_information::Read");
+    Throw(exception, "bsplinelib::tools::log_information::Read");
   }
 #endif
   return log_information;

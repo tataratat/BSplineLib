@@ -1,8 +1,16 @@
-# tataratat/SplineLib
-BSpline and NURBS library written in modern c++ for seamless integration to 
-[splinepy](https://github.com/tataratat/splinepy).  
-Checkout [upstream project](https://github.com/SplineLib/SplineLib) and
+# tataratat/BSplineLib
+BSpline and NURBS library written in modern c++ for seamless integration to
+[splinepy](https://github.com/tataratat/splinepy).
+This is a forked project of [SplineLib](https://github.com/SplineLib/SplineLib). Checkout its
 `README` below for more information!
+
+In this project, there are following changes:
+- Instead of fully recursive basis function creation, we only create unique basis functions to reduce memory consumption for higher degree splines.
+- Instead of fully recursive basis function visit/evaluation/derivatives, we use memoization to avoid multiple evaluation of the same basis.
+- Format fix in xml IO
+- Format fix in irit IO
+- Tests are carried out in `splinepy`
+
 
 
 <details><summary><strong>`SplinbLib/SplineLib`'s README</strong></summary><p>
@@ -78,7 +86,7 @@ or by developing your modifiable copy of the SplineLib repository (e.g., using D
 
 At some point in time, you can remove the `-b install` option from the previous command if you want <em>spack</em> to
 not stop before the install phase.  Note that `--test root` can be added after `install` in both commands above to run
-the tests. 
+the tests.
 </p></details>
 
 <details><summary><strong>Building/Installing using <em>CMake</em></strong></summary><p>
@@ -94,7 +102,7 @@ before building SplineLib (e.g., using Debug or Release configuration)
 
 and subsequently running the tests
 
-    $ ctest --build-and-test . build --build-generator "Generator" --build-noclean --test-command ctest 
+    $ ctest --build-and-test . build --build-generator "Generator" --build-noclean --test-command ctest
       --build-config Configuration -j8
 
 If you eventually want to install SplineLib, you can type
