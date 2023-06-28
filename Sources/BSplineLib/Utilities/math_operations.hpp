@@ -17,20 +17,20 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#ifndef TOOLS_TESTS_CONFIG_LOG_IN_HPP_
-#define TOOLS_TESTS_CONFIG_LOG_IN_HPP_
+#ifndef SOURCES_UTILITIES_MATH_OPERATIONS_HPP_
+#define SOURCES_UTILITIES_MATH_OPERATIONS_HPP_
 
-namespace bsplinelib::tools::tests {
+// Math operations (that are not implemented by the standard library) such
+// as 1.) computing binomial coefficients.
+//
+// Example:
+//   int const &four_choose_2 = ComputeBinomialCoefficient(4, 2);  // The
+//   binomial coefficient "4 choose 2" equals 6.
+namespace bsplinelib::utilities::math_operations {
 
-char const *const xml_file{"@xml_file@"},
-    *const xml_itd{"@xml_itd@"},
-        *const log_converter{"@log_converter@"},
-            *const log_invalid_numbers_of_parametric_coordinates{
-                "@log_invalid_numbers_of_parametric_coordinates@"},
-                *const log_invalid_splines{"@log_invalid_splines@"},
-                    *const log_sampler{"@log_sampler@"},
-                        *const itd_vtk{"@itd_vtk@"};
+int ComputeBinomialCoefficient(int const& number_of_elements_in_set,
+                               int const& number_of_elements_in_subset);
 
-} // namespace bsplinelib::tools::tests
+} // namespace bsplinelib::utilities::math_operations
 
-#endif // TOOLS_TESTS_CONFIG_LOG_IN_HPP_
+#endif // SOURCES_UTILITIES_MATH_OPERATIONS_HPP_

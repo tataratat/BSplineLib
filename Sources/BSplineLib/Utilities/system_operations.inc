@@ -17,20 +17,13 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#ifndef TOOLS_TESTS_CONFIG_LOG_IN_HPP_
-#define TOOLS_TESTS_CONFIG_LOG_IN_HPP_
-
-namespace bsplinelib::tools::tests {
-
-char const *const xml_file{"@xml_file@"},
-    *const xml_itd{"@xml_itd@"},
-        *const log_converter{"@log_converter@"},
-            *const log_invalid_numbers_of_parametric_coordinates{
-                "@log_invalid_numbers_of_parametric_coordinates@"},
-                *const log_invalid_splines{"@log_invalid_splines@"},
-                    *const log_sampler{"@log_sampler@"},
-                        *const itd_vtk{"@itd_vtk@"};
-
-} // namespace bsplinelib::tools::tests
-
-#endif // TOOLS_TESTS_CONFIG_LOG_IN_HPP_
+template<typename FileStream, Mode mode>
+FileStream Open(File const& file_name) {
+  FileStream file(file_name, mode);
+#ifndef NDEBUG
+  if (!file)
+    Throw(RuntimeError("File " + file_name + " cannot be opened."),
+          "bsplinelib::utilities::system_operations::Open");
+#endif
+  return file;
+}

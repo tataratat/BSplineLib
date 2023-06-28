@@ -16,16 +16,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include <iostream>
 
-#include "Sources/InputOutput/operations.hpp"
-#include "Sources/InputOutput/vtk.hpp"
-#include "Sources/Utilities/error_handling.hpp"
-#include "Sources/Utilities/string_operations.hpp"
+#include "BSplineLib/InputOutput/operations.hpp"
+#include "BSplineLib/InputOutput/vtk.hpp"
+#include "BSplineLib/Utilities/error_handling.hpp"
+#include "BSplineLib/Utilities/string_operations.hpp"
 #include "Tools/Sources/log_operations.hpp"
 
-using namespace splinelib;                        // NOLINT(build/namespaces)
-using namespace splinelib::sources::input_output; // NOLINT(build/namespaces)
-using namespace splinelib::tools::sources::
-    log_operations; // NOLINT(build/namespaces)
+using namespace bsplinelib;                        // NOLINT(build/namespaces)
+using namespace bsplinelib::input_output;          // NOLINT(build/namespaces)
+using namespace bsplinelib::tools::log_operations; // NOLINT(build/namespaces)
 using FileFormat = operations::FileFormat;
 using std::cout, std::endl, std::to_string;
 

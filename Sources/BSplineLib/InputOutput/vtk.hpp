@@ -17,20 +17,32 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#ifndef TOOLS_TESTS_CONFIG_LOG_IN_HPP_
-#define TOOLS_TESTS_CONFIG_LOG_IN_HPP_
+#ifndef SOURCES_INPUTOUTPUT_VTK_HPP_
+#define SOURCES_INPUTOUTPUT_VTK_HPP_
 
-namespace bsplinelib::tools::tests {
+#include "BSplineLib/InputOutput/operations.hpp"
+#include "BSplineLib/Utilities/named_type.hpp"
+#include "BSplineLib/Utilities/std_container_operations.hpp"
+#include "BSplineLib/Utilities/string_operations.hpp"
 
-char const *const xml_file{"@xml_file@"},
-    *const xml_itd{"@xml_itd@"},
-        *const log_converter{"@log_converter@"},
-            *const log_invalid_numbers_of_parametric_coordinates{
-                "@log_invalid_numbers_of_parametric_coordinates@"},
-                *const log_invalid_splines{"@log_invalid_splines@"},
-                    *const log_sampler{"@log_sampler@"},
-                        *const itd_vtk{"@itd_vtk@"};
+// Output for VTK (cf. legacy format at
+// <https://www.kitware.com/products/books/VTKUsersGuide.pdf>).
+//
+// Example:
+//   Write({curve}, "out.vtk",
+//   {{NumbersOfParametricCoordinates::value_type::value_type{10}}});  // 9
+//   elements.
+namespace bsplinelib::input_output::vtk {
 
-} // namespace bsplinelib::tools::tests
+using NumbersOfParametricCoordinates = Vector<Vector<Length>>;
 
-#endif // TOOLS_TESTS_CONFIG_LOG_IN_HPP_
+void Sample(
+    Splines const& splines,
+    String const& file_name,
+    NumbersOfParametricCoordinates const& numbers_of_parametric_coordinates,
+    Tolerance const& tolerance = kEpsilon,
+    Precision const& precision = kPrecision);
+
+} // namespace bsplinelib::input_output::vtk
+
+#endif // SOURCES_INPUTOUTPUT_VTK_HPP_

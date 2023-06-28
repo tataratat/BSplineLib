@@ -1,8 +1,16 @@
 # tataratat/BSplineLib
 BSpline and NURBS library written in modern c++ for seamless integration to
 [splinepy](https://github.com/tataratat/splinepy).
-Checkout [upstream project](https://github.com/SplineLib/SplineLib) and
+This is a forked project of [SplineLib](https://github.com/SplineLib/SplineLib). Checkout its
 `README` below for more information!
+
+In this project, there are following changes:
+- Instead of fully recursive basis function creation, we only create unique basis functions to reduce memory consumption for higher degree splines.
+- Instead of fully recursive basis function visit/evaluation/derivatives, we use memoization to avoid multiple evaluation of the same basis.
+- Format fix in xml IO
+- Format fix in irit IO
+- Tests are carried out in `splinepy`
+
 
 
 <details><summary><strong>`SplinbLib/SplineLib`'s README</strong></summary><p>

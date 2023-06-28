@@ -16,17 +16,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include <iostream>
 
-#include "Sources/InputOutput/iges.hpp"
-#include "Sources/InputOutput/irit.hpp"
-#include "Sources/InputOutput/operations.hpp"
-#include "Sources/InputOutput/xml.hpp"
-#include "Sources/Utilities/error_handling.hpp"
+#include "BSplineLib/InputOutput/iges.hpp"
+#include "BSplineLib/InputOutput/irit.hpp"
+#include "BSplineLib/InputOutput/operations.hpp"
+#include "BSplineLib/InputOutput/xml.hpp"
+#include "BSplineLib/Utilities/error_handling.hpp"
 #include "Tools/Sources/log_operations.hpp"
 
-using namespace splinelib;                        // NOLINT(build/namespaces)
-using namespace splinelib::sources::input_output; // NOLINT(build/namespaces)
-using namespace splinelib::tools::sources::
-    log_operations; // NOLINT(build/namespaces)
+using namespace bsplinelib;                        // NOLINT(build/namespaces)
+using namespace bsplinelib::input_output;          // NOLINT(build/namespaces)
+using namespace bsplinelib::tools::log_operations; // NOLINT(build/namespaces)
 using FileFormat = operations::FileFormat;
 using std::cout, std::endl;
 

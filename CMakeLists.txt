@@ -45,7 +45,7 @@ set(include_install_directory "include")
 set(include_install_directory_headers
     "${include_install_directory}/${PROJECT_NAME}")
 set(INCLUDE_DIRECTORIES
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/Sources>
     $<INSTALL_INTERFACE:${include_install_directory_headers}>)
 set(library_install_directory "lib")
 set(executable_install_directory "bin")
@@ -71,7 +71,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
       -Weffc++
       $<$<NOT:$<CONFIG:Debug>>:-Wno-unused-parameter>
       $<$<NOT:$<CONFIG:Debug>>:-Wno-unused-variable>
-      $<$<BOOL:${BSPLINELIB_GOOGLETEST}>:-Wno-gnu-zero-variadic-macro-arguments>)
+      $<$<BOOL:${BSPLINELIB_GOOGLETEST}>:-Wno-gnu-zero-variadic-macro-arguments>
+  )
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
   set(OPTIMIZATION_FLAGS $<$<NOT:$<CONFIG:Debug>>:-O3>)
   set(PARALLELIZATION_FLAGS)
@@ -86,8 +87,9 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Intel")
 else()
   message(WARNING "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
-set(COMPILE_DEFINITIONS $<$<BOOL:${BSPLINELIB_SHARED}>:BSPLINELIB_SHARED>
-                        $<$<BOOL:${BSPLINELIB_GOOGLETEST}>:BSPLINELIB_GOOGLETEST>)
+set(COMPILE_DEFINITIONS
+    $<$<BOOL:${BSPLINELIB_SHARED}>:BSPLINELIB_SHARED>
+    $<$<BOOL:${BSPLINELIB_GOOGLETEST}>:BSPLINELIB_GOOGLETEST>)
 set(COMPILE_OPTIONS
     ${OPTIMIZATION_FLAGS} $<IF:$<CONFIG:Release>,${PARALLELIZATION_FLAGS},
     ${RUNTIME_CHECKS_DEBUG}> ${WARNING_FLAGS} ${SPLINEPY_FLAGS})
@@ -115,10 +117,13 @@ else()
 endif()
 
 # Content
-add_subdirectory(Sources)
+add_subdirectory(Sources/BSplineLib)
+
 if(BSPLINELIB_GOOGLETEST)
   message(STATUS "Build tests!")
-  enable_testing()
+  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/AddGoogleTest.cmake)
+  set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES}
+                          $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>)
   add_subdirectory(Tests)
 else()
   message(STATUS "No tests!")

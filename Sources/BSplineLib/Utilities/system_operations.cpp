@@ -17,20 +17,13 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#ifndef TOOLS_TESTS_CONFIG_LOG_IN_HPP_
-#define TOOLS_TESTS_CONFIG_LOG_IN_HPP_
+#include "BSplineLib/Utilities/system_operations.hpp"
 
-namespace bsplinelib::tools::tests {
+namespace bsplinelib::utilities::system_operations {
 
-char const *const xml_file{"@xml_file@"},
-    *const xml_itd{"@xml_itd@"},
-        *const log_converter{"@log_converter@"},
-            *const log_invalid_numbers_of_parametric_coordinates{
-                "@log_invalid_numbers_of_parametric_coordinates@"},
-                *const log_invalid_splines{"@log_invalid_splines@"},
-                    *const log_sampler{"@log_sampler@"},
-                        *const itd_vtk{"@itd_vtk@"};
+LocalTime GetLocalTime() {
+  std::time_t const& calendar_time = std::time(nullptr);
+  return *std::localtime(&calendar_time);
+}
 
-} // namespace bsplinelib::tools::tests
-
-#endif // TOOLS_TESTS_CONFIG_LOG_IN_HPP_
+} // namespace bsplinelib::utilities::system_operations

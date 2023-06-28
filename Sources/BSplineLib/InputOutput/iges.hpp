@@ -17,20 +17,26 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#ifndef TOOLS_TESTS_CONFIG_LOG_IN_HPP_
-#define TOOLS_TESTS_CONFIG_LOG_IN_HPP_
+#ifndef SOURCES_INPUTOUTPUT_IGES_HPP_
+#define SOURCES_INPUTOUTPUT_IGES_HPP_
 
-namespace bsplinelib::tools::tests {
+#include "BSplineLib/InputOutput/operations.hpp"
+#include "BSplineLib/Utilities/named_type.hpp"
+#include "BSplineLib/Utilities/string_operations.hpp"
 
-char const *const xml_file{"@xml_file@"},
-    *const xml_itd{"@xml_itd@"},
-        *const log_converter{"@log_converter@"},
-            *const log_invalid_numbers_of_parametric_coordinates{
-                "@log_invalid_numbers_of_parametric_coordinates@"},
-                *const log_invalid_splines{"@log_invalid_splines@"},
-                    *const log_sampler{"@log_sampler@"},
-                        *const itd_vtk{"@itd_vtk@"};
+// Input & output for IGES (cf. IGES 5.3 at, e.g.,
+// <http://paulbourke.net/dataformats/iges/IGES.pdf>).
+//
+// Example:
+//   Splines const &splines = Read("input.iges");
+namespace bsplinelib::input_output::iges {
 
-} // namespace bsplinelib::tools::tests
+Splines Read(String const& file_name);
+void Write(Splines const& splines,
+           String const& file_name,
+           Precision const& precision = kPrecision,
+           Tolerance const& tolerance = kEpsilon);
 
-#endif // TOOLS_TESTS_CONFIG_LOG_IN_HPP_
+} // namespace bsplinelib::input_output::iges
+
+#endif // SOURCES_INPUTOUTPUT_IGES_HPP_

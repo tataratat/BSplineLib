@@ -19,16 +19,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "Tools/Sources/log_operations.hpp"
 
-#include "Sources/Utilities/string_operations.hpp"
-#include "Sources/Utilities/system_operations.hpp"
+#include "BSplineLib/Utilities/string_operations.hpp"
+#include "BSplineLib/Utilities/system_operations.hpp"
 
-namespace splinelib::tools::sources::log_operations {
+namespace bsplinelib::tools::log_operations {
 
-namespace system_operations = splinelib::sources::utilities::system_operations;
+namespace system_operations = bsplinelib::utilities::system_operations;
 
 void Append(String const& name_log, LogInformation const& log_information) {
   using OutputStream = system_operations::OutputStream;
-  using std::get, splinelib::sources::utilities::string_operations::Write;
+  using std::get, bsplinelib::utilities::string_operations::Write;
 
   OutputStream log{
       system_operations::Open<OutputStream, system_operations::kModeAppend>(
@@ -73,4 +73,4 @@ void ThrowIfCommandLineArgumentsAreInvalid(int const& argument_count) {
         "provided as command line argument.");
 }
 #endif
-} // namespace splinelib::tools::sources::log_operations
+} // namespace bsplinelib::tools::log_operations

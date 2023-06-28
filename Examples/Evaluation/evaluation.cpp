@@ -20,14 +20,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include <iostream>
 #include <memory>
 
-#include <SplineLib/Sources/Splines/b_spline.hpp>
+#include <BSplineLib/Splines/b_spline.hpp>
 
-using splinelib::SharedPointer, std::cerr, std::cout, std::endl,
+using bsplinelib::SharedPointer, std::cerr, std::cout, std::endl,
     std::make_shared;
 
 int main() {
   // Construct a B-spline curve that embeds into a plane.
-  using BSpline = splinelib::sources::splines::BSpline<1, 2>;
+  using BSpline = bsplinelib::splines::BSpline<1, 2>;
   using ParameterSpace = BSpline::ParameterSpace_;
   using VectorSpace = BSpline::VectorSpace_;
   using Coordinates = VectorSpace::Coordinates_;

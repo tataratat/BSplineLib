@@ -25,7 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace splinelib::tests::utilities::std_container_operations {
 
-using namespace splinelib::sources::utilities::
+using namespace bsplinelib::utilities::
     std_container_operations; // NOLINT(build/namespaces)
 using std::sqrt;
 

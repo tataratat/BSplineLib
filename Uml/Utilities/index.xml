@@ -26,7 +26,7 @@ operator-(Index const &amp;, Value_ const &amp;) : Index
 operator==(Index const &amp;, Index const &amp;)  : bool
 operator!=(Index const &amp;, Index const &amp;) : bool
 --
-Index_ : splinelib::Index
+Index_ : bsplinelib::Index
 Length_ : array&lt;Length, size&gt;
 Value_ : array&lt;Index_, size&gt;
 --</panel_attributes><additional_attributes></additional_attributes></element></diagram>

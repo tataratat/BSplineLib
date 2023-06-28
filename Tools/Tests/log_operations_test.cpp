@@ -17,18 +17,18 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#include "Sources/Utilities/error_handling.hpp"
-#include "Sources/Utilities/std_container_operations.hpp"
-#include "Sources/Utilities/string_operations.hpp"
-#include "Sources/Utilities/system_operations.hpp"
+#include "BSplineLib/Utilities/error_handling.hpp"
+#include "BSplineLib/Utilities/std_container_operations.hpp"
+#include "BSplineLib/Utilities/string_operations.hpp"
+#include "BSplineLib/Utilities/system_operations.hpp"
 #include "Tests/Splines/spline_item_mock.hpp"
 #include "Tools/Sources/log_operations.hpp"
 #include "Tools/Tests/config_log.hpp"
 #include <gtest/gtest.h>
 
-namespace splinelib::tools::tests::log_operations {
+namespace bsplinelib::tools::tests::log_operations {
 
-using namespace tools::sources::log_operations; // NOLINT(build/namespaces)
+using namespace tools::log_operations; // NOLINT(build/namespaces)
 using NumberOfParametricCoordinates =
     NumbersOfParametricCoordinates::value_type;
 
@@ -72,7 +72,7 @@ TEST_F(LogOperationsSuite, Read) {
 }
 
 TEST_F(LogOperationsSuite, SkipBlankLineAndReadSectionIdentifier) {
-  namespace utilities = splinelib::sources::utilities;
+  namespace utilities = bsplinelib::utilities;
   namespace system_operations = utilities::system_operations;
   using InputStream = system_operations::InputStream;
   using utilities::string_operations::StartsWith;
@@ -97,7 +97,7 @@ TEST_F(LogOperationsSuite, SkipBlankLineAndReadSectionIdentifier) {
 
 TEST_F(LogOperationsSuite, RemoveSplinesOfTooHighDimensionalities) {
   using SplineItem =
-      testing::StrictMock<splinelib::tests::splines::ASplineItem>;
+      testing::StrictMock<bsplinelib::tests::splines::ASplineItem>;
 
   SharedPointer<SplineItem> const b_spline_surface{
       std::make_shared<SplineItem>()};
@@ -128,4 +128,4 @@ TEST_F(LogOperationsSuite,
       RuntimeError);
 }
 #endif
-} // namespace splinelib::tools::tests::log_operations
+} // namespace bsplinelib::tools::tests::log_operations

@@ -17,11 +17,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #ifndef TOOLS_SOURCES_LOG_OPERATIONS_HPP_
 #define TOOLS_SOURCES_LOG_OPERATIONS_HPP_
 
-#include "Sources/InputOutput/vtk.hpp"
-#include "Sources/Utilities/named_type.hpp"
-#include "Sources/Utilities/std_container_operations.hpp"
-#include "Sources/Utilities/string_operations.hpp"
-#include "Sources/Utilities/system_operations.hpp"
+#include "BSplineLib/InputOutput/vtk.hpp"
+#include "BSplineLib/Utilities/named_type.hpp"
+#include "BSplineLib/Utilities/std_container_operations.hpp"
+#include "BSplineLib/Utilities/string_operations.hpp"
+#include "BSplineLib/Utilities/system_operations.hpp"
 
 // Log operations for converting and sampling splines.
 //
@@ -29,15 +29,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 //   LogInformation log_info{Read<LogType::kConverter>(converter.log)};
 //   SplinesConsidered iges_splines{RemoveSplinesOfTooHighDimensionalities<2,
 //   3>(get<2>(log_info), splines_read)}; Append(converter.log, log_info_iges);
-namespace splinelib::tools::sources::log_operations {
+namespace bsplinelib::tools::log_operations {
 
 enum class LogType { kConverter, kSampler };
-using InputStream =
-    splinelib::sources::utilities::system_operations::InputStream;
+using InputStream = bsplinelib::utilities::system_operations::InputStream;
 using NumbersOfParametricCoordinates =
-    splinelib::sources::input_output::vtk::NumbersOfParametricCoordinates;
+    bsplinelib::input_output::vtk::NumbersOfParametricCoordinates;
 using SplinesConsidered = Vector<Index>;
-using SplinesRead = splinelib::sources::input_output::Splines;
+using SplinesRead = bsplinelib::input_output::Splines;
 using LogInformation =
     Tuple<String, String, SplinesConsidered, NumbersOfParametricCoordinates>;
 
@@ -59,6 +58,6 @@ void ThrowIfCommandLineArgumentsAreInvalid(int const& argument_count);
 
 #include "Tools/Sources/log_operations.inc"
 
-} // namespace splinelib::tools::sources::log_operations
+} // namespace bsplinelib::tools::log_operations
 
 #endif // TOOLS_SOURCES_LOG_OPERATIONS_HPP_
