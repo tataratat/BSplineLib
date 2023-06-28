@@ -43,12 +43,12 @@ set_source_files_properties(${HEADERS} PROPERTIES LANGUAGE CXX HEADER_FILE_ONLY
                                                                TRUE)
 
 add_library(utilities ${SOURCES})
-add_library(SplineLib::utilities ALIAS utilities)
+add_library(BSplineLib::utilities ALIAS utilities)
 
 target_include_directories(utilities PUBLIC ${INCLUDE_DIRECTORIES})
 target_compile_definitions(utilities INTERFACE ${COMPILE_DEFINITIONS})
 target_compile_options(utilities PRIVATE ${COMPILE_OPTIONS})
-target_compile_features(utilities PUBLIC ${SPLINELIB_COMPILE_FEATURES})
+target_compile_features(utilities PUBLIC ${BSPLINELIB_COMPILE_FEATURES})
 
 install(
   TARGETS utilities

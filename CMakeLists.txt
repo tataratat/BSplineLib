@@ -22,22 +22,22 @@ cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 
 # Project
 project(
-  SplineLib
+  BSplineLib
   VERSION 1.0.0
   LANGUAGES CXX)
 set(namespace "${PROJECT_NAME}::")
 set(targets_export_name "${PROJECT_NAME}Targets")
-option(SPLINELIB_SHARED "Build shared library" OFF)
-option(SPLINELIB_GOOGLETEST "Build with GoogleTest" OFF)
-option(SPLINELIB_BUILD_TOOLS "Build tools" OFF)
-option(SPLINELIB_BUILD_PUGIXML "Build pugixml" ON)
+option(BSPLINELIB_SHARED "Build shared library" OFF)
+option(BSPLINELIB_GOOGLETEST "Build with GoogleTest" OFF)
+option(BSPLINELIB_BUILD_TOOLS "Build tools" OFF)
+option(BSPLINELIB_BUILD_PUGIXML "Build pugixml" ON)
 
 # Overwrite some options if this is for splinepy
-if(SPLINEPY_BUILD_SPLINELIB)
-  set(SPLINELIB_SHARED OFF)
-  set(SPLINELIB_GOOGLETEST OFF)
-  set(SPLINELIB_BUILD_TOOLS OFF)
-  set(SPLINELIB_BUILD_PUGIXML ON)
+if(SPLINEPY_BUILD_BSPLINELIB)
+  set(BSPLINELIB_SHARED OFF)
+  set(BSPLINELIB_GOOGLETEST OFF)
+  set(BSPLINELIB_BUILD_TOOLS OFF)
+  set(BSPLINELIB_BUILD_PUGIXML ON)
 endif()
 
 # Setup
@@ -71,7 +71,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
       -Weffc++
       $<$<NOT:$<CONFIG:Debug>>:-Wno-unused-parameter>
       $<$<NOT:$<CONFIG:Debug>>:-Wno-unused-variable>
-      $<$<BOOL:${SPLINELIB_GOOGLETEST}>:-Wno-gnu-zero-variadic-macro-arguments>)
+      $<$<BOOL:${BSPLINELIB_GOOGLETEST}>:-Wno-gnu-zero-variadic-macro-arguments>)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
   set(OPTIMIZATION_FLAGS $<$<NOT:$<CONFIG:Debug>>:-O3>)
   set(PARALLELIZATION_FLAGS)
@@ -86,8 +86,8 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Intel")
 else()
   message(WARNING "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
-set(COMPILE_DEFINITIONS $<$<BOOL:${SPLINELIB_SHARED}>:SPLINELIB_SHARED>
-                        $<$<BOOL:${SPLINELIB_GOOGLETEST}>:SPLINELIB_GOOGLETEST>)
+set(COMPILE_DEFINITIONS $<$<BOOL:${BSPLINELIB_SHARED}>:BSPLINELIB_SHARED>
+                        $<$<BOOL:${BSPLINELIB_GOOGLETEST}>:BSPLINELIB_GOOGLETEST>)
 set(COMPILE_OPTIONS
     ${OPTIMIZATION_FLAGS} $<IF:$<CONFIG:Release>,${PARALLELIZATION_FLAGS},
     ${RUNTIME_CHECKS_DEBUG}> ${WARNING_FLAGS} ${SPLINEPY_FLAGS})
@@ -96,17 +96,17 @@ set(CMAKE_DEBUG_POSTFIX "d")
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)
   message(STATUS "Build debug!")
-  set(SPLINELIB_COMPILE_FEATURES cxx_std_20)
+  set(BSPLINELIB_COMPILE_FEATURES cxx_std_20)
 else()
   message(STATUS "Build release!")
   # MSVC has issues evaluating constexpr @ string_operation.inc l.125 with c++17
   if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-    set(SPLINELIB_COMPILE_FEATURES cxx_std_20)
+    set(BSPLINELIB_COMPILE_FEATURES cxx_std_20)
   else()
-    set(SPLINELIB_COMPILE_FEATURES cxx_std_17)
+    set(BSPLINELIB_COMPILE_FEATURES cxx_std_17)
   endif()
 endif()
-if(SPLINELIB_SHARED)
+if(BSPLINELIB_SHARED)
   message(STATUS "Build shared!")
   set(BUILD_SHARED_LIBS ON)
 else()
@@ -116,17 +116,17 @@ endif()
 
 # Content
 add_subdirectory(Sources)
-if(SPLINELIB_GOOGLETEST)
+if(BSPLINELIB_GOOGLETEST)
   message(STATUS "Build tests!")
   enable_testing()
   add_subdirectory(Tests)
 else()
   message(STATUS "No tests!")
 endif()
-if(SPLINELIB_BUILD_TOOLS)
+if(BSPLINELIB_BUILD_TOOLS)
   add_subdirectory(Tools)
 endif()
-if(SPLINELIB_BUILD_PUGIXML)
+if(BSPLINELIB_BUILD_PUGIXML)
   # currently only one dependency, so add directly here
   add_subdirectory(third_party/pugixml)
 else()

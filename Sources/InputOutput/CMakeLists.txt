@@ -28,7 +28,7 @@ set_source_files_properties(${HEADERS} PROPERTIES LANGUAGE CXX HEADER_FILE_ONLY
                                                                TRUE)
 
 add_library(input_output ${SOURCES})
-add_library(SplineLib::input_output ALIAS input_output)
+add_library(BSplineLib::input_output ALIAS input_output)
 
 target_include_directories(input_output PUBLIC ${INCLUDE_DIRECTORIES})
 target_include_directories(input_output SYSTEM PRIVATE ${PUGIXML_INCLUDEDIR})
@@ -41,7 +41,7 @@ target_compile_definitions(
   INTERFACE ${COMPILE_DEFINITIONS}
   PRIVATE ${PUGIXML_CFLAGS_OTHER})
 target_compile_options(input_output PRIVATE ${COMPILE_OPTIONS})
-target_compile_features(input_output PUBLIC ${SPLINELIB_COMPILE_FEATURES})
+target_compile_features(input_output PUBLIC ${BSPLINELIB_COMPILE_FEATURES})
 
 install(
   TARGETS input_output

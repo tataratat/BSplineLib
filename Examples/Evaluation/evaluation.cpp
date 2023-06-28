@@ -70,11 +70,11 @@ int main() {
   constexpr Coordinate const kReference{ScalarCoordinate{0.125},
                                         ScalarCoordinate{0.375}};
   if (evaluated == kReference) {
-    cout << "\"Hello World!\" from a SplineLib consumer." << endl;
+    cout << "\"Hello World!\" from a BSplineLib consumer." << endl;
   } else {
     cerr << "Oops, something went wrong!" << endl;
-#ifdef SPLINELIB_GOOGLETEST
-    cerr << "You might want to run SplineLib's tests!" << endl;
+#ifdef BSPLINELIB_GOOGLETEST
+    cerr << "You might want to run BSplineLib's tests!" << endl;
 #endif
   }
 

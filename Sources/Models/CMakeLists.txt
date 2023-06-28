@@ -33,7 +33,7 @@ endif()
 target_include_directories(models INTERFACE ${INCLUDE_DIRECTORIES})
 target_link_libraries(models INTERFACE utilities parameter_spaces splines)
 target_compile_definitions(models INTERFACE ${COMPILE_DEFINITIONS})
-target_compile_features(models INTERFACE ${SPLINELIB_COMPILE_FEATURES})
+target_compile_features(models INTERFACE ${BSPLINELIB_COMPILE_FEATURES})
 
 install(
   TARGETS models

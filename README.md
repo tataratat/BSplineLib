@@ -1,4 +1,4 @@
-# tataratat/SplineLib
+# tataratat/BSplineLib
 BSpline and NURBS library written in modern c++ for seamless integration to
 [splinepy](https://github.com/tataratat/splinepy).
 Checkout [upstream project](https://github.com/SplineLib/SplineLib) and

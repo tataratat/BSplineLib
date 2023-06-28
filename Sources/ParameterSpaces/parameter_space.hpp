@@ -94,13 +94,13 @@ template<std::size_t depth,
          typename BasisValueType,
          std::size_t array_dim,
          typename ValueType,
-         typename SplineLibIndex,
+         typename BSplineLibIndex,
          typename CoeffType,
          typename ReturnType>
 constexpr void
 RecursiveCombine_(const Array<Vector<BasisValueType>, array_dim>& factors,
-                  const SplineLibIndex& index,
-                  SplineLibIndex& index_offset,
+                  const BSplineLibIndex& index,
+                  BSplineLibIndex& index_offset,
                   const CoeffType& coeffs,
                   const ValueType& c_value,
                   ReturnType& result) {
@@ -137,13 +137,13 @@ RecursiveCombine_(const Array<Vector<BasisValueType>, array_dim>& factors,
 /// recursive combime adapted from bezman
 template<typename ValueType,
          std::size_t array_dim,
-         typename SplineLibIndex,
+         typename BSplineLibIndex,
          typename CoeffType,
          typename ReturnType>
 constexpr void
 RecursiveCombine(const Array<Vector<ValueType>, array_dim>& factors,
-                 const SplineLibIndex& index,
-                 SplineLibIndex& index_offset,
+                 const BSplineLibIndex& index,
+                 BSplineLibIndex& index_offset,
                  const CoeffType& coeffs,
                  ReturnType& result) {
 

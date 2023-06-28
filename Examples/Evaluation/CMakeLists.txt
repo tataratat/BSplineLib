@@ -22,7 +22,7 @@ cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 
 # Project
 project(
-  SplineLibEvaluation
+  BSplineLibEvaluation
   VERSION 0.0.0
   LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
@@ -41,6 +41,6 @@ else()
 endif()
 
 # Content
-find_package(SplineLib REQUIRED QUIET)
+find_package(BSplineLib REQUIRED QUIET)
 add_executable(evaluation evaluation.cpp)
-target_link_libraries(evaluation PRIVATE SplineLib::splines)
+target_link_libraries(evaluation PRIVATE BSplineLib::splines)
