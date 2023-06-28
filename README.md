@@ -1,6 +1,6 @@
 # tataratat/SplineLib
-BSpline and NURBS library written in modern c++ for seamless integration to 
-[splinepy](https://github.com/tataratat/splinepy).  
+BSpline and NURBS library written in modern c++ for seamless integration to
+[splinepy](https://github.com/tataratat/splinepy).
 Checkout [upstream project](https://github.com/SplineLib/SplineLib) and
 `README` below for more information!
 
@@ -78,7 +78,7 @@ or by developing your modifiable copy of the SplineLib repository (e.g., using D
 
 At some point in time, you can remove the `-b install` option from the previous command if you want <em>spack</em> to
 not stop before the install phase.  Note that `--test root` can be added after `install` in both commands above to run
-the tests. 
+the tests.
 </p></details>
 
 <details><summary><strong>Building/Installing using <em>CMake</em></strong></summary><p>
@@ -94,7 +94,7 @@ before building SplineLib (e.g., using Debug or Release configuration)
 
 and subsequently running the tests
 
-    $ ctest --build-and-test . build --build-generator "Generator" --build-noclean --test-command ctest 
+    $ ctest --build-and-test . build --build-generator "Generator" --build-noclean --test-command ctest
       --build-config Configuration -j8
 
 If you eventually want to install SplineLib, you can type
