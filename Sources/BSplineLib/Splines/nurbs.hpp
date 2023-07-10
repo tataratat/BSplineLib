@@ -68,9 +68,6 @@ public:
   using ParametricCoordinate_ = typename Base_::ParametricCoordinate_;
   using WeightedVectorSpace_ =
       vector_spaces::WeightedVectorSpace<dimensionality>;
-  using OutputInformation_ =
-      Tuple<typename ParameterSpace_::OutputInformation_,
-            typename WeightedVectorSpace_::OutputInformation_>;
 
   Nurbs();
   Nurbs(SharedPointer<ParameterSpace_> parameter_space,

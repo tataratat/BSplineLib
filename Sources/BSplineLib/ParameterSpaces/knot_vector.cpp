@@ -278,12 +278,6 @@ void KnotVector::DecreaseMultiplicities(Multiplicity const& multiplicity,
       Remove(knot, multiplicity, tolerance);
 }
 
-typename KnotVector::OutputInformation_
-KnotVector::Write(Precision const& precision) const {
-  return utilities::string_operations::Write<OutputInformation_>(knots_,
-                                                                 precision);
-}
-
 #ifndef NDEBUG
 void KnotVector::ThrowIfParametricCoordinateIsOutsideScope(
     ParametricCoordinate const& parametric_coordinate,

@@ -30,7 +30,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include "BSplineLib/Utilities/named_type.hpp"
 #include "BSplineLib/Utilities/numeric_operations.hpp"
 #include "BSplineLib/Utilities/std_container_operations.hpp"
-#include "BSplineLib/Utilities/string_operations.hpp"
 
 namespace bsplinelib::vector_spaces {
 
@@ -94,7 +93,6 @@ public:
   using Coordinates_ = Vector<double>;
   using NamedCoordinate_ = Vector<Coordinate>;
   using NestedCoordinates_ = Vector<Coordinate_>;
-  using OutputInformation_ = Tuple<Vector<StringArray<dimensionality>>>;
 
   VectorSpace() = default;
   explicit VectorSpace(Coordinates_ coordinates);
@@ -133,8 +131,6 @@ public:
 
   virtual Coordinate DetermineMaximumDistanceFromOrigin(
       Tolerance const& tolerance = kEpsilon) const;
-  virtual OutputInformation_
-  Write(Precision const& precision = kPrecision) const;
 
 protected:
   int dim_ = dimensionality;

@@ -622,14 +622,6 @@ Coordinate BSpline<parametric_dimensionality, dimensionality>::
   return vector_space_->DetermineMaximumDistanceFromOrigin(tolerance);
 }
 
-template<int parametric_dimensionality, int dimensionality>
-typename BSpline<parametric_dimensionality, dimensionality>::OutputInformation_
-BSpline<parametric_dimensionality, dimensionality>::Write(
-    Precision const& precision) const {
-  return OutputInformation_{Base_::parameter_space_->Write(precision),
-                            vector_space_->Write(precision)};
-}
-
 // See NURBS book p. 169.
 template<int parametric_dimensionality, int dimensionality>
 typename BSpline<parametric_dimensionality, dimensionality>::BezierInformation_

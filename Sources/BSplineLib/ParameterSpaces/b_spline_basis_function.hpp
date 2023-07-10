@@ -23,7 +23,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include "BSplineLib/ParameterSpaces/knot_vector.hpp"
 #include "BSplineLib/Utilities/named_type.hpp"
 #include "BSplineLib/Utilities/std_container_operations.hpp"
-#include "BSplineLib/Utilities/string_operations.hpp" // for String alias.
 
 namespace bsplinelib::parameter_spaces {
 
@@ -33,7 +32,7 @@ class BSplineBasisFunction;
 // unorderd_map key syntax
 // <start_of_support>_<degree>
 using UniqueBSplineBasisFunctions =
-    UnorderedMap<String, SharedPointer<BSplineBasisFunction>>;
+    UnorderedMap<std::string, SharedPointer<BSplineBasisFunction>>;
 
 template<int parametric_dimensionality>
 using UniqueBSplineBasisFunctionsArray =

@@ -172,27 +172,6 @@ Coordinate VectorSpace<dimensionality>::DetermineMaximumDistanceFromOrigin(
   return maximum_distance;
 }
 
-template<int dimensionality>
-typename VectorSpace<dimensionality>::OutputInformation_
-VectorSpace<dimensionality>::Write(Precision const& precision) const {
-  // work around to keep this alive.
-  Vector<NamedCoordinate_> nt_coordinates;
-  nt_coordinates.reserve(GetNumberOfCoordinates());
-
-  const double* current_coord = coordinates_.data();
-  for (int i{}; i < GetNumberOfCoordinates(); ++i) {
-    NamedCoordinate_ nc;
-    nc.reserve(dim_);
-    for (int j{}; j < dim_; ++j) {
-      nc.emplace_back(typename NamedCoordinate_::value_type{*(current_coord++)});
-    }
-    nt_coordinates.push_back(std::move(nc));
-  }
-
-  return OutputInformation_{utilities::string_operations::Write<
-      std::tuple_element_t<0, OutputInformation_>>(nt_coordinates, precision)};
-}
-
 #ifndef NDEBUG
 template<int dimensionality>
 void VectorSpace<dimensionality>::ThrowIfIndexIsInvalid(

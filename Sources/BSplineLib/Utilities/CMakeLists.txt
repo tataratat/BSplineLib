@@ -30,13 +30,11 @@ set(HEADERS
     numeric_operations.hpp
     std_container_operations.inc
     std_container_operations.hpp
-    string_operations.inc
-    string_operations.hpp
     system_operations.hpp
     system_operations.inc)
 
 set(SOURCES
-    math_operations.cpp string_operations.cpp system_operations.cpp
+    math_operations.cpp system_operations.cpp
     #
     ${HEADERS})
 set_source_files_properties(${HEADERS} PROPERTIES LANGUAGE CXX HEADER_FILE_ONLY

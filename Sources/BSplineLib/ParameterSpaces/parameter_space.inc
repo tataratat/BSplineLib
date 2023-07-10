@@ -689,30 +689,6 @@ ParameterSpace<parametric_dimensionality>::Sample(
   return parametric_coordinates;
 }
 
-template<int parametric_dimensionality>
-typename ParameterSpace<parametric_dimensionality>::OutputInformation_
-ParameterSpace<parametric_dimensionality>::Write(
-    Precision const& precision) const {
-  using std::get, std::tuple_element_t, utilities::string_operations::Write;
-
-  OutputInformation_ knot_vectors_degrees_and_maximum_basis_function_indices;
-  Dimension::ForEach(
-      0,
-      parametric_dimensionality,
-      [&](Dimension const& dimension) {
-        Dimension::Type_ const& current_dimension = dimension.Get();
-        get<0>(knot_vectors_degrees_and_maximum_basis_function_indices)
-            [current_dimension] =
-                knot_vectors_[current_dimension]->Write(precision);
-      });
-  get<1>(knot_vectors_degrees_and_maximum_basis_function_indices) =
-      Write<tuple_element_t<1, OutputInformation_>>(degrees_, precision);
-  get<2>(knot_vectors_degrees_and_maximum_basis_function_indices) =
-      Write<tuple_element_t<2, OutputInformation_>>(GetNumberOfBasisFunctions(),
-                                                    precision);
-  return knot_vectors_degrees_and_maximum_basis_function_indices;
-}
-
 #ifndef NDEBUG
 template<int parametric_dimensionality>
 void ParameterSpace<parametric_dimensionality>::

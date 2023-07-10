@@ -29,7 +29,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include "BSplineLib/Utilities/named_type.hpp"
 #include "BSplineLib/Utilities/numeric_operations.hpp"
 #include "BSplineLib/Utilities/std_container_operations.hpp"
-#include "BSplineLib/Utilities/string_operations.hpp"
 #include "BSplineLib/VectorSpaces/vector_space.hpp"
 
 namespace bsplinelib::vector_spaces {
@@ -73,8 +72,6 @@ public:
   using NestedCoordinates_ = Vector<Coordinate_>;
   using HomogeneousCoordinate_ = typename Base_::Coordinate_;
   using MaximumDistanceFromOriginAndMinimumWeight_ = Tuple<Coordinate, Weight>;
-  using OutputInformation_ =
-      Tuple<Vector<StringArray<dimensionality>>, StringVector>;
   using Weights_ = Vector<Weight>;
 
   // Make Base Constructor public
