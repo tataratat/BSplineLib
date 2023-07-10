@@ -21,7 +21,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #define SOURCES_VECTORSPACES_VECTOR_SPACE_HPP_
 
 #include <algorithm>
+#include <cassert>
 #include <functional>
+#include <initializer_list>
+#include <iostream>
 #include <utility>
 
 #include "BSplineLib/Utilities/error_handling.hpp"
@@ -43,6 +46,35 @@ template<int dimensionality>
 bool operator==(VectorSpace<dimensionality> const& lhs,
                 VectorSpace<dimensionality> const& rhs);
 
+struct CoordinateView {
+  using value_type = double;
+  static constexpr const bool is_coordinate_view = true;
+  // constant pointer
+  double* const begin_;
+  const int& dim_;
+
+  double* begin() const { return begin_; }
+  double* end() const { return begin_ + dim_; }
+  const int& size() const { return dim_; }
+  double& operator[](const int& i) const { return *(begin_ + i); }
+  std::vector<double> as_vector() {
+    return std::vector<double>(begin_, begin_ + dim_);
+  };
+};
+
+struct ConstCoordinateView {
+  using value_type = double;
+  static constexpr const bool is_coordinate_view = true;
+  // constant pointer
+  const double* begin_;
+  const int& dim_;
+
+  const double* begin() const { return begin_; }
+  const double* end() const { return begin_ + dim_; }
+  const int& size() const { return dim_; }
+  const double& operator[](const int& i) const { return *(begin_ + i); }
+};
+
 // VectorSpaces group coordinates.
 //
 // Example:
@@ -59,8 +91,10 @@ bool operator==(VectorSpace<dimensionality> const& lhs,
 template<int dimensionality>
 class VectorSpace {
 public:
-  using Coordinate_ = Array<Coordinate, dimensionality>;
-  using Coordinates_ = Vector<Coordinate_>;
+  using Coordinate_ = Vector<double>;
+  using Coordinates_ = Vector<double>;
+  using NamedCoordinate_ = Vector<Coordinate>;
+  using NestedCoordinates_ = Vector<Coordinate_>;
   using OutputInformation_ = Tuple<Vector<StringArray<dimensionality>>>;
 
   VectorSpace() = default;
@@ -78,13 +112,24 @@ public:
   // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
   friend bool operator==<dimensionality>(VectorSpace const& lhs,
                                          VectorSpace const& rhs);
-  virtual Coordinate_ const& operator[](Index const& coordinate) const;
+  virtual CoordinateView operator[](const int coordinate_id);
+  virtual CoordinateView operator[](Index const& coordinate);
+  virtual ConstCoordinateView operator[](const int coordinate_id) const;
+  virtual Coordinate_ CreateCoordinate() const;
+  virtual Coordinate_
+  CreateCoordinate(std::initializer_list<double> coordinate) const;
   virtual Coordinates_& GetCoordinates() { return coordinates_; }
   virtual Coordinates_ const& GetCoordinates() const { return coordinates_; }
 
   virtual int GetNumberOfCoordinates() const;
-  virtual void Replace(Index const& coordinate_index, Coordinate_ coordinate);
-  virtual void Insert(Index const& coordinate_index, Coordinate_ coordinate);
+  template<typename CoordinateType>
+  // virtual void Replace(Index const& coordinate_index, CoordinateType
+  // coordinate);
+  void Replace(Index const& coordinate_index, CoordinateType coordinate);
+  template<typename CoordinateType>
+  // virtual void Insert(Index const& coordinate_index, CoordinateType
+  // coordinate);
+  void Insert(Index const& coordinate_index, CoordinateType coordinate);
   virtual void Erase(Index const& coordinate_index);
 
   virtual Coordinate DetermineMaximumDistanceFromOrigin(
@@ -93,6 +138,7 @@ public:
   Write(Precision const& precision = kPrecision) const;
 
 protected:
+  int dim_ = dimensionality;
   Coordinates_ coordinates_;
 
 private:

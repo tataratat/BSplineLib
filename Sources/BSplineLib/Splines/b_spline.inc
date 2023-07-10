@@ -92,7 +92,7 @@ BSpline<parametric_dimensionality, dimensionality>::operator()(
   }
 #endif
   ParameterSpace_ const& parameter_space = *Base_::parameter_space_;
-  Coordinate_ evaluated_b_spline{};
+  Coordinate_ evaluated_b_spline(dimensionality);
 
   const auto basis_per_dim =
       parameter_space.EvaluateBasisValuesPerDimension(parametric_coordinate);
@@ -104,7 +104,7 @@ BSpline<parametric_dimensionality, dimensionality>::operator()(
       basis_per_dim,
       beginning,
       offset,
-      vector_space_->GetCoordinates(),
+      *vector_space_,
       evaluated_b_spline);
 
   return evaluated_b_spline;
@@ -124,7 +124,7 @@ BSpline<parametric_dimensionality, dimensionality>::operator()(
   }
 #endif
   ParameterSpace_ const& parameter_space = *Base_::parameter_space_;
-  Coordinate_ evaluated_b_spline_derivative{};
+  Coordinate_ evaluated_b_spline_derivative(dimensionality);
 
   const auto basis_derivative_per_dim =
       parameter_space.EvaluateBasisDerivativeValuesPerDimension(
@@ -139,7 +139,7 @@ BSpline<parametric_dimensionality, dimensionality>::operator()(
       basis_derivative_per_dim,
       beginning,
       offset,
-      vector_space_->GetCoordinates(),
+      *vector_space_,
       evaluated_b_spline_derivative);
 
   return evaluated_b_spline_derivative;
@@ -356,7 +356,7 @@ Multiplicity BSpline<parametric_dimensionality, dimensionality>::RemoveKnot(
       lower_coordinate_index = coordinate_index;
       coordinate_index = coordinate.Increment(dimension).GetIndex1d();
       if (IsLessOrEqual(
-              utilities::std_container_operations::EuclidianDistance(
+              Coordinate{utilities::std_container_operations::EuclidianDistance(
                   Divide(Subtract(vector_space[coordinate_index],
                                   Multiply(vector_space[lower_coordinate_index],
                                            k1_0 - current_coefficient)),
@@ -364,7 +364,7 @@ Multiplicity BSpline<parametric_dimensionality, dimensionality>::RemoveKnot(
                   vector_space[Index_{number_of_coordinates,
                                       coordinate.GetIndex()}
                                    .GetIndex1d()
-                               + slice_coordinate.GetIndex1d() + Index{1}]),
+                               + slice_coordinate.GetIndex1d() + Index{1}])},
               Coordinate{tolerance_removal})) {
         vector_space.Erase(coordinate_index);
       } else {
@@ -544,7 +544,7 @@ bool BSpline<parametric_dimensionality, dimensionality>::ReduceDegree(
         coordinate_value[dimension_value] = coordinate_index;
         Index_ current_coordinate{number_of_coordinates, coordinate_value};
         Index const& replacement_position = current_coordinate.GetIndex1d();
-        Coordinate_ coordinate{vector_space[replacement_position]};
+        Coordinate_ coordinate = vector_space[replacement_position].as_vector();
         for_each(
             current_coefficients.begin(),
             std::prev(current_coefficients.end()),
@@ -581,7 +581,7 @@ bool BSpline<parametric_dimensionality, dimensionality>::ReduceDegree(
         IndexValue_ current_last_coordinate_value{coordinate_value};
         current_last_coordinate_value[dimension_value] +=
             (maximum_interior_coordinate - interior_coordinate);
-        Coordinate_ coordinate{vector_space[erasure_position]};
+        Coordinate_ coordinate = vector_space[erasure_position].as_vector();
         for_each(
             current_coefficients.rbegin() + 1,
             current_coefficients.rend(),
@@ -593,14 +593,14 @@ bool BSpline<parametric_dimensionality, dimensionality>::ReduceDegree(
                            coefficient));
             });
         if (IsLessOrEqual(
-                utilities::std_container_operations::EuclidianDistance(
+                Coordinate{utilities::std_container_operations::EuclidianDistance(
                     utilities::std_container_operations::DivideAndAssignToFirst(
                         coordinate,
                         GetBack(current_coefficients)),
                     vector_space[Index_{number_of_coordinates,
                                         current_last_coordinate_value}
                                      .GetIndex1d()
-                                 + slice_coordinate.GetIndex1d() + Index{1}]),
+                                 + slice_coordinate.GetIndex1d() + Index{1}])},
                 Coordinate{tolerance_reduction})) {
           vector_space.Erase(erasure_position);
         } else {

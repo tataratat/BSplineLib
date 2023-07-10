@@ -60,6 +60,7 @@ public:
   using Base_ = SplineItem;
   using Coordinate_ = typename VectorSpace_::Coordinate_;
   using Coordinates_ = typename VectorSpace_::Coordinates_;
+  using NestedCoordinates_ = typename VectorSpace_::NestedCoordinates_;
   using ParameterSpace_ =
       parameter_spaces::ParameterSpace<parametric_dimensionality>;
   using Derivative_ = typename ParameterSpace_::Derivative_;
@@ -117,7 +118,7 @@ public:
 
   virtual Coordinate ComputeUpperBoundForMaximumDistanceFromOrigin(
       Tolerance const& tolerance = kEpsilon) const = 0;
-  virtual Coordinates_
+  virtual NestedCoordinates_
   Sample(NumberOfParametricCoordinates_ const& number_of_parametric_coordinates,
          Tolerance const& tolerance = kEpsilon) const;
 

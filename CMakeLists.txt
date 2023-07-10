@@ -23,14 +23,11 @@ cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 # Project
 project(
   BSplineLib
-  VERSION 1.0.0
+  VERSION 0.0.1
   LANGUAGES CXX)
 set(namespace "${PROJECT_NAME}::")
 set(targets_export_name "${PROJECT_NAME}Targets")
 option(BSPLINELIB_SHARED "Build shared library" OFF)
-option(BSPLINELIB_GOOGLETEST "Build with GoogleTest" OFF)
-option(BSPLINELIB_BUILD_TOOLS "Build tools" OFF)
-option(BSPLINELIB_BUILD_PUGIXML "Build pugixml" ON)
 
 # Overwrite some options if this is for splinepy
 if(SPLINEPY_BUILD_BSPLINELIB)
@@ -70,9 +67,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
       -Wfloat-equal
       -Weffc++
       $<$<NOT:$<CONFIG:Debug>>:-Wno-unused-parameter>
-      $<$<NOT:$<CONFIG:Debug>>:-Wno-unused-variable>
-      $<$<BOOL:${BSPLINELIB_GOOGLETEST}>:-Wno-gnu-zero-variadic-macro-arguments>
-  )
+      $<$<NOT:$<CONFIG:Debug>>:-Wno-unused-variable>)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
   set(OPTIMIZATION_FLAGS $<$<NOT:$<CONFIG:Debug>>:-O3>)
   set(PARALLELIZATION_FLAGS)
@@ -87,9 +82,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Intel")
 else()
   message(WARNING "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
-set(COMPILE_DEFINITIONS
-    $<$<BOOL:${BSPLINELIB_SHARED}>:BSPLINELIB_SHARED>
-    $<$<BOOL:${BSPLINELIB_GOOGLETEST}>:BSPLINELIB_GOOGLETEST>)
+set(COMPILE_DEFINITIONS $<$<BOOL:${BSPLINELIB_SHARED}>:BSPLINELIB_SHARED>)
 set(COMPILE_OPTIONS
     ${OPTIMIZATION_FLAGS} $<IF:$<CONFIG:Release>,${PARALLELIZATION_FLAGS},
     ${RUNTIME_CHECKS_DEBUG}> ${WARNING_FLAGS} ${SPLINEPY_FLAGS})
@@ -118,25 +111,6 @@ endif()
 
 # Content
 add_subdirectory(Sources/BSplineLib)
-
-if(BSPLINELIB_GOOGLETEST)
-  message(STATUS "Build tests!")
-  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/AddGoogleTest.cmake)
-  set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES}
-                          $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>)
-  add_subdirectory(Tests)
-else()
-  message(STATUS "No tests!")
-endif()
-if(BSPLINELIB_BUILD_TOOLS)
-  add_subdirectory(Tools)
-endif()
-if(BSPLINELIB_BUILD_PUGIXML)
-  # currently only one dependency, so add directly here
-  add_subdirectory(third_party/pugixml)
-else()
-  find_package(pugixml REQUIRED)
-endif()
 
 # Packaging
 set(generated_directory ${CMAKE_CURRENT_BINARY_DIR}/Generated)

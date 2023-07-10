@@ -69,6 +69,8 @@ public:
   using Base_ = VectorSpace<dimensionality + 1>;
   using Coordinate_ = typename VectorSpace_::Coordinate_;
   using Coordinates_ = typename VectorSpace_::Coordinates_;
+  using NamedCoordinate_ = Vector<Coordinate>;
+  using NestedCoordinates_ = Vector<Coordinate_>;
   using HomogeneousCoordinate_ = typename Base_::Coordinate_;
   using MaximumDistanceFromOriginAndMinimumWeight_ = Tuple<Coordinate, Weight>;
   using OutputInformation_ =
@@ -93,17 +95,13 @@ public:
   // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
   friend bool operator==<dimensionality>(WeightedVectorSpace const& lhs,
                                          WeightedVectorSpace const& rhs);
-
+  virtual Coordinate_ CreateCoordinate() const override;
   static Coordinate_
   Project(HomogeneousCoordinate_ const& homogeneous_coordinate);
+  static Coordinate_ Project(ConstCoordinateView const& homogeneous_coordinate);
   virtual MaximumDistanceFromOriginAndMinimumWeight_
   DetermineMaximumDistanceFromOriginAndMinimumWeight(
       Tolerance const& tolerance = kEpsilon) const;
-
-  virtual OutputInformation_
-  WriteProjected(Precision const& precision = kPrecision) const;
-  virtual OutputInformation_
-  WriteWeighted(Precision const& precision = kPrecision) const;
 
 private:
   using HomogeneousCoordinates_ = typename Base_::Coordinates_;

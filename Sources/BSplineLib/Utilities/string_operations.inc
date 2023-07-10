@@ -87,11 +87,11 @@ Numbers<Type> ConvertToNumbers(String delimited_string, char const& delimiter) {
 
 template<typename Type>
 String Write(Type const& value, Precision const& precision) {
-  static_assert(is_named_type<Type>, "Source type must be a NamedType.");
+  //static_assert(is_named_type<Type>, "Source type must be a NamedType.");
 
   std::ostringstream string_stream;
   string_stream.precision(precision.Get());
-  string_stream << value.Get();
+  string_stream << static_cast<double>(value);//.Get();
   return string_stream.str();
 }
 

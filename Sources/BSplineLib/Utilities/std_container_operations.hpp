@@ -88,6 +88,27 @@ struct IsVectorStruct<Vector<Type>> : std::true_type {};
 template<typename Type>
 constexpr bool const is_vector{IsVectorStruct<Type>::value};
 
+/// @brief https://stackoverflow.com/a/257382
+/// @tparam Type
+template<typename Type>
+class HasIsCoordinateView {
+  using yes = char;
+  struct no {
+    char x[2];
+  };
+
+  template<typename TestType>
+  static yes test(decltype(&TestType::is_coordinate_view));
+  template<typename TestType>
+  static no test(...);
+
+public:
+  enum { value = sizeof(test<Type>(0)) == sizeof(char) };
+};
+
+template<typename Type>
+constexpr bool const is_coordinate_view{HasIsCoordinateView<Type>::value};
+
 // Member functions front() and back() have undefined behavior for empty
 // containers.
 template<typename ContainerType>
@@ -130,35 +151,38 @@ AddAndAssignToFirst(ContainerType& lhs,
 template<typename ContainerType, typename... ContainerTypes>
 constexpr ContainerType Add(ContainerType const& lhs,
                             ContainerTypes const&... rhs);
-template<typename ContainerType>
-constexpr ContainerType& SubtractAndAssignToFirst(ContainerType& lhs,
-                                                  ContainerType const& rhs);
-template<typename ContainerType, typename... ContainerTypes>
-constexpr ContainerType&
-SubtractAndAssignToFirst(ContainerType& lhs,
-                         ContainerType const& rhs,
-                         ContainerTypes const&... further_rhs);
+template<typename ContainerLhsType, typename ContainerRhsType>
+constexpr ContainerLhsType&
+SubtractAndAssignToFirst(ContainerLhsType& lhs, ContainerRhsType const& rhs);
+template<typename ContainerLhsType,
+         typename ContainerRhsType,
+         typename... ContainerRhsTypes>
+constexpr ContainerLhsType&
+SubtractAndAssignToFirst(ContainerLhsType& lhs,
+                         ContainerRhsType const& rhs,
+                         ContainerRhsTypes const&... further_rhs);
 template<typename ContainerType, typename... ContainerTypes>
 constexpr ContainerType Subtract(ContainerType const& lhs,
                                  ContainerTypes const&... rhs);
-template<typename ContainerType>
-constexpr ContainerType
-Multiply(ContainerType const& container,
-         typename ContainerType::value_type::Type_ const& factor);
-template<typename ContainerType>
-ContainerType& DivideAndAssignToFirst(
-    ContainerType& container,
-    typename ContainerType::value_type::Type_ const& divisor,
-    typename ContainerType::value_type::Type_ const& tolerance =
-        numeric_operations::GetEpsilon<
-            typename ContainerType::value_type::Type_>());
-template<typename ContainerType>
+template<typename ContainerType, typename FactorType>
+constexpr auto Multiply(ContainerType const& container,
+                        FactorType const& factor);
+template<typename ContainerType,
+         typename DivisorType,
+         typename ToleranceType = DivisorType>
+ContainerType&
+DivideAndAssignToFirst(ContainerType& container,
+                       DivisorType const& divisor,
+                       ToleranceType const& tolerance =
+                           numeric_operations::GetEpsilon<DivisorType>());
+template<typename ContainerType,
+         typename DivisorType,
+         typename ToleranceType = DivisorType>
 constexpr ContainerType
 Divide(ContainerType const& container,
-       typename ContainerType::value_type::Type_ const& divisor,
-       typename ContainerType::value_type::Type_ const& tolerance =
-           numeric_operations::GetEpsilon<
-               typename ContainerType::value_type::Type_>());
+       DivisorType const& divisor,
+       ToleranceType const& tolerance =
+           numeric_operations::GetEpsilon<DivisorType>());
 
 template<typename ContainerType>
 constexpr typename ContainerType::value_type
@@ -166,9 +190,9 @@ DotProduct(ContainerType const& lhs, ContainerType const& rhs);
 template<typename ContainerType>
 constexpr typename ContainerType::value_type
 TwoNorm(ContainerType const& container);
-template<typename ContainerType>
-constexpr typename ContainerType::value_type
-EuclidianDistance(ContainerType const& lhs, ContainerType const& rhs);
+template<typename ContainerTypeLhs, typename ContainerTypeRhs>
+constexpr typename ContainerTypeLhs::value_type
+EuclidianDistance(ContainerTypeLhs const& lhs, ContainerTypeRhs const& rhs);
 
 #ifndef NDEBUG
 template<typename ContainerTypeLhs, typename ContainerTypeRhs>

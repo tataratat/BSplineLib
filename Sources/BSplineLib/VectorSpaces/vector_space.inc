@@ -51,8 +51,29 @@ bool operator==(VectorSpace<dimensionality> const& lhs,
 }
 
 template<int dimensionality>
-typename VectorSpace<dimensionality>::Coordinate_ const&
-VectorSpace<dimensionality>::operator[](Index const& coordinate) const {
+typename VectorSpace<dimensionality>::Coordinate_
+VectorSpace<dimensionality>::CreateCoordinate() const {
+  return Coordinate_(dim_);
+}
+
+template<int dimensionality>
+typename VectorSpace<dimensionality>::Coordinate_
+VectorSpace<dimensionality>::CreateCoordinate(std::initializer_list<double> coordinate) const {
+  // size check
+  assert(coordinate.size() == dim_); // coordinate size and dim mismatch
+  return Coordinate_(coordinate);
+}
+
+template<int dimensionality>
+CoordinateView
+VectorSpace<dimensionality>::operator[](const int coordinate_id) {
+  double* begin_ptr = coordinates_.data();
+  return {begin_ptr + (coordinate_id * dim_), dim_};
+}
+
+template<int dimensionality>
+CoordinateView //const&
+VectorSpace<dimensionality>::operator[](Index const& coordinate) {
 #ifndef NDEBUG
   try {
     ThrowIfIndexIsInvalid(coordinate);
@@ -61,17 +82,27 @@ VectorSpace<dimensionality>::operator[](Index const& coordinate) const {
           "bsplinelib::vector_spaces::VectorSpace::operator[]");
   }
 #endif
-  return coordinates_[coordinate.Get()];
+  return operator[](coordinate.Get());
+}
+
+template<int dimensionality>
+ConstCoordinateView //const&
+VectorSpace<dimensionality>::operator[](const int coordinate_id) const {
+  const double* begin_ptr = coordinates_.data();
+  return {begin_ptr + (coordinate_id * dim_), dim_};
 }
 
 template<int dimensionality>
 int VectorSpace<dimensionality>::GetNumberOfCoordinates() const {
-  return coordinates_.size();
+  std::cout << "ncoordinates_ " << coordinates_.size();
+  std::cout << "\ndim_ " << dim_ << std::endl;
+  return coordinates_.size() / dim_;
 }
 
 template<int dimensionality>
+template<typename CoordinateType>
 void VectorSpace<dimensionality>::Replace(Index const& coordinate_index,
-                                          Coordinate_ coordinate) {
+                                          CoordinateType coordinate) {
 #ifndef NDEBUG
   try {
     ThrowIfIndexIsInvalid(coordinate_index);
@@ -79,12 +110,17 @@ void VectorSpace<dimensionality>::Replace(Index const& coordinate_index,
     Throw(exception, "bsplinelib::vector_spaces::VectorSpace::Replace");
   }
 #endif
-  coordinates_[coordinate_index.Get()] = std::move(coordinate);
+  //coordinates_[coordinate_index.Get()] = std::move(coordinate);
+  const auto this_coordinate = operator[](coordinate_index);
+  for (int i{}; i < dim_; ++i) {
+    this_coordinate[i] = coordinate[i];
+  }
 }
 
 template<int dimensionality>
+template<typename CoordinateType>
 void VectorSpace<dimensionality>::Insert(Index const& coordinate_index,
-                                         Coordinate_ coordinate) {
+                                         CoordinateType coordinate) {
 #ifndef NDEBUG
   try {
     ThrowIfIndexIsInvalid(coordinate_index);
@@ -92,8 +128,9 @@ void VectorSpace<dimensionality>::Insert(Index const& coordinate_index,
     Throw(exception, "bsplinelib::vector_spaces::VectorSpace::Insert");
   }
 #endif
-  coordinates_.insert(coordinates_.begin() + coordinate_index.Get(),
-                      std::move(coordinate));
+
+  coordinates_.insert(coordinates_.begin() + (coordinate_index.Get() * dim_),
+                      coordinate.begin(), coordinate.end());
 }
 
 template<int dimensionality>
@@ -105,7 +142,8 @@ void VectorSpace<dimensionality>::Erase(Index const& coordinate_index) {
     Throw(exception, "bsplinelib::vector_spaces::VectorSpace::Erase");
   }
 #endif
-  coordinates_.erase(coordinates_.begin() + coordinate_index.Get());
+  const auto begin = coordinates_.begin() + (coordinate_index.Get() * dim_);
+  coordinates_.erase(begin, begin + dim_);
 }
 
 template<int dimensionality>
@@ -121,26 +159,40 @@ Coordinate VectorSpace<dimensionality>::DetermineMaximumDistanceFromOrigin(
   }
 #endif
   Coordinate maximum_distance{};
-  std::for_each(coordinates_.begin(),
-                coordinates_.end(),
-                [&](Coordinate_ const& coordinate) {
-                  maximum_distance = std::max(
-                      utilities::std_container_operations::TwoNorm(coordinate),
-                      maximum_distance,
-                      std::bind(utilities::IsLess<typename Coordinate::Name_,
-                                                  typename Coordinate::Type_>,
-                                std::placeholders::_1,
-                                std::placeholders::_2,
-                                tolerance));
-                });
+  //std::for_each(coordinates_.begin(),
+  //              coordinates_.end(),
+  //              [&](Coordinate_ const& coordinate) {
+  //                maximum_distance = std::max(
+  //                    utilities::std_container_operations::TwoNorm(coordinate),
+  //                    maximum_distance,
+  //                    std::bind(utilities::IsLess<typename Coordinate::Name_,
+  //                                                typename Coordinate::Type_>,
+  //                              std::placeholders::_1,
+  //                              std::placeholders::_2,
+  //                              tolerance));
+  //              });
   return maximum_distance;
 }
 
 template<int dimensionality>
 typename VectorSpace<dimensionality>::OutputInformation_
 VectorSpace<dimensionality>::Write(Precision const& precision) const {
+  // work around to keep this alive.
+  Vector<NamedCoordinate_> nt_coordinates;
+  nt_coordinates.reserve(GetNumberOfCoordinates());
+
+  const double* current_coord = coordinates_.data();
+  for (int i{}; i < GetNumberOfCoordinates(); ++i) {
+    NamedCoordinate_ nc;
+    nc.reserve(dim_);
+    for (int j{}; j < dim_; ++j) {
+      nc.emplace_back(typename NamedCoordinate_::value_type{*(current_coord++)});
+    }
+    nt_coordinates.push_back(std::move(nc));
+  }
+
   return OutputInformation_{utilities::string_operations::Write<
-      std::tuple_element_t<0, OutputInformation_>>(coordinates_, precision)};
+      std::tuple_element_t<0, OutputInformation_>>(nt_coordinates, precision)};
 }
 
 #ifndef NDEBUG

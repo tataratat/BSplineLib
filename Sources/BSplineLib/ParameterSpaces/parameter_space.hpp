@@ -95,13 +95,13 @@ template<std::size_t depth,
          std::size_t array_dim,
          typename ValueType,
          typename BSplineLibIndex,
-         typename CoeffType,
+         typename VectorSpaceType,
          typename ReturnType>
 constexpr void
 RecursiveCombine_(const Array<Vector<BasisValueType>, array_dim>& factors,
                   const BSplineLibIndex& index,
                   BSplineLibIndex& index_offset,
-                  const CoeffType& coeffs,
+                  const VectorSpaceType& vector_space,
                   const ValueType& c_value,
                   ReturnType& result) {
   static_assert(depth < array_dim,
@@ -113,7 +113,7 @@ RecursiveCombine_(const Array<Vector<BasisValueType>, array_dim>& factors,
       const auto fac = c_value * factor;
       // get coeff
       const auto& coeff =
-          coeffs[(index + index_offset.GetIndex()).GetIndex1d().Get()];
+          vector_space[(index + index_offset.GetIndex()).GetIndex1d().Get()];
       // contribute to each dim
       int j{};
       for (auto& r : result) {
@@ -127,7 +127,7 @@ RecursiveCombine_(const Array<Vector<BasisValueType>, array_dim>& factors,
       RecursiveCombine_<static_cast<std::size_t>(depth - 1)>(factors,
                                                              index,
                                                              index_offset,
-                                                             coeffs,
+                                                             vector_space,
                                                              c_value * factor,
                                                              result);
     }
@@ -138,20 +138,20 @@ RecursiveCombine_(const Array<Vector<BasisValueType>, array_dim>& factors,
 template<typename ValueType,
          std::size_t array_dim,
          typename BSplineLibIndex,
-         typename CoeffType,
+         typename VectorSpaceType,
          typename ReturnType>
 constexpr void
 RecursiveCombine(const Array<Vector<ValueType>, array_dim>& factors,
                  const BSplineLibIndex& index,
                  BSplineLibIndex& index_offset,
-                 const CoeffType& coeffs,
+                 const VectorSpaceType& vector_space,
                  ReturnType& result) {
 
   // Start computation
   RecursiveCombine_<array_dim - 1>(factors,
                                    index,
                                    index_offset,
-                                   coeffs,
+                                   vector_space,
                                    static_cast<ValueType>(1),
                                    result);
 }

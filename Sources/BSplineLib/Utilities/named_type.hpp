@@ -136,6 +136,10 @@ public:
   constexpr NamedType(NamedType&& other) noexcept = default;
   constexpr NamedType& operator=(NamedType const& rhs) = default;
   constexpr NamedType& operator=(NamedType&& rhs) noexcept = default;
+  constexpr NamedType& operator=(Type_ const& value) {
+    value_ = value;
+    return *this;
+  }
   ~NamedType() = default;
 
   constexpr NamedType& operator+=(NamedType const& rhs);

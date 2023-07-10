@@ -89,6 +89,10 @@ Nurbs<parametric_dimensionality, dimensionality>::operator()(
     Throw(exception, "bsplinelib::splines::Nurbs::operator()");
   }
 #endif
+  std::cout << "homo dim_ " << homogeneous_b_spline_->dimensionality_ << std::endl;
+  const auto eva = (*homogeneous_b_spline_)(parametric_coordinate);
+  std::cout << "eval size " <<  eva.size() << std::endl;
+  std::cout << "eval 0 " <<  eva[0] << std::endl;
   return WeightedVectorSpace_::Project(
       (*homogeneous_b_spline_)(parametric_coordinate));
 }
@@ -130,10 +134,13 @@ Nurbs<parametric_dimensionality, dimensionality>::operator()(
   int const& total_number_of_derivatives =
       zero_derivative.GetTotalNumberOfIndices();
 
+
+  std::cout << "determined length \n";
+
   // Evaluate all homogeneous derivatives of same or lower order.
-  typename HomogeneousBSpline_::VectorSpace_::Coordinates_
+  typename HomogeneousBSpline_::VectorSpace_::NestedCoordinates_
       homogeneous_b_spline_derivatives;
-  homogeneous_b_spline_derivatives.reserve(total_number_of_derivatives);
+  homogeneous_b_spline_derivatives.reserve(total_number_of_derivatives );
   for (Index current_derivative{zero_derivative};
        current_derivative != end_derivative;
        ++current_derivative)
@@ -168,19 +175,27 @@ Nurbs<parametric_dimensionality, dimensionality>::operator()(
         binomial_coefficients.push_back(current_binomial_coefficients);
       });
 
+  std::cout << "determined bino \n";
+
+
   // Evaluate requested rational derivative requiring evaluation of all rational
   // derivatives of lower order.
-  typename WeightedVectorSpace_::Coordinates_ rational_derivatives;
+  int co{};
+  typename WeightedVectorSpace_::NestedCoordinates_ rational_derivatives;
   rational_derivatives.reserve(total_number_of_derivatives);
   for (Index current_derivative{zero_derivative};
        current_derivative != end_derivative;
        ++current_derivative) {
+          std::cout << "entering for / starting for bino " << co << "\n";
     IndexValue const& current_derivative_value = current_derivative.GetIndex();
     typename HomogeneousBSpline_::Coordinate_ const&
         homogeneous_b_spline_derivative =
             homogeneous_b_spline_derivatives[current_derivative.GetIndex1d()
                                                  .Get()];
-    Coordinate_ homogeneous_derivative;
+          std::cout << "got homo b der " << co << "\n";
+
+
+    Coordinate_ homogeneous_derivative(dimensionality);
     std::copy(homogeneous_b_spline_derivative.begin(),
               std::prev(homogeneous_b_spline_derivative.end()),
               homogeneous_derivative.begin());
@@ -198,6 +213,9 @@ Nurbs<parametric_dimensionality, dimensionality>::operator()(
             are_required_derivatives_currently_required.begin(),
         &are_required_derivatives_currently_required_end =
             are_required_derivatives_currently_required.end();
+    std::cout << "got demands " << co << "\n";
+
+
     Dimension::ForEach(
         0,
         parametric_dimensionality,
@@ -262,7 +280,7 @@ Nurbs<parametric_dimensionality, dimensionality>::operator()(
                             * homogeneous_b_spline_derivatives
                                   [current_complementary_derivative.GetIndex1d()
                                        .Get()][dimensionality]
-                                      .Get()));
+                                      ));
               }
             } while (std::next_permutation(
                 are_required_derivatives_currently_required_begin,
@@ -273,7 +291,7 @@ Nurbs<parametric_dimensionality, dimensionality>::operator()(
         });
     rational_derivatives.push_back(utilities::std_container_operations::Divide(
         homogeneous_derivative,
-        homogeneous_b_spline_derivatives[0][dimensionality].Get()));
+        homogeneous_b_spline_derivatives[0][dimensionality]));
   }
   return rational_derivatives[total_number_of_derivatives - 1];
 }
@@ -400,20 +418,4 @@ Coordinate Nurbs<parametric_dimensionality, dimensionality>::
   return std::get<0>(
       weighted_vector_space_
           ->DetermineMaximumDistanceFromOriginAndMinimumWeight(tolerance));
-}
-
-template<int parametric_dimensionality, int dimensionality>
-typename Nurbs<parametric_dimensionality, dimensionality>::OutputInformation_
-Nurbs<parametric_dimensionality, dimensionality>::Write(
-    Precision const& precision) const {
-  return OutputInformation_{Base_::parameter_space_->Write(precision),
-                            weighted_vector_space_->WriteProjected(precision)};
-}
-
-template<int parametric_dimensionality, int dimensionality>
-typename Nurbs<parametric_dimensionality, dimensionality>::OutputInformation_
-Nurbs<parametric_dimensionality, dimensionality>::WriteWeighted(
-    Precision const& precision) const {
-  return OutputInformation_{Base_::parameter_space_->Write(precision),
-                            weighted_vector_space_->WriteWeighted(precision)};
 }

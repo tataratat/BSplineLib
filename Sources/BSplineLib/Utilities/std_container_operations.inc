@@ -171,11 +171,11 @@ constexpr ContainerType Add(ContainerType const& lhs,
   return sum;
 }
 
-template<typename ContainerType>
-constexpr ContainerType& SubtractAndAssignToFirst(ContainerType& lhs,
-                                                  ContainerType const& rhs) {
+template<typename ContainerLhsType, typename ContainerRhsType>
+constexpr ContainerLhsType& SubtractAndAssignToFirst(ContainerLhsType& lhs,
+                                                    ContainerRhsType const& rhs) {
 #ifndef NDEBUG
-  if constexpr (is_vector<ContainerType>)
+  if constexpr (is_vector<ContainerLhsType>)
     try {
       ThrowIfContainerSizesDiffer(lhs, rhs);
     } catch (InvalidArgument const& exception) {
@@ -191,11 +191,11 @@ constexpr ContainerType& SubtractAndAssignToFirst(ContainerType& lhs,
                  std::minus{});
   return lhs;
 }
-template<typename ContainerType, typename... ContainerTypes>
-constexpr ContainerType&
-SubtractAndAssignToFirst(ContainerType& lhs,
-                         ContainerType const& rhs,
-                         ContainerTypes const&... further_rhs) {
+template<typename ContainerLhsType, typename ContainerRhsType, typename... ContainerRhsTypes>
+constexpr ContainerLhsType&
+SubtractAndAssignToFirst(ContainerLhsType& lhs,
+                         ContainerRhsType const& rhs,
+                         ContainerRhsTypes const&... further_rhs) {
   return SubtractAndAssignToFirst(SubtractAndAssignToFirst(lhs, rhs),
                                   further_rhs...);
 }
@@ -217,39 +217,52 @@ constexpr ContainerType Subtract(ContainerType const& lhs,
   return difference;
 }
 
-template<typename ContainerType>
-constexpr ContainerType
+template<typename ContainerType, typename FactorType>
+constexpr auto
 Multiply(ContainerType const& container,
-         typename ContainerType::value_type::Type_ const& factor) {
+         FactorType const& factor) {
   using std::bind, std::multiplies, std::placeholders::_1, std::transform;
 
-  ContainerType multiplied;
+
   if constexpr (is_array<ContainerType>) {
+    ContainerType multiplied;
     transform(container.begin(),
               container.end(),
               multiplied.begin(),
               bind(multiplies{}, _1, factor));
+                return multiplied;
   } else if constexpr (is_vector<ContainerType>) {
+    ContainerType multiplied;
     multiplied.reserve(container.size());
     transform(container.begin(),
               container.end(),
               std::back_inserter(multiplied),
               bind(multiplies{}, _1, factor));
+                return multiplied;
+  } else if constexpr (is_coordinate_view<ContainerType>){
+    Vector<typename ContainerType::value_type> multiplied;
+    multiplied.reserve(container.size());
+    transform(container.begin(),
+              container.end(),
+              std::back_inserter(multiplied),
+              bind(multiplies{}, _1, factor));
+                return multiplied;
   } else {
     static_assert(error_handling::is_false<ContainerType>,
                   "Only std::array and std::vector are supported.");
   }
-  return multiplied;
+
 }
 
-template<typename ContainerType>
+template<typename ContainerType, typename DivisorType, typename ToleranceType>
 ContainerType& DivideAndAssignToFirst(
     ContainerType& container,
-    typename ContainerType::value_type::Type_ const& divisor,
-    typename ContainerType::value_type::Type_ const& tolerance) {
+    DivisorType const& divisor,
+    ToleranceType const& tolerance) {
 #ifndef NDEBUG
   if (numeric_operations::IsEqual(divisor,
-                                  typename ContainerType::value_type::Type_{},
+                                  0.,
+                                  //typename ContainerType::value_type::Type_{},
                                   tolerance))
     Throw(InvalidArgument("Division by zero (" + std::to_string(divisor)
                           + ") encountered."),
@@ -263,11 +276,11 @@ ContainerType& DivideAndAssignToFirst(
   return container;
 }
 
-template<typename ContainerType>
+template<typename ContainerType, typename DivisorType, typename ToleranceType>
 constexpr ContainerType
 Divide(ContainerType const& container,
-       typename ContainerType::value_type::Type_ const& divisor,
-       typename ContainerType::value_type::Type_ const& tolerance) {
+       DivisorType const& divisor,
+       ToleranceType const& tolerance) {
   ContainerType divided{container};
 #ifndef NDEBUG
   try {
@@ -305,14 +318,14 @@ template<typename ContainerType>
 constexpr typename ContainerType::value_type
 TwoNorm(ContainerType const& container) {
   return typename ContainerType::value_type{
-      std::sqrt(DotProduct(container, container).Get())};
+      std::sqrt(DotProduct(container, container))};
 }
 
-template<typename ContainerType>
-constexpr typename ContainerType::value_type
-EuclidianDistance(ContainerType const& lhs, ContainerType const& rhs) {
+template<typename ContainerTypeLhs, typename ContainerTypeRhs>
+constexpr typename ContainerTypeLhs::value_type
+EuclidianDistance(ContainerTypeLhs const& lhs, ContainerTypeRhs const& rhs) {
 #ifndef NDEBUG
-  if constexpr (is_vector<ContainerType>)
+  if constexpr (is_vector<ContainerTypeLhs>)
     try {
       ThrowIfContainerSizesDiffer(lhs, rhs);
     } catch (InvalidArgument const& exception) {

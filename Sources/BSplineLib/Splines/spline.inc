@@ -72,7 +72,7 @@ Multiplicity Spline<parametric_dimensionality, dimensionality>::CoarsenKnots(
 }
 
 template<int parametric_dimensionality, int dimensionality>
-typename Spline<parametric_dimensionality, dimensionality>::Coordinates_
+typename Spline<parametric_dimensionality, dimensionality>::NestedCoordinates_
 Spline<parametric_dimensionality, dimensionality>::Sample(
     NumberOfParametricCoordinates_ const& number_of_parametric_coordinates,
     Tolerance const& tolerance) const {
@@ -81,7 +81,7 @@ Spline<parametric_dimensionality, dimensionality>::Sample(
 
   ParametricCoordinates const& parametric_coordinates =
       parameter_space_->Sample(number_of_parametric_coordinates);
-  Coordinates_ coordinates{};
+  NestedCoordinates_ coordinates{};
   coordinates.reserve(parametric_coordinates.size());
   std::for_each(
       parametric_coordinates.begin(),
