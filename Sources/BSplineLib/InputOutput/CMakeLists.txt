@@ -18,10 +18,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-set(HEADERS iges.hpp operations.hpp operations.inc xml.hpp)
+set(HEADERS iges.hpp xml.hpp)
 
 set(SOURCES
-    iges.cpp operations.cpp xml.cpp
+    iges.cpp xml.cpp
     #
     ${HEADERS})
 set_source_files_properties(${HEADERS} PROPERTIES LANGUAGE CXX HEADER_FILE_ONLY
