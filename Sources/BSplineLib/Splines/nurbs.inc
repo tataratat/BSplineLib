@@ -89,10 +89,7 @@ Nurbs<parametric_dimensionality, dimensionality>::operator()(
     Throw(exception, "bsplinelib::splines::Nurbs::operator()");
   }
 #endif
-  std::cout << "homo dim_ " << homogeneous_b_spline_->dimensionality_ << std::endl;
   const auto eva = (*homogeneous_b_spline_)(parametric_coordinate);
-  std::cout << "eval size " <<  eva.size() << std::endl;
-  std::cout << "eval 0 " <<  eva[0] << std::endl;
   return WeightedVectorSpace_::Project(
       (*homogeneous_b_spline_)(parametric_coordinate));
 }
@@ -134,9 +131,6 @@ Nurbs<parametric_dimensionality, dimensionality>::operator()(
   int const& total_number_of_derivatives =
       zero_derivative.GetTotalNumberOfIndices();
 
-
-  std::cout << "determined length \n";
-
   // Evaluate all homogeneous derivatives of same or lower order.
   typename HomogeneousBSpline_::VectorSpace_::NestedCoordinates_
       homogeneous_b_spline_derivatives;
@@ -175,9 +169,6 @@ Nurbs<parametric_dimensionality, dimensionality>::operator()(
         binomial_coefficients.push_back(current_binomial_coefficients);
       });
 
-  std::cout << "determined bino \n";
-
-
   // Evaluate requested rational derivative requiring evaluation of all rational
   // derivatives of lower order.
   int co{};
@@ -186,14 +177,11 @@ Nurbs<parametric_dimensionality, dimensionality>::operator()(
   for (Index current_derivative{zero_derivative};
        current_derivative != end_derivative;
        ++current_derivative) {
-          std::cout << "entering for / starting for bino " << co << "\n";
     IndexValue const& current_derivative_value = current_derivative.GetIndex();
     typename HomogeneousBSpline_::Coordinate_ const&
         homogeneous_b_spline_derivative =
             homogeneous_b_spline_derivatives[current_derivative.GetIndex1d()
                                                  .Get()];
-          std::cout << "got homo b der " << co << "\n";
-
 
     Coordinate_ homogeneous_derivative(dimensionality);
     std::copy(homogeneous_b_spline_derivative.begin(),
@@ -213,8 +201,6 @@ Nurbs<parametric_dimensionality, dimensionality>::operator()(
             are_required_derivatives_currently_required.begin(),
         &are_required_derivatives_currently_required_end =
             are_required_derivatives_currently_required.end();
-    std::cout << "got demands " << co << "\n";
-
 
     Dimension::ForEach(
         0,

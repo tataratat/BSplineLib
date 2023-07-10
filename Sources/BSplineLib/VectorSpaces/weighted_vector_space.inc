@@ -59,8 +59,6 @@ typename WeightedVectorSpace<dimensionality>::Coordinate_
 WeightedVectorSpace<dimensionality>::Project(
     HomogeneousCoordinate_ const& homogeneous_coordinate) {
 
-    std::cout << "hc size " << homogeneous_coordinate.size() << std::endl;
-
   Coordinate_ coordinate;
   coordinate.reserve(dimensionality);
   const auto w_inv = 1 / homogeneous_coordinate[dimensionality];
@@ -124,9 +122,7 @@ WeightedVectorSpace<dimensionality>::HomogenizeCoordinates(
     const auto& w = weights[i];
     for (int j{}; j < dimensionality; ++j) {
       homogeneous_coordinates.emplace_back(*(current_coord++) * w);
-      std::cout << "just added " << homogeneous_coordinates[c++] << " ";
     }
-      std::cout << "\n";
 
     homogeneous_coordinates.push_back(w);
     c++;

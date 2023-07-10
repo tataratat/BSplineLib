@@ -94,8 +94,6 @@ VectorSpace<dimensionality>::operator[](const int coordinate_id) const {
 
 template<int dimensionality>
 int VectorSpace<dimensionality>::GetNumberOfCoordinates() const {
-  std::cout << "ncoordinates_ " << coordinates_.size();
-  std::cout << "\ndim_ " << dim_ << std::endl;
   return coordinates_.size() / dim_;
 }
 

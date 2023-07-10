@@ -24,7 +24,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include <cassert>
 #include <functional>
 #include <initializer_list>
-#include <iostream>
 #include <utility>
 
 #include "BSplineLib/Utilities/error_handling.hpp"
