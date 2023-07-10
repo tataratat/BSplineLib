@@ -157,18 +157,13 @@ Coordinate VectorSpace<dimensionality>::DetermineMaximumDistanceFromOrigin(
   }
 #endif
   Coordinate maximum_distance{};
-  //std::for_each(coordinates_.begin(),
-  //              coordinates_.end(),
-  //              [&](Coordinate_ const& coordinate) {
-  //                maximum_distance = std::max(
-  //                    utilities::std_container_operations::TwoNorm(coordinate),
-  //                    maximum_distance,
-  //                    std::bind(utilities::IsLess<typename Coordinate::Name_,
-  //                                                typename Coordinate::Type_>,
-  //                              std::placeholders::_1,
-  //                              std::placeholders::_2,
-  //                              tolerance));
-  //              });
+  for (int i{}; i < GetNumberOfCoordinates(); ++i) {
+    const auto c_view = operator[](i);
+    maximum_distance = std::max(
+       Coordinate{utilities::std_container_operations::TwoNorm(c_view)},
+        maximum_distance
+    );
+  }
   return maximum_distance;
 }
 

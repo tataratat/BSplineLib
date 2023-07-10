@@ -162,8 +162,7 @@ SubtractAndAssignToFirst(ContainerLhsType& lhs,
                          ContainerRhsType const& rhs,
                          ContainerRhsTypes const&... further_rhs);
 template<typename ContainerType, typename... ContainerTypes>
-constexpr ContainerType Subtract(ContainerType const& lhs,
-                                 ContainerTypes const&... rhs);
+constexpr auto Subtract(ContainerType const& lhs, ContainerTypes const&... rhs);
 template<typename ContainerType, typename FactorType>
 constexpr auto Multiply(ContainerType const& container,
                         FactorType const& factor);
@@ -178,11 +177,10 @@ DivideAndAssignToFirst(ContainerType& container,
 template<typename ContainerType,
          typename DivisorType,
          typename ToleranceType = DivisorType>
-constexpr ContainerType
-Divide(ContainerType const& container,
-       DivisorType const& divisor,
-       ToleranceType const& tolerance =
-           numeric_operations::GetEpsilon<DivisorType>());
+constexpr auto Divide(ContainerType const& container,
+                      DivisorType const& divisor,
+                      ToleranceType const& tolerance =
+                          numeric_operations::GetEpsilon<DivisorType>());
 
 template<typename ContainerType>
 constexpr typename ContainerType::value_type

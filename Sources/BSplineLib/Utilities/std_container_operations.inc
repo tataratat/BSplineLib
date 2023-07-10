@@ -201,9 +201,17 @@ SubtractAndAssignToFirst(ContainerLhsType& lhs,
 }
 
 template<typename ContainerType, typename... ContainerTypes>
-constexpr ContainerType Subtract(ContainerType const& lhs,
+constexpr auto Subtract(ContainerType const& lhs,
                                  ContainerTypes const&... rhs) {
-  ContainerType difference{lhs};
+  auto difference = [&lhs]() {
+    if constexpr (is_coordinate_view<ContainerType>) {
+      return lhs.as_vector();
+    } else if constexpr (is_vector<ContainerType> || is_array<ContainerType>) {
+      return ContainerType{lhs};
+    } else {
+      static_assert(error_handling::is_false<ContainerType>, "Unsupported for Subtract()");
+    }
+  }();
 #ifndef NDEBUG
   try {
 #endif
@@ -277,11 +285,21 @@ ContainerType& DivideAndAssignToFirst(
 }
 
 template<typename ContainerType, typename DivisorType, typename ToleranceType>
-constexpr ContainerType
+constexpr auto
 Divide(ContainerType const& container,
        DivisorType const& divisor,
        ToleranceType const& tolerance) {
-  ContainerType divided{container};
+
+  auto divided = [&container]() {
+    if constexpr (is_coordinate_view<ContainerType>) {
+      return container.as_vector();
+    } else if constexpr (is_vector<ContainerType> || is_array<ContainerType>) {
+      return ContainerType{container};
+    } else {
+      static_assert(error_handling::is_false<ContainerType>, "Unsupported for Subtract()");
+    }
+  }();
+
 #ifndef NDEBUG
   try {
 #endif

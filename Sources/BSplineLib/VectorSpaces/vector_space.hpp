@@ -55,8 +55,8 @@ struct CoordinateView {
   double* end() const { return begin_ + dim_; }
   const int& size() const { return dim_; }
   double& operator[](const int& i) const { return *(begin_ + i); }
-  std::vector<double> as_vector() {
-    return std::vector<double>(begin_, begin_ + dim_);
+  Vector<double> as_vector() const {
+    return Vector<double>(begin_, begin_ + dim_);
   };
 };
 
@@ -71,6 +71,9 @@ struct ConstCoordinateView {
   const double* end() const { return begin_ + dim_; }
   const int& size() const { return dim_; }
   const double& operator[](const int& i) const { return *(begin_ + i); }
+  Vector<double> as_vector() const {
+    return Vector<double>(begin_, begin_ + dim_);
+  };
 };
 
 // VectorSpaces group coordinates.
