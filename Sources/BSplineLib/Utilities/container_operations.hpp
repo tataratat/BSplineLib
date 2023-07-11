@@ -73,7 +73,7 @@ using UnorderedMap = std::unordered_map<KeyType, ValueType>;
 //   DoesContainEqualValues(more_named_ints, named_ints);  // Yields false as
 //   containers do not store equal values. double const &five =
 //   EuclidianDistance(Vector{3.0, 4.0}, Vector{0.0, 0.0});
-namespace bsplinelib::utilities::std_container_operations {
+namespace bsplinelib::utilities::container_operations {
 
 template<typename Type>
 struct IsArrayStruct : std::false_type {};
@@ -198,8 +198,8 @@ void ThrowIfContainerSizesDiffer(ContainerTypeLhs const& lhs,
                                  ContainerTypeRhs const& rhs);
 #endif
 
-#include "BSplineLib/Utilities/std_container_operations.inc"
+#include "BSplineLib/Utilities/container_operations.inc"
 
-} // namespace bsplinelib::utilities::std_container_operations
+} // namespace bsplinelib::utilities::container_operations
 
 #endif // SOURCES_UTILITIES_STD_CONTAINER_OPERATIONS_HPP_

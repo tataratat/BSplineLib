@@ -93,7 +93,7 @@ WeightedVectorSpace<dimensionality>::
   for (int i{}; i < Base_::GetNumberOfCoordinates(); ++i) {
     const auto hc_view = Base_::operator[](0);
     max_distance =
-        std::max(utilities::std_container_operations::TwoNorm(Project(hc_view)),
+        std::max(utilities::container_operations::TwoNorm(Project(hc_view)),
                  max_distance);
     min_weight = std::min(hc_view[dimensionality], min_weight);
   }

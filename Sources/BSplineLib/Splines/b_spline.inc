@@ -163,9 +163,9 @@ BSpline<parametric_dimensionality, dimensionality>::FullyRecursiveEvaluate(
     Index_ const& basis_function =
         (parameter_space.FindFirstNonZeroBasisFunction(parametric_coordinate)
          + non_zero_basis_function.GetIndex());
-    utilities::std_container_operations::AddAndAssignToFirst(
+    utilities::container_operations::AddAndAssignToFirst(
         evaluated_b_spline,
-        utilities::std_container_operations::Multiply(
+        utilities::container_operations::Multiply(
             (*vector_space_)[basis_function.GetIndex1d()],
             parameter_space.EvaluateBasisFunction(basis_function,
                                                   parametric_coordinate)));
@@ -194,9 +194,9 @@ BSpline<parametric_dimensionality, dimensionality>::FullyRecursiveDerivative(
     Index_ const& basis_function =
         (parameter_space.FindFirstNonZeroBasisFunction(parametric_coordinate)
          + non_zero_basis_function.GetIndex());
-    utilities::std_container_operations::AddAndAssignToFirst(
+    utilities::container_operations::AddAndAssignToFirst(
         evaluated_b_spline_derivative,
-        utilities::std_container_operations::Multiply(
+        utilities::container_operations::Multiply(
             ((*vector_space_))[basis_function.GetIndex1d()],
             parameter_space.EvaluateBasisFunctionDerivative(
                 basis_function,
@@ -213,8 +213,8 @@ void BSpline<parametric_dimensionality, dimensionality>::InsertKnot(
     Knot_ knot,
     Multiplicity const& multiplicity,
     Tolerance const& tolerance) const {
-  using utilities::std_container_operations::Add,
-      utilities::std_container_operations::Multiply;
+  using utilities::container_operations::Add,
+      utilities::container_operations::Multiply;
 
   ParameterSpace_& parameter_space = *Base_::parameter_space_;
   Dimension::Type_ const& dimension_value = dimension.Get();
@@ -289,9 +289,9 @@ Multiplicity BSpline<parametric_dimensionality, dimensionality>::RemoveKnot(
     Tolerance const& tolerance_removal,
     Multiplicity const& multiplicity,
     Tolerance const& tolerance) const {
-  using utilities::std_container_operations::Divide,
-      utilities::std_container_operations::Multiply,
-      utilities::std_container_operations::Subtract;
+  using utilities::container_operations::Divide,
+      utilities::container_operations::Multiply,
+      utilities::container_operations::Subtract;
 
   Dimension::Type_ const& dimension_value = dimension.Get();
 #ifndef NDEBUG
@@ -354,7 +354,7 @@ Multiplicity BSpline<parametric_dimensionality, dimensionality>::RemoveKnot(
       lower_coordinate_index = coordinate_index;
       coordinate_index = coordinate.Increment(dimension).GetIndex1d();
       if (IsLessOrEqual(
-              Coordinate{utilities::std_container_operations::EuclidianDistance(
+              Coordinate{utilities::container_operations::EuclidianDistance(
                   Divide(Subtract(vector_space[coordinate_index],
                                   Multiply(vector_space[lower_coordinate_index],
                                            k1_0 - current_coefficient)),
@@ -386,9 +386,9 @@ void BSpline<parametric_dimensionality, dimensionality>::ElevateDegree(
     Dimension const& dimension,
     Multiplicity const& multiplicity,
     Tolerance const& tolerance) const {
-  using utilities::std_container_operations::AddAndAssignToFirst,
-      utilities::std_container_operations::GetBack,
-      utilities::std_container_operations::Multiply;
+  using utilities::container_operations::AddAndAssignToFirst,
+      utilities::container_operations::GetBack,
+      utilities::container_operations::Multiply;
 
   Dimension::Type_ const& dimension_value = dimension.Get();
 #ifndef NDEBUG
@@ -493,9 +493,9 @@ bool BSpline<parametric_dimensionality, dimensionality>::ReduceDegree(
     Tolerance const& tolerance_reduction,
     Multiplicity const& multiplicity,
     Tolerance const& tolerance) const {
-  using std::for_each, utilities::std_container_operations::GetBack,
-      utilities::std_container_operations::Multiply,
-      utilities::std_container_operations::SubtractAndAssignToFirst;
+  using std::for_each, utilities::container_operations::GetBack,
+      utilities::container_operations::Multiply,
+      utilities::container_operations::SubtractAndAssignToFirst;
 
   Dimension::Type_ const& dimension_value = dimension.Get();
 #ifndef NDEBUG
@@ -554,7 +554,7 @@ bool BSpline<parametric_dimensionality, dimensionality>::ReduceDegree(
                            coefficient));
             });
         vector_space.Replace(replacement_position,
-                             utilities::std_container_operations::Divide(
+                             utilities::container_operations::Divide(
                                  coordinate,
                                  GetBack(current_coefficients)));
       }
@@ -591,17 +591,14 @@ bool BSpline<parametric_dimensionality, dimensionality>::ReduceDegree(
                            coefficient));
             });
         if (IsLessOrEqual(
-                Coordinate{
-                    utilities::std_container_operations::EuclidianDistance(
-                        utilities::std_container_operations::
-                            DivideAndAssignToFirst(
-                                coordinate,
-                                GetBack(current_coefficients)),
-                        vector_space[Index_{number_of_coordinates,
-                                            current_last_coordinate_value}
-                                         .GetIndex1d()
-                                     + slice_coordinate.GetIndex1d()
-                                     + Index{1}])},
+                Coordinate{utilities::container_operations::EuclidianDistance(
+                    utilities::container_operations::DivideAndAssignToFirst(
+                        coordinate,
+                        GetBack(current_coefficients)),
+                    vector_space[Index_{number_of_coordinates,
+                                        current_last_coordinate_value}
+                                     .GetIndex1d()
+                                 + slice_coordinate.GetIndex1d() + Index{1}])},
                 Coordinate{tolerance_reduction})) {
           vector_space.Erase(erasure_position);
         } else {

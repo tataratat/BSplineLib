@@ -24,9 +24,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include <iterator>
 #include <utility>
 
+#include "BSplineLib/Utilities/container_operations.hpp"
 #include "BSplineLib/Utilities/error_handling.hpp"
 #include "BSplineLib/Utilities/numeric_operations.hpp"
-#include "BSplineLib/Utilities/std_container_operations.hpp"
 
 namespace bsplinelib::parameter_spaces {
 
@@ -62,9 +62,9 @@ bool IsEqual(KnotVector const& lhs,
     Throw(exception, "bsplinelib::parameter_spaces::IsEqual::KnotVector");
   }
 #endif
-  return utilities::std_container_operations::DoesContainEqualValues(lhs.knots_,
-                                                                     rhs.knots_,
-                                                                     tolerance);
+  return utilities::container_operations::DoesContainEqualValues(lhs.knots_,
+                                                                 rhs.knots_,
+                                                                 tolerance);
 }
 
 bool operator==(KnotVector const& lhs, KnotVector const& rhs) {

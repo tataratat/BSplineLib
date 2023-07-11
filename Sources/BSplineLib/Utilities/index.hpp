@@ -25,9 +25,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include <numeric>
 #include <utility>
 
+#include "BSplineLib/Utilities/container_operations.hpp"
 #include "BSplineLib/Utilities/error_handling.hpp"
 #include "BSplineLib/Utilities/named_type.hpp"
-#include "BSplineLib/Utilities/std_container_operations.hpp"
 
 namespace bsplinelib::utilities {
 

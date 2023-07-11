@@ -22,8 +22,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "BSplineLib/ParameterSpaces/b_spline_basis_function.hpp"
 #include "BSplineLib/ParameterSpaces/knot_vector.hpp"
+#include "BSplineLib/Utilities/container_operations.hpp"
 #include "BSplineLib/Utilities/named_type.hpp"
-#include "BSplineLib/Utilities/std_container_operations.hpp"
 
 namespace bsplinelib::parameter_spaces {
 

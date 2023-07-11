@@ -23,8 +23,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include "BSplineLib/ParameterSpaces/parameter_space.hpp"
 #include "BSplineLib/Splines/b_spline.hpp"
 #include "BSplineLib/Splines/nurbs.hpp"
+#include "BSplineLib/Utilities/container_operations.hpp"
 #include "BSplineLib/Utilities/named_type.hpp"
-#include "BSplineLib/Utilities/std_container_operations.hpp"
 
 // Generates maximally-smooth spline models of rectangular unit domains.
 //

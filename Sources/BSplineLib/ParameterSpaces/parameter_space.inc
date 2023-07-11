@@ -99,7 +99,7 @@ bool IsEqual(ParameterSpace<parametric_dimensionality> const& lhs,
              Tolerance const& tolerance) {
   using BSplineBasisFunctions = typename ParameterSpace<
       parametric_dimensionality>::BSplineBasisFunctions_::value_type;
-  using utilities::std_container_operations::DoesContainPointersToEqualValues;
+  using utilities::container_operations::DoesContainPointersToEqualValues;
 
 #ifndef NDEBUG
   try {

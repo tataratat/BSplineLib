@@ -37,7 +37,7 @@ bool IsEqual(VectorSpace<dimensionality> const& lhs,
       lhs.coordinates_.end(),
       rhs.coordinates_.begin(),
       rhs.coordinates_.end(),
-      std::bind(utilities::std_container_operations::DoesContainEqualValues<
+      std::bind(utilities::container_operations::DoesContainEqualValues<
                     typename VectorSpace<dimensionality>::Coordinate_>,
                 std::placeholders::_1,
                 std::placeholders::_2,
@@ -161,7 +161,7 @@ Coordinate VectorSpace<dimensionality>::DetermineMaximumDistanceFromOrigin(
   for (int i{}; i < GetNumberOfCoordinates(); ++i) {
     const auto c_view = operator[](i);
     maximum_distance =
-        std::max(utilities::std_container_operations::TwoNorm(c_view),
+        std::max(utilities::container_operations::TwoNorm(c_view),
                  maximum_distance);
   }
   return Coordinate{maximum_distance};

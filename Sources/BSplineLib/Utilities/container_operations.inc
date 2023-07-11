@@ -89,7 +89,7 @@ constexpr bool DoesContainEqualValues(
     numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
     Throw(exception,
-          "bsplinelib::utilities::std_container_operations::"
+          "bsplinelib::utilities::container_operations::"
           "DoesContainEqualValues");
   }
 #endif
@@ -116,7 +116,7 @@ constexpr bool DoesContainPointersToEqualValues(
     numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
     Throw(exception,
-          "bsplinelib::utilities::std_container_operations::"
+          "bsplinelib::utilities::container_operations::"
           "DoesContainPointersToEqualValues");
   }
 #endif
@@ -139,7 +139,7 @@ constexpr ContainerType& AddAndAssignToFirst(ContainerType& lhs,
       ThrowIfContainerSizesDiffer(lhs, rhs);
     } catch (InvalidArgument const& exception) {
       Throw(exception,
-            "bsplinelib::utilities::std_container_operations::"
+            "bsplinelib::utilities::container_operations::"
             "AddAndAssignToFirst");
     }
 #endif
@@ -164,7 +164,7 @@ constexpr ContainerType Add(ContainerType const& lhs,
     AddAndAssignToFirst(sum, rhs...);
 #ifndef NDEBUG
   } catch (InvalidArgument const& exception) {
-    Throw(exception, "bsplinelib::utilities::std_container_operations::Add");
+    Throw(exception, "bsplinelib::utilities::container_operations::Add");
   }
 #endif
   return sum;
@@ -179,7 +179,7 @@ SubtractAndAssignToFirst(ContainerLhsType& lhs, ContainerRhsType const& rhs) {
       ThrowIfContainerSizesDiffer(lhs, rhs);
     } catch (InvalidArgument const& exception) {
       Throw(exception,
-            "bsplinelib::utilities::std_container_operations::"
+            "bsplinelib::utilities::container_operations::"
             "SubtractAndAssignToFirst");
     }
 #endif
@@ -220,8 +220,7 @@ constexpr auto Subtract(ContainerType const& lhs,
     SubtractAndAssignToFirst(difference, rhs...);
 #ifndef NDEBUG
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "bsplinelib::utilities::std_container_operations::Subtract");
+    Throw(exception, "bsplinelib::utilities::container_operations::Subtract");
   }
 #endif
   return difference;
@@ -273,7 +272,7 @@ ContainerType& DivideAndAssignToFirst(ContainerType& container,
           tolerance))
     Throw(InvalidArgument("Division by zero (" + std::to_string(divisor)
                           + ") encountered."),
-          "bsplinelib::utilities::std_container_operations::"
+          "bsplinelib::utilities::container_operations::"
           "DivideAndAssignToFirst");
 #endif
   std::transform(container.begin(),
@@ -305,7 +304,7 @@ constexpr auto Divide(ContainerType const& container,
     DivideAndAssignToFirst(divided, divisor, tolerance);
 #ifndef NDEBUG
   } catch (InvalidArgument const& exception) {
-    Throw(exception, "bsplinelib::utilities::std_container_operations::Divide");
+    Throw(exception, "bsplinelib::utilities::container_operations::Divide");
   }
 #endif
   return divided;
@@ -320,7 +319,7 @@ DotProduct(ContainerType const& lhs, ContainerType const& rhs) {
       ThrowIfContainerSizesDiffer(lhs, rhs);
     } catch (InvalidArgument const& exception) {
       Throw(exception,
-            "bsplinelib::utilities::std_container_operations::"
+            "bsplinelib::utilities::container_operations::"
             "DotProduct");
     }
 #endif
@@ -346,7 +345,7 @@ EuclidianDistance(ContainerTypeLhs const& lhs, ContainerTypeRhs const& rhs) {
       ThrowIfContainerSizesDiffer(lhs, rhs);
     } catch (InvalidArgument const& exception) {
       Throw(exception,
-            "bsplinelib::utilities::std_container_operations::"
+            "bsplinelib::utilities::container_operations::"
             "EuclidianDistance");
     }
 #endif
