@@ -105,8 +105,7 @@ bool IsEqual(ParameterSpace<parametric_dimensionality> const& lhs,
   try {
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "bsplinelib::parameter_spaces::IsEqual::ParameterSpace");
+    Throw(exception, "bsplinelib::parameter_spaces::IsEqual::ParameterSpace");
   }
 #endif
   return (DoesContainPointersToEqualValues(lhs.knot_vectors_,

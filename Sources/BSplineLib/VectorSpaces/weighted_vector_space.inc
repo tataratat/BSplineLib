@@ -33,8 +33,7 @@ bool IsEqual(WeightedVectorSpace<dimensionality> const& lhs,
   try {
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "bsplinelib::vector_spaces::IsEqual::WeightedVectorSpace");
+    Throw(exception, "bsplinelib::vector_spaces::IsEqual::WeightedVectorSpace");
   }
 #endif
   return IsEqual(static_cast<Base const&>(lhs),
@@ -83,7 +82,6 @@ WeightedVectorSpace<dimensionality>::Project(
   return coordinate;
 }
 
-
 template<int dimensionality>
 typename WeightedVectorSpace<
     dimensionality>::MaximumDistanceFromOriginAndMinimumWeight_
@@ -94,14 +92,17 @@ WeightedVectorSpace<dimensionality>::
   double max_distance{}, min_weight{};
   for (int i{}; i < Base_::GetNumberOfCoordinates(); ++i) {
     const auto hc_view = Base_::operator[](0);
-    max_distance = std::max(utilities::std_container_operations::TwoNorm(Project(hc_view)), max_distance);
+    max_distance =
+        std::max(utilities::std_container_operations::TwoNorm(Project(hc_view)),
+                 max_distance);
     min_weight = std::min(hc_view[dimensionality], min_weight);
   }
 
   return typename WeightedVectorSpace<
-    dimensionality>::MaximumDistanceFromOriginAndMinimumWeight_{Coordinate{max_distance}, Coordinate{min_weight}};
+      dimensionality>::MaximumDistanceFromOriginAndMinimumWeight_{
+      Coordinate{max_distance},
+      Coordinate{min_weight}};
 }
-
 
 template<int dimensionality>
 typename WeightedVectorSpace<dimensionality>::HomogeneousCoordinates_

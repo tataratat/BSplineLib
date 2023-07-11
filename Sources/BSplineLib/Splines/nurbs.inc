@@ -134,7 +134,7 @@ Nurbs<parametric_dimensionality, dimensionality>::operator()(
   // Evaluate all homogeneous derivatives of same or lower order.
   typename HomogeneousBSpline_::VectorSpace_::NestedCoordinates_
       homogeneous_b_spline_derivatives;
-  homogeneous_b_spline_derivatives.reserve(total_number_of_derivatives );
+  homogeneous_b_spline_derivatives.reserve(total_number_of_derivatives);
   for (Index current_derivative{zero_derivative};
        current_derivative != end_derivative;
        ++current_derivative)
@@ -264,9 +264,8 @@ Nurbs<parametric_dimensionality, dimensionality>::operator()(
                             [current_lower_derivative.GetIndex1d().Get()],
                         product_of_binomial_coefficients
                             * homogeneous_b_spline_derivatives
-                                  [current_complementary_derivative.GetIndex1d()
-                                       .Get()][dimensionality]
-                                      ));
+                                [current_complementary_derivative.GetIndex1d()
+                                     .Get()][dimensionality]));
               }
             } while (std::next_permutation(
                 are_required_derivatives_currently_required_begin,

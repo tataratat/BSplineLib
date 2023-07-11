@@ -58,7 +58,8 @@ VectorSpace<dimensionality>::CreateCoordinate() const {
 
 template<int dimensionality>
 typename VectorSpace<dimensionality>::Coordinate_
-VectorSpace<dimensionality>::CreateCoordinate(std::initializer_list<double> coordinate) const {
+VectorSpace<dimensionality>::CreateCoordinate(
+    std::initializer_list<double> coordinate) const {
   // size check
   assert(coordinate.size() == dim_); // coordinate size and dim mismatch
   return Coordinate_(coordinate);
@@ -72,21 +73,20 @@ VectorSpace<dimensionality>::operator[](const int coordinate_id) {
 }
 
 template<int dimensionality>
-CoordinateView //const&
+CoordinateView // const&
 VectorSpace<dimensionality>::operator[](Index const& coordinate) {
 #ifndef NDEBUG
   try {
     ThrowIfIndexIsInvalid(coordinate);
   } catch (OutOfRange const& exception) {
-    Throw(exception,
-          "bsplinelib::vector_spaces::VectorSpace::operator[]");
+    Throw(exception, "bsplinelib::vector_spaces::VectorSpace::operator[]");
   }
 #endif
   return operator[](coordinate.Get());
 }
 
 template<int dimensionality>
-ConstCoordinateView //const&
+ConstCoordinateView // const&
 VectorSpace<dimensionality>::operator[](const int coordinate_id) const {
   const double* begin_ptr = coordinates_.data();
   return {begin_ptr + (coordinate_id * dim_), dim_};
@@ -108,7 +108,7 @@ void VectorSpace<dimensionality>::Replace(Index const& coordinate_index,
     Throw(exception, "bsplinelib::vector_spaces::VectorSpace::Replace");
   }
 #endif
-  //coordinates_[coordinate_index.Get()] = std::move(coordinate);
+  // coordinates_[coordinate_index.Get()] = std::move(coordinate);
   const auto this_coordinate = operator[](coordinate_index);
   for (int i{}; i < dim_; ++i) {
     this_coordinate[i] = coordinate[i];
@@ -128,7 +128,8 @@ void VectorSpace<dimensionality>::Insert(Index const& coordinate_index,
 #endif
 
   coordinates_.insert(coordinates_.begin() + (coordinate_index.Get() * dim_),
-                      coordinate.begin(), coordinate.end());
+                      coordinate.begin(),
+                      coordinate.end());
 }
 
 template<int dimensionality>
@@ -159,10 +160,9 @@ Coordinate VectorSpace<dimensionality>::DetermineMaximumDistanceFromOrigin(
   double maximum_distance{};
   for (int i{}; i < GetNumberOfCoordinates(); ++i) {
     const auto c_view = operator[](i);
-    maximum_distance = std::max(
-        utilities::std_container_operations::TwoNorm(c_view),
-        maximum_distance
-    );
+    maximum_distance =
+        std::max(utilities::std_container_operations::TwoNorm(c_view),
+                 maximum_distance);
   }
   return Coordinate{maximum_distance};
 }

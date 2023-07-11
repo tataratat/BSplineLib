@@ -164,16 +164,15 @@ constexpr ContainerType Add(ContainerType const& lhs,
     AddAndAssignToFirst(sum, rhs...);
 #ifndef NDEBUG
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "bsplinelib::utilities::std_container_operations::Add");
+    Throw(exception, "bsplinelib::utilities::std_container_operations::Add");
   }
 #endif
   return sum;
 }
 
 template<typename ContainerLhsType, typename ContainerRhsType>
-constexpr ContainerLhsType& SubtractAndAssignToFirst(ContainerLhsType& lhs,
-                                                    ContainerRhsType const& rhs) {
+constexpr ContainerLhsType&
+SubtractAndAssignToFirst(ContainerLhsType& lhs, ContainerRhsType const& rhs) {
 #ifndef NDEBUG
   if constexpr (is_vector<ContainerLhsType>)
     try {
@@ -191,7 +190,9 @@ constexpr ContainerLhsType& SubtractAndAssignToFirst(ContainerLhsType& lhs,
                  std::minus{});
   return lhs;
 }
-template<typename ContainerLhsType, typename ContainerRhsType, typename... ContainerRhsTypes>
+template<typename ContainerLhsType,
+         typename ContainerRhsType,
+         typename... ContainerRhsTypes>
 constexpr ContainerLhsType&
 SubtractAndAssignToFirst(ContainerLhsType& lhs,
                          ContainerRhsType const& rhs,
@@ -202,14 +203,15 @@ SubtractAndAssignToFirst(ContainerLhsType& lhs,
 
 template<typename ContainerType, typename... ContainerTypes>
 constexpr auto Subtract(ContainerType const& lhs,
-                                 ContainerTypes const&... rhs) {
+                        ContainerTypes const&... rhs) {
   auto difference = [&lhs]() {
     if constexpr (is_coordinate_view<ContainerType>) {
       return lhs.as_vector();
     } else if constexpr (is_vector<ContainerType> || is_array<ContainerType>) {
       return ContainerType{lhs};
     } else {
-      static_assert(error_handling::is_false<ContainerType>, "Unsupported for Subtract()");
+      static_assert(error_handling::is_false<ContainerType>,
+                    "Unsupported for Subtract()");
     }
   }();
 #ifndef NDEBUG
@@ -226,11 +228,9 @@ constexpr auto Subtract(ContainerType const& lhs,
 }
 
 template<typename ContainerType, typename FactorType>
-constexpr auto
-Multiply(ContainerType const& container,
-         FactorType const& factor) {
+constexpr auto Multiply(ContainerType const& container,
+                        FactorType const& factor) {
   using std::bind, std::multiplies, std::placeholders::_1, std::transform;
-
 
   if constexpr (is_array<ContainerType>) {
     ContainerType multiplied;
@@ -238,7 +238,7 @@ Multiply(ContainerType const& container,
               container.end(),
               multiplied.begin(),
               bind(multiplies{}, _1, factor));
-                return multiplied;
+    return multiplied;
   } else if constexpr (is_vector<ContainerType>) {
     ContainerType multiplied;
     multiplied.reserve(container.size());
@@ -246,32 +246,31 @@ Multiply(ContainerType const& container,
               container.end(),
               std::back_inserter(multiplied),
               bind(multiplies{}, _1, factor));
-                return multiplied;
-  } else if constexpr (is_coordinate_view<ContainerType>){
+    return multiplied;
+  } else if constexpr (is_coordinate_view<ContainerType>) {
     Vector<typename ContainerType::value_type> multiplied;
     multiplied.reserve(container.size());
     transform(container.begin(),
               container.end(),
               std::back_inserter(multiplied),
               bind(multiplies{}, _1, factor));
-                return multiplied;
+    return multiplied;
   } else {
     static_assert(error_handling::is_false<ContainerType>,
                   "Only std::array and std::vector are supported.");
   }
-
 }
 
 template<typename ContainerType, typename DivisorType, typename ToleranceType>
-ContainerType& DivideAndAssignToFirst(
-    ContainerType& container,
-    DivisorType const& divisor,
-    ToleranceType const& tolerance) {
+ContainerType& DivideAndAssignToFirst(ContainerType& container,
+                                      DivisorType const& divisor,
+                                      ToleranceType const& tolerance) {
 #ifndef NDEBUG
-  if (numeric_operations::IsEqual(divisor,
-                                  0.,
-                                  //typename ContainerType::value_type::Type_{},
-                                  tolerance))
+  if (numeric_operations::IsEqual(
+          divisor,
+          0.,
+          // typename ContainerType::value_type::Type_{},
+          tolerance))
     Throw(InvalidArgument("Division by zero (" + std::to_string(divisor)
                           + ") encountered."),
           "bsplinelib::utilities::std_container_operations::"
@@ -285,10 +284,9 @@ ContainerType& DivideAndAssignToFirst(
 }
 
 template<typename ContainerType, typename DivisorType, typename ToleranceType>
-constexpr auto
-Divide(ContainerType const& container,
-       DivisorType const& divisor,
-       ToleranceType const& tolerance) {
+constexpr auto Divide(ContainerType const& container,
+                      DivisorType const& divisor,
+                      ToleranceType const& tolerance) {
 
   auto divided = [&container]() {
     if constexpr (is_coordinate_view<ContainerType>) {
@@ -296,7 +294,8 @@ Divide(ContainerType const& container,
     } else if constexpr (is_vector<ContainerType> || is_array<ContainerType>) {
       return ContainerType{container};
     } else {
-      static_assert(error_handling::is_false<ContainerType>, "Unsupported for Subtract()");
+      static_assert(error_handling::is_false<ContainerType>,
+                    "Unsupported for Subtract()");
     }
   }();
 
@@ -306,8 +305,7 @@ Divide(ContainerType const& container,
     DivideAndAssignToFirst(divided, divisor, tolerance);
 #ifndef NDEBUG
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "bsplinelib::utilities::std_container_operations::Divide");
+    Throw(exception, "bsplinelib::utilities::std_container_operations::Divide");
   }
 #endif
   return divided;

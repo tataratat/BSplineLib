@@ -100,12 +100,11 @@ BSpline<parametric_dimensionality, dimensionality>::operator()(
       parameter_space.FindFirstNonZeroBasisFunction(parametric_coordinate);
   auto offset = parameter_space.First();
 
-  bsplinelib::parameter_spaces::RecursiveCombine(
-      basis_per_dim,
-      beginning,
-      offset,
-      *vector_space_,
-      evaluated_b_spline);
+  bsplinelib::parameter_spaces::RecursiveCombine(basis_per_dim,
+                                                 beginning,
+                                                 offset,
+                                                 *vector_space_,
+                                                 evaluated_b_spline);
 
   return evaluated_b_spline;
 }
@@ -135,12 +134,11 @@ BSpline<parametric_dimensionality, dimensionality>::operator()(
       parameter_space.FindFirstNonZeroBasisFunction(parametric_coordinate);
   auto offset = parameter_space.First();
 
-  bsplinelib::parameter_spaces::RecursiveCombine(
-      basis_derivative_per_dim,
-      beginning,
-      offset,
-      *vector_space_,
-      evaluated_b_spline_derivative);
+  bsplinelib::parameter_spaces::RecursiveCombine(basis_derivative_per_dim,
+                                                 beginning,
+                                                 offset,
+                                                 *vector_space_,
+                                                 evaluated_b_spline_derivative);
 
   return evaluated_b_spline_derivative;
 }
@@ -593,14 +591,17 @@ bool BSpline<parametric_dimensionality, dimensionality>::ReduceDegree(
                            coefficient));
             });
         if (IsLessOrEqual(
-                Coordinate{utilities::std_container_operations::EuclidianDistance(
-                    utilities::std_container_operations::DivideAndAssignToFirst(
-                        coordinate,
-                        GetBack(current_coefficients)),
-                    vector_space[Index_{number_of_coordinates,
-                                        current_last_coordinate_value}
-                                     .GetIndex1d()
-                                 + slice_coordinate.GetIndex1d() + Index{1}])},
+                Coordinate{
+                    utilities::std_container_operations::EuclidianDistance(
+                        utilities::std_container_operations::
+                            DivideAndAssignToFirst(
+                                coordinate,
+                                GetBack(current_coefficients)),
+                        vector_space[Index_{number_of_coordinates,
+                                            current_last_coordinate_value}
+                                         .GetIndex1d()
+                                     + slice_coordinate.GetIndex1d()
+                                     + Index{1}])},
                 Coordinate{tolerance_reduction})) {
           vector_space.Erase(erasure_position);
         } else {
