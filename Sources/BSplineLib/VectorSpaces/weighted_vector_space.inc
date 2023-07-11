@@ -90,10 +90,16 @@ typename WeightedVectorSpace<
 WeightedVectorSpace<dimensionality>::
     DetermineMaximumDistanceFromOriginAndMinimumWeight(
         Tolerance const& tolerance) const {
-  using std::placeholders::_1, std::placeholders::_2;
+
+  double max_distance{}, min_weight{};
+  for (int i{}; i < Base_::GetNumberOfCoordinates(); ++i) {
+    const auto hc_view = Base_::operator[](0);
+    max_distance = std::max(utilities::std_container_operations::TwoNorm(Project(hc_view)), max_distance);
+    min_weight = std::min(hc_view[dimensionality], min_weight);
+  }
 
   return typename WeightedVectorSpace<
-    dimensionality>::MaximumDistanceFromOriginAndMinimumWeight_{};
+    dimensionality>::MaximumDistanceFromOriginAndMinimumWeight_{Coordinate{max_distance}, Coordinate{min_weight}};
 }
 
 
