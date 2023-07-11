@@ -37,16 +37,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace bsplinelib::splines {
 
-template<int parametric_dimensionality, int dimensionality>
+template<int parametric_dimensionality>
 class Nurbs;
 
-template<int parametric_dimensionality, int dimensionality>
-bool IsEqual(Nurbs<parametric_dimensionality, dimensionality> const& lhs,
-             Nurbs<parametric_dimensionality, dimensionality> const& rhs,
+template<int parametric_dimensionality>
+bool IsEqual(Nurbs<parametric_dimensionality> const& lhs,
+             Nurbs<parametric_dimensionality> const& rhs,
              Tolerance const& tolerance = kEpsilon);
-template<int parametric_dimensionality, int dimensionality>
-bool operator==(Nurbs<parametric_dimensionality, dimensionality> const& lhs,
-                Nurbs<parametric_dimensionality, dimensionality> const& rhs);
+template<int parametric_dimensionality>
+bool operator==(Nurbs<parametric_dimensionality> const& lhs,
+                Nurbs<parametric_dimensionality> const& rhs);
 
 // NURBSs are rational B-splines.  Currently only single-patch NURBSs are
 // supported.
@@ -57,17 +57,16 @@ bool operator==(Nurbs<parametric_dimensionality, dimensionality> const& lhs,
 //   Evaluating S'(0.0, 0.0) (Eq. (4.9)). curve.InsertKnot(Dimension{1},
 //   Curve::Knot_{0.5});  // Insert u = 0.5 into U_1.
 //   curve.ElevateDegree(Dimension{});  // Raise the spline's degree p_0 by one.
-template<int parametric_dimensionality, int dimensionality>
-class Nurbs : public Spline<parametric_dimensionality, dimensionality> {
+template<int parametric_dimensionality>
+class Nurbs : public Spline<parametric_dimensionality> {
 public:
-  using Base_ = Spline<parametric_dimensionality, dimensionality>;
+  using Base_ = Spline<parametric_dimensionality>;
   using Coordinate_ = typename Base_::Coordinate_;
   using Derivative_ = typename Base_::Derivative_;
   using Knot_ = typename Base_::Knot_;
   using ParameterSpace_ = typename Base_::ParameterSpace_;
   using ParametricCoordinate_ = typename Base_::ParametricCoordinate_;
-  using WeightedVectorSpace_ =
-      vector_spaces::WeightedVectorSpace<dimensionality>;
+  using WeightedVectorSpace_ = vector_spaces::WeightedVectorSpace;
 
   Nurbs();
   Nurbs(SharedPointer<ParameterSpace_> parameter_space,
@@ -79,14 +78,12 @@ public:
   ~Nurbs() override = default;
 
   // Comparison based on tolerance.
-  friend bool IsEqual<parametric_dimensionality, dimensionality>(
-      Nurbs const& lhs,
-      Nurbs const& rhs,
-      Tolerance const& tolerance);
+  friend bool IsEqual<parametric_dimensionality>(Nurbs const& lhs,
+                                                 Nurbs const& rhs,
+                                                 Tolerance const& tolerance);
   // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
-  friend bool
-  operator==<parametric_dimensionality, dimensionality>(Nurbs const& lhs,
-                                                        Nurbs const& rhs);
+  friend bool operator==<parametric_dimensionality>(Nurbs const& lhs,
+                                                    Nurbs const& rhs);
   Coordinate_ operator()(ParametricCoordinate_ const& parametric_coordinate,
                          Tolerance const& tolerance = kEpsilon) const final;
   Coordinate_ operator()(ParametricCoordinate_ const& parametric_coordinate,
@@ -114,8 +111,7 @@ public:
       Tolerance const& tolerance = kEpsilon) const final;
 
 protected:
-  using HomogeneousBSpline_ =
-      BSpline<parametric_dimensionality, dimensionality + 1>;
+  using HomogeneousBSpline_ = BSpline<parametric_dimensionality>;
 
   SharedPointer<HomogeneousBSpline_> homogeneous_b_spline_;
   SharedPointer<WeightedVectorSpace_> weighted_vector_space_;

@@ -20,11 +20,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 // TODO(all): use NamedInteger::ForEach once clang supports capturing of
 // variables from structured bindings.
 
-template<int parametric_dimensionality, int dimensionality>
-BSpline<parametric_dimensionality, dimensionality>::BSpline() : Base_(false) {}
+template<int parametric_dimensionality>
+BSpline<parametric_dimensionality>::BSpline() : Base_(false) {}
 
-template<int parametric_dimensionality, int dimensionality>
-BSpline<parametric_dimensionality, dimensionality>::BSpline(
+template<int parametric_dimensionality>
+BSpline<parametric_dimensionality>::BSpline(
     SharedPointer<ParameterSpace_> parameter_space,
     SharedPointer<VectorSpace_> vector_space)
     : Base_(std::move(parameter_space), false) {
@@ -45,27 +45,24 @@ BSpline<parametric_dimensionality, dimensionality>::BSpline(
   vector_space_ = std::move(vector_space);
 }
 
-template<int parametric_dimensionality, int dimensionality>
-BSpline<parametric_dimensionality, dimensionality>::BSpline(
-    BSpline const& other)
+template<int parametric_dimensionality>
+BSpline<parametric_dimensionality>::BSpline(BSpline const& other)
     : Base_(other),
       vector_space_{std::make_shared<VectorSpace_>(*other.vector_space_)} {}
 
-template<int parametric_dimensionality, int dimensionality>
-BSpline<parametric_dimensionality, dimensionality>&
-BSpline<parametric_dimensionality, dimensionality>::operator=(
-    BSpline const& rhs) {
+template<int parametric_dimensionality>
+BSpline<parametric_dimensionality>&
+BSpline<parametric_dimensionality>::operator=(BSpline const& rhs) {
   Base_::operator=(rhs),
   vector_space_ = std::make_shared<VectorSpace_>(*rhs.vector_space_);
   return *this;
 }
 
-template<int parametric_dimensionality, int dimensionality>
-bool IsEqual(BSpline<parametric_dimensionality, dimensionality> const& lhs,
-             BSpline<parametric_dimensionality, dimensionality> const& rhs,
+template<int parametric_dimensionality>
+bool IsEqual(BSpline<parametric_dimensionality> const& lhs,
+             BSpline<parametric_dimensionality> const& rhs,
              Tolerance const& tolerance) {
-  using Base =
-      typename BSpline<parametric_dimensionality, dimensionality>::Base_;
+  using Base = typename BSpline<parametric_dimensionality>::Base_;
 
   return (IsEqual(*lhs.vector_space_, *rhs.vector_space_, tolerance)
           && IsEqual(static_cast<Base const&>(lhs),
@@ -73,15 +70,15 @@ bool IsEqual(BSpline<parametric_dimensionality, dimensionality> const& lhs,
                      tolerance));
 }
 
-template<int parametric_dimensionality, int dimensionality>
-bool operator==(BSpline<parametric_dimensionality, dimensionality> const& lhs,
-                BSpline<parametric_dimensionality, dimensionality> const& rhs) {
+template<int parametric_dimensionality>
+bool operator==(BSpline<parametric_dimensionality> const& lhs,
+                BSpline<parametric_dimensionality> const& rhs) {
   return IsEqual(lhs, rhs);
 }
 
-template<int parametric_dimensionality, int dimensionality>
-typename Spline<parametric_dimensionality, dimensionality>::Coordinate_
-BSpline<parametric_dimensionality, dimensionality>::operator()(
+template<int parametric_dimensionality>
+typename Spline<parametric_dimensionality>::Coordinate_
+BSpline<parametric_dimensionality>::operator()(
     ParametricCoordinate_ const& parametric_coordinate,
     Tolerance const& tolerance) const {
 #ifndef NDEBUG
@@ -92,7 +89,7 @@ BSpline<parametric_dimensionality, dimensionality>::operator()(
   }
 #endif
   ParameterSpace_ const& parameter_space = *Base_::parameter_space_;
-  Coordinate_ evaluated_b_spline(dimensionality);
+  Coordinate_ evaluated_b_spline(vector_space_->GetDimensionality());
 
   const auto basis_per_dim =
       parameter_space.EvaluateBasisValuesPerDimension(parametric_coordinate);
@@ -109,9 +106,9 @@ BSpline<parametric_dimensionality, dimensionality>::operator()(
   return evaluated_b_spline;
 }
 
-template<int parametric_dimensionality, int dimensionality>
-typename Spline<parametric_dimensionality, dimensionality>::Coordinate_
-BSpline<parametric_dimensionality, dimensionality>::operator()(
+template<int parametric_dimensionality>
+typename Spline<parametric_dimensionality>::Coordinate_
+BSpline<parametric_dimensionality>::operator()(
     ParametricCoordinate_ const& parametric_coordinate,
     Derivative_ const& derivative,
     Tolerance const& tolerance) const {
@@ -123,7 +120,7 @@ BSpline<parametric_dimensionality, dimensionality>::operator()(
   }
 #endif
   ParameterSpace_ const& parameter_space = *Base_::parameter_space_;
-  Coordinate_ evaluated_b_spline_derivative(dimensionality);
+  Coordinate_ evaluated_b_spline_derivative(vector_space_->GetDimensionality());
 
   const auto basis_derivative_per_dim =
       parameter_space.EvaluateBasisDerivativeValuesPerDimension(
@@ -143,9 +140,9 @@ BSpline<parametric_dimensionality, dimensionality>::operator()(
   return evaluated_b_spline_derivative;
 }
 
-template<int parametric_dimensionality, int dimensionality>
-typename Spline<parametric_dimensionality, dimensionality>::Coordinate_
-BSpline<parametric_dimensionality, dimensionality>::FullyRecursiveEvaluate(
+template<int parametric_dimensionality>
+typename Spline<parametric_dimensionality>::Coordinate_
+BSpline<parametric_dimensionality>::FullyRecursiveEvaluate(
     ParametricCoordinate_ const& parametric_coordinate,
     Tolerance const& tolerance) const {
 #ifndef NDEBUG
@@ -173,9 +170,9 @@ BSpline<parametric_dimensionality, dimensionality>::FullyRecursiveEvaluate(
   return evaluated_b_spline;
 }
 
-template<int parametric_dimensionality, int dimensionality>
-typename Spline<parametric_dimensionality, dimensionality>::Coordinate_
-BSpline<parametric_dimensionality, dimensionality>::FullyRecursiveDerivative(
+template<int parametric_dimensionality>
+typename Spline<parametric_dimensionality>::Coordinate_
+BSpline<parametric_dimensionality>::FullyRecursiveDerivative(
     ParametricCoordinate_ const& parametric_coordinate,
     Derivative_ const& derivative,
     Tolerance const& tolerance) const {
@@ -207,8 +204,8 @@ BSpline<parametric_dimensionality, dimensionality>::FullyRecursiveDerivative(
 }
 
 // Cf. NURBS book Eq. (5.15).
-template<int parametric_dimensionality, int dimensionality>
-void BSpline<parametric_dimensionality, dimensionality>::InsertKnot(
+template<int parametric_dimensionality>
+void BSpline<parametric_dimensionality>::InsertKnot(
     Dimension const& dimension,
     Knot_ knot,
     Multiplicity const& multiplicity,
@@ -282,8 +279,8 @@ void BSpline<parametric_dimensionality, dimensionality>::InsertKnot(
   }
 }
 
-template<int parametric_dimensionality, int dimensionality>
-Multiplicity BSpline<parametric_dimensionality, dimensionality>::RemoveKnot(
+template<int parametric_dimensionality>
+Multiplicity BSpline<parametric_dimensionality>::RemoveKnot(
     Dimension const& dimension,
     Knot_ const& knot,
     Tolerance const& tolerance_removal,
@@ -381,8 +378,8 @@ Multiplicity BSpline<parametric_dimensionality, dimensionality>::RemoveKnot(
 }
 
 // Cf. NURBS book Eq. (5.36).
-template<int parametric_dimensionality, int dimensionality>
-void BSpline<parametric_dimensionality, dimensionality>::ElevateDegree(
+template<int parametric_dimensionality>
+void BSpline<parametric_dimensionality>::ElevateDegree(
     Dimension const& dimension,
     Multiplicity const& multiplicity,
     Tolerance const& tolerance) const {
@@ -487,8 +484,8 @@ void BSpline<parametric_dimensionality, dimensionality>::ElevateDegree(
   Base_::CoarsenKnots(dimension, knots_inserted, tolerance);
 }
 
-template<int parametric_dimensionality, int dimensionality>
-bool BSpline<parametric_dimensionality, dimensionality>::ReduceDegree(
+template<int parametric_dimensionality>
+bool BSpline<parametric_dimensionality>::ReduceDegree(
     Dimension const& dimension,
     Tolerance const& tolerance_reduction,
     Multiplicity const& multiplicity,
@@ -613,17 +610,17 @@ bool BSpline<parametric_dimensionality, dimensionality>::ReduceDegree(
   return true;
 }
 
-template<int parametric_dimensionality, int dimensionality>
-Coordinate BSpline<parametric_dimensionality, dimensionality>::
+template<int parametric_dimensionality>
+Coordinate BSpline<parametric_dimensionality>::
     ComputeUpperBoundForMaximumDistanceFromOrigin(
         Tolerance const& tolerance) const {
   return vector_space_->DetermineMaximumDistanceFromOrigin(tolerance);
 }
 
 // See NURBS book p. 169.
-template<int parametric_dimensionality, int dimensionality>
-typename BSpline<parametric_dimensionality, dimensionality>::BezierInformation_
-BSpline<parametric_dimensionality, dimensionality>::MakeBezier(
+template<int parametric_dimensionality>
+typename BSpline<parametric_dimensionality>::BezierInformation_
+BSpline<parametric_dimensionality>::MakeBezier(
     Dimension const& dimension,
     Tolerance const& tolerance) const {
   BezierInformation_ const& bezier_information =

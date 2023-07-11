@@ -44,14 +44,12 @@ public:
                       Tolerance const& tolerance);
   friend bool operator==(SplineItem const& lhs, SplineItem const& rhs);
 
-  int dimensionality_, parametric_dimensionality_;
+  int parametric_dimensionality_;
   bool is_rational_;
 
 protected:
   SplineItem() = default;
-  SplineItem(int parametric_dimensionality,
-             int dimensionality,
-             bool is_rational);
+  SplineItem(int parametric_dimensionality, bool is_rational);
   SplineItem(SplineItem const& other) = default;
   SplineItem(SplineItem&& other) noexcept = default;
   SplineItem& operator=(SplineItem const& rhs) = default;

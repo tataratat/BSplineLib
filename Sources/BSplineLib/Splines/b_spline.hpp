@@ -34,16 +34,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace bsplinelib::splines {
 
-template<int parametric_dimensionality, int dimensionality>
+template<int parametric_dimensionality>
 class BSpline;
 
-template<int parametric_dimensionality, int dimensionality>
-bool IsEqual(BSpline<parametric_dimensionality, dimensionality> const& lhs,
-             BSpline<parametric_dimensionality, dimensionality> const& rhs,
+template<int parametric_dimensionality>
+bool IsEqual(BSpline<parametric_dimensionality> const& lhs,
+             BSpline<parametric_dimensionality> const& rhs,
              Tolerance const& tolerance = kEpsilon);
-template<int parametric_dimensionality, int dimensionality>
-bool operator==(BSpline<parametric_dimensionality, dimensionality> const& lhs,
-                BSpline<parametric_dimensionality, dimensionality> const& rhs);
+template<int parametric_dimensionality>
+bool operator==(BSpline<parametric_dimensionality> const& lhs,
+                BSpline<parametric_dimensionality> const& rhs);
 
 // B-splines are non-rational splines.  Currently only single-patch B-splines
 // are supported.
@@ -56,10 +56,10 @@ bool operator==(BSpline<parametric_dimensionality, dimensionality> const& lhs,
 //   Surface::Knot_{0.5}); bool const &successful =
 //   surface.ReduceDegree(Dimension{1}, kEpsilon);  // True if spline's degree
 //   p_0 be reduced.
-template<int parametric_dimensionality, int dimensionality>
-class BSpline : public Spline<parametric_dimensionality, dimensionality> {
+template<int parametric_dimensionality>
+class BSpline : public Spline<parametric_dimensionality> {
 public:
-  using Base_ = Spline<parametric_dimensionality, dimensionality>;
+  using Base_ = Spline<parametric_dimensionality>;
   using Coordinate_ = typename Base_::Coordinate_;
   using Derivative_ = typename Base_::Derivative_;
   using Knot_ = typename Base_::Knot_;
@@ -77,14 +77,12 @@ public:
   ~BSpline() override = default;
 
   // Comparison based on tolerance.
-  friend bool IsEqual<parametric_dimensionality, dimensionality>(
-      BSpline const& lhs,
-      BSpline const& rhs,
-      Tolerance const& tolerance);
+  friend bool IsEqual<parametric_dimensionality>(BSpline const& lhs,
+                                                 BSpline const& rhs,
+                                                 Tolerance const& tolerance);
   // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
-  friend bool
-  operator==<parametric_dimensionality, dimensionality>(BSpline const& lhs,
-                                                        BSpline const& rhs);
+  friend bool operator==<parametric_dimensionality>(BSpline const& lhs,
+                                                    BSpline const& rhs);
   // Default evaluation uses lookup tricks
   Coordinate_ operator()(ParametricCoordinate_ const& parametric_coordinate,
                          Tolerance const& tolerance = kEpsilon) const override;

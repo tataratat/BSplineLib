@@ -18,25 +18,22 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-set(HEADERS vector_space.hpp vector_space.inc weighted_vector_space.hpp
-            weighted_vector_space.inc)
+set(HEADERS vector_space.hpp weighted_vector_space.hpp)
 
-set(SOURCES #
-    ${HEADERS})
+set(SOURCES vector_space.cpp weighted_vector_space.cpp
+            # ${HEADERS}
+)
 set_source_files_properties(${HEADERS} PROPERTIES LANGUAGE CXX HEADER_FILE_ONLY
                                                                TRUE)
 
-if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.19")
-  add_library(vector_spaces INTERFACE ${SOURCES})
-else()
-  add_library(vector_spaces INTERFACE)
-endif()
+add_library(vector_spaces ${SOURCES})
 add_library(BSplineLib::vector_spaces ALIAS vector_spaces)
 
-target_include_directories(vector_spaces INTERFACE ${INCLUDE_DIRECTORIES})
-target_link_libraries(vector_spaces INTERFACE utilities)
-target_compile_definitions(vector_spaces INTERFACE ${COMPILE_DEFINITIONS})
-target_compile_features(vector_spaces INTERFACE ${BSPLINELIB_COMPILE_FEATURES})
+target_include_directories(vector_spaces PUBLIC ${INCLUDE_DIRECTORIES})
+target_link_libraries(vector_spaces PUBLIC utilities)
+target_compile_definitions(vector_spaces PRIVATE ${COMPILE_DEFINITIONS})
+target_compile_options(vector_spaces PRIVATE ${COMPILE_OPTIONS})
+target_compile_features(vector_spaces PRIVATE ${BSPLINELIB_COMPILE_FEATURES})
 
 install(
   TARGETS vector_spaces

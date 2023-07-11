@@ -17,12 +17,11 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-template<int parametric_dimensionality, int dimensionality>
-bool IsEqual(Spline<parametric_dimensionality, dimensionality> const& lhs,
-             Spline<parametric_dimensionality, dimensionality> const& rhs,
+template<int parametric_dimensionality>
+bool IsEqual(Spline<parametric_dimensionality> const& lhs,
+             Spline<parametric_dimensionality> const& rhs,
              Tolerance const& tolerance) {
-  using Base =
-      typename Spline<parametric_dimensionality, dimensionality>::Base_;
+  using Base = typename Spline<parametric_dimensionality>::Base_;
 
 #ifndef NDEBUG
   try {
@@ -35,14 +34,14 @@ bool IsEqual(Spline<parametric_dimensionality, dimensionality> const& lhs,
           && IsEqual(*lhs.parameter_space_, *rhs.parameter_space_, tolerance));
 }
 
-template<int parametric_dimensionality, int dimensionality>
-bool operator==(Spline<parametric_dimensionality, dimensionality> const& lhs,
-                Spline<parametric_dimensionality, dimensionality> const& rhs) {
+template<int parametric_dimensionality>
+bool operator==(Spline<parametric_dimensionality> const& lhs,
+                Spline<parametric_dimensionality> const& rhs) {
   return IsEqual(lhs, rhs);
 }
 
-template<int parametric_dimensionality, int dimensionality>
-void Spline<parametric_dimensionality, dimensionality>::RefineKnots(
+template<int parametric_dimensionality>
+void Spline<parametric_dimensionality>::RefineKnots(
     Dimension const& dimension,
     Knots_ knots,
     Multiplicity const& multiplicity,
@@ -52,8 +51,8 @@ void Spline<parametric_dimensionality, dimensionality>::RefineKnots(
   });
 }
 
-template<int parametric_dimensionality, int dimensionality>
-Multiplicity Spline<parametric_dimensionality, dimensionality>::CoarsenKnots(
+template<int parametric_dimensionality>
+Multiplicity Spline<parametric_dimensionality>::CoarsenKnots(
     Dimension const& dimension,
     Knots_ const& knots,
     Tolerance const& tolerance_removal,
@@ -71,9 +70,9 @@ Multiplicity Spline<parametric_dimensionality, dimensionality>::CoarsenKnots(
   return successful_removals;
 }
 
-template<int parametric_dimensionality, int dimensionality>
-typename Spline<parametric_dimensionality, dimensionality>::NestedCoordinates_
-Spline<parametric_dimensionality, dimensionality>::Sample(
+template<int parametric_dimensionality>
+typename Spline<parametric_dimensionality>::NestedCoordinates_
+Spline<parametric_dimensionality>::Sample(
     NumberOfParametricCoordinates_ const& number_of_parametric_coordinates,
     Tolerance const& tolerance) const {
   using ParametricCoordinates =
@@ -93,34 +92,30 @@ Spline<parametric_dimensionality, dimensionality>::Sample(
   return coordinates;
 }
 
-template<int parametric_dimensionality, int dimensionality>
-Spline<parametric_dimensionality, dimensionality>::Spline(bool is_rational)
-    : SplineItem(parametric_dimensionality,
-                 dimensionality,
-                 std::move(is_rational)) {}
+template<int parametric_dimensionality>
+Spline<parametric_dimensionality>::Spline(bool is_rational)
+    : SplineItem(parametric_dimensionality, std::move(is_rational)) {}
 
-template<int parametric_dimensionality, int dimensionality>
-Spline<parametric_dimensionality, dimensionality>::Spline(
+template<int parametric_dimensionality>
+Spline<parametric_dimensionality>::Spline(
     SharedPointer<ParameterSpace_> parameter_space,
     bool is_rational)
     : Spline(std::move(is_rational)) {
   static_assert(parametric_dimensionality > 0,
                 "The parametric dimensionality must be positive");
-  static_assert(dimensionality > 0, "The dimensionality must be positive");
 
   parameter_space_ = std::move(parameter_space);
 }
 
-template<int parametric_dimensionality, int dimensionality>
-Spline<parametric_dimensionality, dimensionality>::Spline(Spline const& other)
+template<int parametric_dimensionality>
+Spline<parametric_dimensionality>::Spline(Spline const& other)
     : Base_(),
       parameter_space_(
           std::make_shared<ParameterSpace_>(*other.parameter_space_)) {}
 
-template<int parametric_dimensionality, int dimensionality>
-Spline<parametric_dimensionality, dimensionality>&
-Spline<parametric_dimensionality, dimensionality>::operator=(
-    Spline const& rhs) {
+template<int parametric_dimensionality>
+Spline<parametric_dimensionality>&
+Spline<parametric_dimensionality>::operator=(Spline const& rhs) {
   Base_::operator=(rhs);
   parameter_space_ = std::make_shared<ParameterSpace_>(*rhs.parameter_space_);
   return *this;

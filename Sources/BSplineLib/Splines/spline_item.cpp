@@ -26,14 +26,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace bsplinelib::splines {
 
-using std::move;
-
-SplineItem::SplineItem(int parametric_dimensionality,
-                       int dimensionality,
-                       bool is_rational)
-    : dimensionality_(move(dimensionality)),
-      parametric_dimensionality_(move(parametric_dimensionality)),
-      is_rational_(move(is_rational)) {}
+SplineItem::SplineItem(int parametric_dimensionality, bool is_rational)
+    : parametric_dimensionality_(std::move(parametric_dimensionality)),
+      is_rational_(std::move(is_rational)) {}
 
 bool IsEqual(SplineItem const& lhs,
              SplineItem const& rhs,
@@ -46,7 +41,6 @@ bool IsEqual(SplineItem const& lhs,
   }
 #endif
   return ((lhs.parametric_dimensionality_ == rhs.parametric_dimensionality_)
-          && (lhs.dimensionality_ == rhs.dimensionality_)
           && (lhs.is_rational_ == rhs.is_rational_));
 }
 

@@ -33,52 +33,37 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace bsplinelib::vector_spaces {
 
-template<int dimensionality>
 class WeightedVectorSpace;
 
-template<int dimensionality>
-bool IsEqual(WeightedVectorSpace<dimensionality> const& lhs,
-             WeightedVectorSpace<dimensionality> const& rhs,
+bool IsEqual(WeightedVectorSpace const& lhs,
+             WeightedVectorSpace const& rhs,
              Tolerance const& tolerance = kEpsilon);
-template<int dimensionality>
-bool operator==(WeightedVectorSpace<dimensionality> const& lhs,
-                WeightedVectorSpace<dimensionality> const& rhs);
+
+bool operator==(WeightedVectorSpace const& lhs, WeightedVectorSpace const& rhs);
 
 // WeightedVectorSpaces store coordinates and weights together using
 // homogeneous, i.e., weighted coordinates.
-//
-// Example:
-//   using WeightedVectorSpace2d = WeightedVectorSpace<2>;
-//   Coordinate const k0_0{}, k2_0{2.0};
-//   WeightedVectorSpace2d::HomogeneousCoordinate_ const
-//   homogeneous_coordinate1{k2_0, k2_0, k2_0};
-//   WeightedVectorSpace2d::Coordinate_ const &coordinate1 =
-//   WeightedVectorSpace2d::Project(homogeneous_coordinate1);
-//   WeightedVectorSpace3d const weighted_vector_space{{{k0_0, k0_0},
-//   coordinate1}, {Weight{1.0}, Weight{2.0}}};
-//   WeightedVectorSpace3d::DetermineMaximumDistanceFromOriginAndMinimumWeight_
-//   const &sqrt2_0_and_1_0 =
-//       weighted_vector_space.DetermineMaximumDistanceFromOriginAndMinimumWeight();
-template<int dimensionality>
-class WeightedVectorSpace : public VectorSpace<dimensionality + 1> {
+class WeightedVectorSpace : public VectorSpace {
 private:
-  using VectorSpace_ = VectorSpace<dimensionality>;
+  using VectorSpace_ = VectorSpace;
 
 public:
-  using Base_ = VectorSpace<dimensionality + 1>;
+  using Base_ = VectorSpace;
   using Coordinate_ = typename VectorSpace_::Coordinate_;
   using Coordinates_ = typename VectorSpace_::Coordinates_;
   using NamedCoordinate_ = Vector<Coordinate>;
   using NestedCoordinates_ = Vector<Coordinate_>;
   using HomogeneousCoordinate_ = typename Base_::Coordinate_;
   using MaximumDistanceFromOriginAndMinimumWeight_ = Tuple<Coordinate, Weight>;
-  using Weights_ = Vector<Weight>;
+  using Weights_ = Vector<double>;
 
   // Make Base Constructor public
   using Base_::Base_;
 
   WeightedVectorSpace() = default;
-  WeightedVectorSpace(Coordinates_ const& coordinates, Weights_ const& weights);
+  WeightedVectorSpace(Coordinates_ const& coordinates,
+                      Weights_ const& weights,
+                      const int dimensionality);
   WeightedVectorSpace(WeightedVectorSpace const& other) = default;
   WeightedVectorSpace(WeightedVectorSpace&& other) noexcept = default;
   WeightedVectorSpace& operator=(WeightedVectorSpace const& rhs) = default;
@@ -86,28 +71,41 @@ public:
   ~WeightedVectorSpace() override = default;
 
   // Comparison based on tolerance.
-  friend bool IsEqual<dimensionality>(WeightedVectorSpace const& lhs,
-                                      WeightedVectorSpace const& rhs,
-                                      Tolerance const& tolerance);
+  friend bool IsEqual(WeightedVectorSpace const& lhs,
+                      WeightedVectorSpace const& rhs,
+                      Tolerance const& tolerance);
   // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
-  friend bool operator==<dimensionality>(WeightedVectorSpace const& lhs,
-                                         WeightedVectorSpace const& rhs);
-  virtual Coordinate_ CreateCoordinate() const override;
+  friend bool operator==(WeightedVectorSpace const& lhs,
+                         WeightedVectorSpace const& rhs);
+
+  virtual void SetDimensionality(const int dimensionality) override;
+  virtual int GetProjectedDimensionality() const;
+  // virtual Coordinate_ CreateCoordinate() const override;
   static Coordinate_
   Project(HomogeneousCoordinate_ const& homogeneous_coordinate);
   static Coordinate_ Project(ConstCoordinateView const& homogeneous_coordinate);
   virtual MaximumDistanceFromOriginAndMinimumWeight_
   DetermineMaximumDistanceFromOriginAndMinimumWeight(
       Tolerance const& tolerance = kEpsilon) const;
+  virtual void SyncCoordinatesSizesAndDims(const bool to_homogeneous);
+  virtual void SyncCoordinates(const bool to_homogeneous);
+
+  // template<typename CoordinateType>
+  // void Replace(Index const& coordinate_index, CoordinateType coordinate);
+  // template<typename CoordinateType>
+  // void Insert(Index const& coordinate_index, CoordinateType coordinate);
+
+protected:
+  VectorSpace_ unweighted_space_; // this dim - 1
+  Coordinates_ weights_;
 
 private:
   using HomogeneousCoordinates_ = typename Base_::Coordinates_;
 
   HomogeneousCoordinates_ HomogenizeCoordinates(Coordinates_ const& coordinates,
-                                                Weights_ const& weights) const;
+                                                Weights_ const& weights,
+                                                const int dimensionality) const;
 };
-
-#include "BSplineLib/VectorSpaces/weighted_vector_space.inc"
 
 } // namespace bsplinelib::vector_spaces
 

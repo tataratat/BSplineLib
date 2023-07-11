@@ -33,23 +33,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace bsplinelib::vector_spaces {
 
-template<int dimensionality>
 class VectorSpace;
 
-template<int dimensionality>
-bool IsEqual(VectorSpace<dimensionality> const& lhs,
-             VectorSpace<dimensionality> const& rhs,
+bool IsEqual(VectorSpace const& lhs,
+             VectorSpace const& rhs,
              Tolerance const& tolerance = kEpsilon);
-template<int dimensionality>
-bool operator==(VectorSpace<dimensionality> const& lhs,
-                VectorSpace<dimensionality> const& rhs);
+
+bool operator==(VectorSpace const& lhs, VectorSpace const& rhs);
 
 struct CoordinateView {
   using value_type = double;
   static constexpr const bool is_coordinate_view = true;
   // constant pointer
   double* const begin_;
-  const int& dim_;
+  const int dim_;
 
   double* begin() const { return begin_; }
   double* end() const { return begin_ + dim_; }
@@ -65,7 +62,7 @@ struct ConstCoordinateView {
   static constexpr const bool is_coordinate_view = true;
   // constant pointer
   const double* begin_;
-  const int& dim_;
+  const int dim_;
 
   const double* begin() const { return begin_; }
   const double* end() const { return begin_ + dim_; }
@@ -78,18 +75,6 @@ struct ConstCoordinateView {
 
 // VectorSpaces group coordinates.
 //
-// Example:
-//   using VectorSpace3d = VectorSpace<3>;
-//   using Coordinate = VectorSpace3d::Coordinate_;
-//   using ScalarCoordinate = Coordinate::value_type;
-//   ScalarCoordinate const k0_0{}, k1_0{1.0};
-//   VectorSpace3d const vector_space{{{k0_0, k0_0, k0_0}, {k1_0, k0_0, k0_0},
-//   {k0_0, k1_0, k0_0}, {k1_0, k1_0, k0_0}}}; int const &four =
-//   vector_space.GetNumberOfCoordinates(); Coordinate const &coordinate =
-//   vector_space[Index{1}];  // Coordinate P_1 = {1.0, 0.0, 0.0}.
-//   ScalarCoordinate const &one_point_zero =
-//   vector_space.DetermineMaximumDistanceFromOrigin();
-template<int dimensionality>
 class VectorSpace {
 public:
   using Coordinate_ = Vector<double>;
@@ -98,7 +83,7 @@ public:
   using NestedCoordinates_ = Vector<Coordinate_>;
 
   VectorSpace() = default;
-  explicit VectorSpace(Coordinates_ coordinates);
+  explicit VectorSpace(Coordinates_ coordinates, const int dimensionality);
   VectorSpace(VectorSpace const& other) = default;
   VectorSpace(VectorSpace&& other) noexcept = default;
   VectorSpace& operator=(VectorSpace const& rhs) = default;
@@ -106,29 +91,32 @@ public:
   virtual ~VectorSpace() = default;
 
   // Comparison based on tolerance.
-  friend bool IsEqual<dimensionality>(VectorSpace const& lhs,
-                                      VectorSpace const& rhs,
-                                      Tolerance const& tolerance);
+  friend bool IsEqual(VectorSpace const& lhs,
+                      VectorSpace const& rhs,
+                      Tolerance const& tolerance);
   // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
-  friend bool operator==<dimensionality>(VectorSpace const& lhs,
-                                         VectorSpace const& rhs);
+  friend bool operator==(VectorSpace const& lhs, VectorSpace const& rhs);
+
+  virtual void SetDimensionality(const int dimensionality);
+  virtual int GetDimensionality() const;
   virtual CoordinateView operator[](const int coordinate_id);
   virtual CoordinateView operator[](Index const& coordinate);
   virtual ConstCoordinateView operator[](const int coordinate_id) const;
+  // similar to operator[], but without checks.
+  // safe to use iff you haven't got an error with GetDimensionality() and
+  // GetCoordinates() GetNumberOfCoordinates() uses both.
+  virtual CoordinateView DirectView(const int coordinate_id);
+  virtual ConstCoordinateView DirectView(const int coordinate_id) const;
   virtual Coordinate_ CreateCoordinate() const;
   virtual Coordinate_
   CreateCoordinate(std::initializer_list<double> coordinate) const;
-  virtual Coordinates_& GetCoordinates() { return coordinates_; }
-  virtual Coordinates_ const& GetCoordinates() const { return coordinates_; }
+  virtual Coordinates_& GetCoordinates();
+  virtual Coordinates_ const& GetCoordinates() const;
 
   virtual int GetNumberOfCoordinates() const;
   template<typename CoordinateType>
-  // virtual void Replace(Index const& coordinate_index, CoordinateType
-  // coordinate);
   void Replace(Index const& coordinate_index, CoordinateType coordinate);
   template<typename CoordinateType>
-  // virtual void Insert(Index const& coordinate_index, CoordinateType
-  // coordinate);
   void Insert(Index const& coordinate_index, CoordinateType coordinate);
   virtual void Erase(Index const& coordinate_index);
 
@@ -136,7 +124,7 @@ public:
       Tolerance const& tolerance = kEpsilon) const;
 
 protected:
-  int dim_ = dimensionality;
+  int dimensionality_{-1};
   Coordinates_ coordinates_;
 
 private:
@@ -145,7 +133,40 @@ private:
 #endif
 };
 
-#include "BSplineLib/VectorSpaces/vector_space.inc"
+// templated implementations should come here
+template<typename CoordinateType>
+void VectorSpace::Insert(Index const& coordinate_index,
+                         CoordinateType coordinate) {
+#ifndef NDEBUG
+  try {
+    ThrowIfIndexIsInvalid(coordinate_index);
+  } catch (OutOfRange const& exception) {
+    Throw(exception, "bsplinelib::vector_spaces::VectorSpace::Insert");
+  }
+#endif
+  coordinates_.insert(coordinates_.begin()
+                          + (coordinate_index.Get() * GetDimensionality()),
+                      coordinate.begin(),
+                      coordinate.end());
+}
+
+template<typename CoordinateType>
+void VectorSpace::Replace(Index const& coordinate_index,
+                          CoordinateType coordinate) {
+#ifndef NDEBUG
+  try {
+    ThrowIfIndexIsInvalid(coordinate_index);
+  } catch (OutOfRange const& exception) {
+    Throw(exception, "bsplinelib::vector_spaces::VectorSpace::Replace");
+  }
+#endif
+  const auto this_coordinate = operator[](coordinate_index);
+  for (int i{}; i < GetDimensionality(); ++i) {
+    this_coordinate[i] = coordinate[i];
+  }
+}
+
+// #include "BSplineLib/VectorSpaces/vector_space.inc"
 
 } // namespace bsplinelib::vector_spaces
 
