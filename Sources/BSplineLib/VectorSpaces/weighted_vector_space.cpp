@@ -196,17 +196,6 @@ void WeightedVectorSpace::SyncCoordinates(const bool to_homogeneous) {
   }
 }
 
-// template<typename CoordinateType>
-// void WeightedVectorSpace::Replace(Index const& coordinate_index,
-//                           CoordinateType coordinate) {
-//                             Base_::Replace(coordinate_index, coordinate);
-//                           }
-// template<typename CoordinateType>
-// void WeightedVectorSpace::Insert(Index const& coordinate_index,
-//                          CoordinateType coordinate) {
-//                           Base_::Insert(coordinate_index, coordinate);
-//                          }
-
 typename WeightedVectorSpace::HomogeneousCoordinates_
 WeightedVectorSpace::HomogenizeCoordinates(Coordinates_ const& coordinates,
                                            Weights_ const& weights,

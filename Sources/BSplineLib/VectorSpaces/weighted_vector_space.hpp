@@ -90,11 +90,6 @@ public:
   virtual void SyncCoordinatesSizesAndDims(const bool to_homogeneous);
   virtual void SyncCoordinates(const bool to_homogeneous);
 
-  // template<typename CoordinateType>
-  // void Replace(Index const& coordinate_index, CoordinateType coordinate);
-  // template<typename CoordinateType>
-  // void Insert(Index const& coordinate_index, CoordinateType coordinate);
-
 protected:
   VectorSpace_ unweighted_space_; // this dim - 1
   Coordinates_ weights_;
