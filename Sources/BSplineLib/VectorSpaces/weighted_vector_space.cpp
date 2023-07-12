@@ -102,7 +102,7 @@ typename WeightedVectorSpace::Coordinate_ WeightedVectorSpace::Project(
 
 typename WeightedVectorSpace::MaximumDistanceFromOriginAndMinimumWeight_
 WeightedVectorSpace::DetermineMaximumDistanceFromOriginAndMinimumWeight(
-    Tolerance const& tolerance) const {
+    [[maybe_unused]] Tolerance const& tolerance) const {
 
   const int p_dim = GetProjectedDimensionality();
 
