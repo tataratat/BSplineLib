@@ -140,40 +140,6 @@ typename VectorSpace::Coordinates_ const& VectorSpace::GetCoordinates() const {
 int VectorSpace::GetNumberOfCoordinates() const {
   return GetCoordinates().size() / GetDimensionality();
 }
-/*
-template<typename CoordinateType>
-void VectorSpace::Replace(Index const& coordinate_index,
-                          CoordinateType coordinate) {
-#ifndef NDEBUG
-  try {
-    ThrowIfIndexIsInvalid(coordinate_index);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, "bsplinelib::vector_spaces::VectorSpace::Replace");
-  }
-#endif
-  const auto this_coordinate = operator[](coordinate_index);
-  for (int i{}; i < GetDimensionality(); ++i) {
-    this_coordinate[i] = coordinate[i];
-  }
-}
-
-
-template<typename CoordinateType>
-void VectorSpace::Insert(Index const& coordinate_index,
-                         CoordinateType coordinate) {
-#ifndef NDEBUG
-  try {
-    ThrowIfIndexIsInvalid(coordinate_index);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, "bsplinelib::vector_spaces::VectorSpace::Insert");
-  }
-#endif
-  coordinates_.insert(coordinates_.begin()
-                          + (coordinate_index.Get() * GetDimensionality()),
-                      coordinate.begin(),
-                      coordinate.end());
-}
-*/
 
 void VectorSpace::Erase(Index const& coordinate_index) {
 #ifndef NDEBUG
