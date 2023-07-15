@@ -164,8 +164,7 @@ constexpr ContainerType Add(ContainerType const& lhs,
     AddAndAssignToFirst(sum, rhs...);
 #ifndef NDEBUG
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "bsplinelib::utilities::std_container_operations::Add");
+    Throw(exception, "bsplinelib::utilities::std_container_operations::Add");
   }
 #endif
   return sum;
@@ -275,8 +274,7 @@ Divide(ContainerType const& container,
     DivideAndAssignToFirst(divided, divisor, tolerance);
 #ifndef NDEBUG
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "bsplinelib::utilities::std_container_operations::Divide");
+    Throw(exception, "bsplinelib::utilities::std_container_operations::Divide");
   }
 #endif
   return divided;

@@ -57,8 +57,7 @@ VectorSpace<dimensionality>::operator[](Index const& coordinate) const {
   try {
     ThrowIfIndexIsInvalid(coordinate);
   } catch (OutOfRange const& exception) {
-    Throw(exception,
-          "bsplinelib::vector_spaces::VectorSpace::operator[]");
+    Throw(exception, "bsplinelib::vector_spaces::VectorSpace::operator[]");
   }
 #endif
   return coordinates_[coordinate.Get()];
