@@ -34,8 +34,7 @@ IsEqual(Type const& lhs, Type const& rhs, Type const& tolerance) {
   try {
     ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "bsplinelib::utilities::numeric_operations::IsEqual");
+    Throw(exception, "bsplinelib::utilities::numeric_operations::IsEqual");
   }
 #endif
   return std::abs(lhs - rhs) <= tolerance;
@@ -47,8 +46,7 @@ constexpr bool IsLess(Type const& lhs, Type const& rhs, Type const& tolerance) {
   try {
     ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "bsplinelib::utilities::numeric_operations::IsLess");
+    Throw(exception, "bsplinelib::utilities::numeric_operations::IsLess");
   }
 #endif
   return IsEqual(lhs, rhs, tolerance) ? false : (lhs < rhs);

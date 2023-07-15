@@ -161,8 +161,7 @@ constexpr bool IsGreaterOrEqual(NamedType<Name, Type> const& lhs,
   try {
     numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "bsplinelib::utilities::IsGreaterOrEqual::NamedType");
+    Throw(exception, "bsplinelib::utilities::IsGreaterOrEqual::NamedType");
   }
 #endif
   return !IsLess(lhs, rhs, tolerance);

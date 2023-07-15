@@ -33,8 +33,7 @@ bool IsEqual(WeightedVectorSpace<dimensionality> const& lhs,
   try {
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "bsplinelib::vector_spaces::IsEqual::WeightedVectorSpace");
+    Throw(exception, "bsplinelib::vector_spaces::IsEqual::WeightedVectorSpace");
   }
 #endif
   return IsEqual(static_cast<Base const&>(lhs),

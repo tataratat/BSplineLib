@@ -18,10 +18,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-set(HEADERS iges.hpp irit.hpp operations.hpp operations.inc vtk.hpp xml.hpp)
+set(HEADERS iges.hpp)
 
 set(SOURCES
-    iges.cpp operations.cpp irit.cpp vtk.cpp xml.cpp
+    iges.cpp operations.cpp
     #
     ${HEADERS})
 set_source_files_properties(${HEADERS} PROPERTIES LANGUAGE CXX HEADER_FILE_ONLY
@@ -31,15 +31,8 @@ add_library(input_output ${SOURCES})
 add_library(BSplineLib::input_output ALIAS input_output)
 
 target_include_directories(input_output PUBLIC ${INCLUDE_DIRECTORIES})
-target_include_directories(input_output SYSTEM PRIVATE ${PUGIXML_INCLUDEDIR})
-target_link_libraries(
-  input_output
-  PUBLIC utilities splines
-  PRIVATE pugixml::pugixml)
-target_compile_definitions(
-  input_output
-  INTERFACE ${COMPILE_DEFINITIONS}
-  PRIVATE ${PUGIXML_CFLAGS_OTHER})
+target_link_libraries(input_output PUBLIC utilities splines)
+target_compile_definitions(input_output INTERFACE ${COMPILE_DEFINITIONS})
 target_compile_options(input_output PRIVATE ${COMPILE_OPTIONS})
 target_compile_features(input_output PUBLIC ${BSPLINELIB_COMPILE_FEATURES})
 
