@@ -216,10 +216,10 @@ constexpr ContainerType Subtract(ContainerType const& lhs,
   return difference;
 }
 
-template<typename ContainerType>
-constexpr ContainerType
-Multiply(ContainerType const& container,
-         typename ContainerType::value_type::Type_ const& factor) {
+template<typename ContainerType, typename FactorType>
+constexpr ContainerType Multiply(ContainerType const& container,
+                                 FactorType const& factor) {
+  static_assert(std::is_arithmetic_v<FactorType>);
   using std::bind, std::multiplies, std::placeholders::_1, std::transform;
 
   ContainerType multiplied;
@@ -241,15 +241,12 @@ Multiply(ContainerType const& container,
   return multiplied;
 }
 
-template<typename ContainerType>
-ContainerType& DivideAndAssignToFirst(
-    ContainerType& container,
-    typename ContainerType::value_type::Type_ const& divisor,
-    typename ContainerType::value_type::Type_ const& tolerance) {
+template<typename ContainerType, typename DivisorType, typename ToleranceType>
+ContainerType& DivideAndAssignToFirst(ContainerType& container,
+                                      DivisorType const& divisor,
+                                      ToleranceType const& tolerance) {
 #ifndef NDEBUG
-  if (numeric_operations::IsEqual(divisor,
-                                  typename ContainerType::value_type::Type_{},
-                                  tolerance))
+  if (numeric_operations::IsEqual(divisor, DivisorType{}, tolerance))
     Throw(InvalidArgument("Division by zero (" + std::to_string(divisor)
                           + ") encountered."),
           "bsplinelib::utilities::std_container_operations::"
@@ -258,15 +255,19 @@ ContainerType& DivideAndAssignToFirst(
   std::transform(container.begin(),
                  container.end(),
                  container.begin(),
-                 std::bind(std::divides{}, std::placeholders::_1, divisor));
+                 std::bind(std::multiplies{},
+                           std::placeholders::_1,
+                           static_cast<DivisorType>(1.) / divisor));
   return container;
 }
 
-template<typename ContainerType>
-constexpr ContainerType
-Divide(ContainerType const& container,
-       typename ContainerType::value_type::Type_ const& divisor,
-       typename ContainerType::value_type::Type_ const& tolerance) {
+template<typename ContainerType, typename DivisorType, typename ToleranceType>
+constexpr ContainerType Divide(ContainerType const& container,
+                               DivisorType const& divisor,
+                               ToleranceType const& tolerance) {
+  static_assert(std::is_arithmetic_v<DivisorType>);
+  static_assert(std::is_arithmetic_v<ToleranceType>);
+
   ContainerType divided{container};
 #ifndef NDEBUG
   try {
@@ -302,8 +303,8 @@ DotProduct(ContainerType const& lhs, ContainerType const& rhs) {
 template<typename ContainerType>
 constexpr typename ContainerType::value_type
 TwoNorm(ContainerType const& container) {
-  return typename ContainerType::value_type{
-      std::sqrt(DotProduct(container, container).Get())};
+  return std::sqrt(static_cast<typename ContainerType::value_type>(
+      DotProduct(container, container)));
 }
 
 template<typename ContainerType>

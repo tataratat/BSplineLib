@@ -168,7 +168,7 @@ void Write(Splines const& splines,
         parameter_data_section{};
     for_each(splines.begin(), splines.end(), [&](SplineEntry const& spline) {
       int const& parametric_dimensionality = spline->parametric_dimensionality_;
-      Coordinate maximum_coordinate_of_spline;
+      Coordinate maximum_coordinate_of_spline{};
       String parameter_data_section_contribution{};
       switch (parametric_dimensionality) {
       case 1:
@@ -197,8 +197,7 @@ void Write(Splines const& splines,
 #ifndef NDEBUG
         throw RuntimeError("The spline's parametric dimensionality ("
                            + to_string(parametric_dimensionality)
-                           + ") "
-                             "must be greater than 0 and less than 3.");
+                           + ") must be greater than 0 and less than 3.");
 #endif
         break;
       }

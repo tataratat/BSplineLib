@@ -250,14 +250,15 @@ constexpr Tolerance const kEpsilon{
 } // namespace parameter_spaces
 
 // vector spaces
-using Coordinate =
-    utilities::NamedType<struct CoordinateName, parameter_spaces::Type>;
-using Weight = utilities::NamedType<struct WeightName, Coordinate::Type_>;
+using Coordinate = double;
+//    utilities::NamedType<struct CoordinateName, parameter_spaces::Type>;
+using Weight = double;
+// utilities::NamedType<struct WeightName, Coordinate::Type_>;
 
 namespace vector_spaces {
 
-using Type = Coordinate::Type_;
-using Tolerance = Type;
+using Type = double;      // Coordinate::Type_;
+using Tolerance = double; // Type;
 
 constexpr Precision const kPrecision{
     utilities::numeric_operations::GetPrecision<Type>()};
@@ -292,19 +293,6 @@ constexpr Tolerance const kEpsilon{
     utilities::numeric_operations::GetEpsilon<Tolerance>()};
 
 } // namespace input_output
-
-// models
-namespace models {
-
-using Type = splines::Type;
-using Tolerance = Type;
-
-constexpr Precision const kPrecision{
-    utilities::numeric_operations::GetPrecision<Type>()};
-constexpr Tolerance const kEpsilon{
-    utilities::numeric_operations::GetEpsilon<Tolerance>()};
-
-} // namespace models
 
 } // namespace bsplinelib
 
