@@ -260,9 +260,8 @@ Nurbs<parametric_dimensionality, dimensionality>::operator()(
                             [current_lower_derivative.GetIndex1d().Get()],
                         product_of_binomial_coefficients
                             * homogeneous_b_spline_derivatives
-                                  [current_complementary_derivative.GetIndex1d()
-                                       .Get()][dimensionality]
-                                      .Get()));
+                                [current_complementary_derivative.GetIndex1d()
+                                     .Get()][dimensionality]));
               }
             } while (std::next_permutation(
                 are_required_derivatives_currently_required_begin,
@@ -273,7 +272,7 @@ Nurbs<parametric_dimensionality, dimensionality>::operator()(
         });
     rational_derivatives.push_back(utilities::std_container_operations::Divide(
         homogeneous_derivative,
-        homogeneous_b_spline_derivatives[0][dimensionality].Get()));
+        homogeneous_b_spline_derivatives[0][dimensionality]));
   }
   return rational_derivatives[total_number_of_derivatives - 1];
 }
@@ -339,7 +338,7 @@ Multiplicity Nurbs<parametric_dimensionality, dimensionality>::RemoveKnot(
       dimension,
       knot,
       tolerance_removal
-          * (minimum_weight.Get() / (1.0 + maximum_distance_from_origin.Get())),
+          * (minimum_weight / (1.0 + maximum_distance_from_origin)),
       multiplicity,
       tolerance);
 }

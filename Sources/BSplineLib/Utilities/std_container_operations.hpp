@@ -141,24 +141,25 @@ SubtractAndAssignToFirst(ContainerType& lhs,
 template<typename ContainerType, typename... ContainerTypes>
 constexpr ContainerType Subtract(ContainerType const& lhs,
                                  ContainerTypes const&... rhs);
-template<typename ContainerType>
-constexpr ContainerType
-Multiply(ContainerType const& container,
-         typename ContainerType::value_type::Type_ const& factor);
-template<typename ContainerType>
-ContainerType& DivideAndAssignToFirst(
-    ContainerType& container,
-    typename ContainerType::value_type::Type_ const& divisor,
-    typename ContainerType::value_type::Type_ const& tolerance =
-        numeric_operations::GetEpsilon<
-            typename ContainerType::value_type::Type_>());
-template<typename ContainerType>
+template<typename ContainerType, typename FactorType>
+constexpr ContainerType Multiply(ContainerType const& container,
+                                 FactorType const& factor);
+template<typename ContainerType,
+         typename DivisorType,
+         typename ToleranceType = DivisorType>
+ContainerType&
+DivideAndAssignToFirst(ContainerType& container,
+                       DivisorType const& divisor,
+                       ToleranceType const& tolerance =
+                           numeric_operations::GetEpsilon<ToleranceType>());
+template<typename ContainerType,
+         typename DivisorType,
+         typename ToleranceType = DivisorType>
 constexpr ContainerType
 Divide(ContainerType const& container,
-       typename ContainerType::value_type::Type_ const& divisor,
-       typename ContainerType::value_type::Type_ const& tolerance =
-           numeric_operations::GetEpsilon<
-               typename ContainerType::value_type::Type_>());
+       DivisorType const& divisor,
+       ToleranceType const& tolerance =
+           numeric_operations::GetEpsilon<ToleranceType>());
 
 template<typename ContainerType>
 constexpr typename ContainerType::value_type

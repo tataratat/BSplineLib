@@ -355,17 +355,16 @@ Multiplicity BSpline<parametric_dimensionality, dimensionality>::RemoveKnot(
       KnotRatio_ const& current_coefficient = *coefficient;
       lower_coordinate_index = coordinate_index;
       coordinate_index = coordinate.Increment(dimension).GetIndex1d();
-      if (IsLessOrEqual(
-              utilities::std_container_operations::EuclidianDistance(
-                  Divide(Subtract(vector_space[coordinate_index],
-                                  Multiply(vector_space[lower_coordinate_index],
-                                           k1_0 - current_coefficient)),
-                         current_coefficient),
-                  vector_space[Index_{number_of_coordinates,
-                                      coordinate.GetIndex()}
-                                   .GetIndex1d()
-                               + slice_coordinate.GetIndex1d() + Index{1}]),
-              Coordinate{tolerance_removal})) {
+      if ( // IsLessOrEqual(
+          utilities::std_container_operations::EuclidianDistance(
+              Divide(Subtract(vector_space[coordinate_index],
+                              Multiply(vector_space[lower_coordinate_index],
+                                       k1_0 - current_coefficient)),
+                     current_coefficient),
+              vector_space[Index_{number_of_coordinates, coordinate.GetIndex()}
+                               .GetIndex1d()
+                           + slice_coordinate.GetIndex1d() + Index{1}])
+          <= tolerance_removal) {
         vector_space.Erase(coordinate_index);
       } else {
         Multiplicity const& successful_removals = (multiplicity - removal);
@@ -592,16 +591,16 @@ bool BSpline<parametric_dimensionality, dimensionality>::ReduceDegree(
                                             .GetIndex1d()],
                            coefficient));
             });
-        if (IsLessOrEqual(
-                utilities::std_container_operations::EuclidianDistance(
-                    utilities::std_container_operations::DivideAndAssignToFirst(
-                        coordinate,
-                        GetBack(current_coefficients)),
-                    vector_space[Index_{number_of_coordinates,
-                                        current_last_coordinate_value}
-                                     .GetIndex1d()
-                                 + slice_coordinate.GetIndex1d() + Index{1}]),
-                Coordinate{tolerance_reduction})) {
+        if ( // IsLessOrEqual(
+            utilities::std_container_operations::EuclidianDistance(
+                utilities::std_container_operations::DivideAndAssignToFirst(
+                    coordinate,
+                    GetBack(current_coefficients)),
+                vector_space[Index_{number_of_coordinates,
+                                    current_last_coordinate_value}
+                                 .GetIndex1d()
+                             + slice_coordinate.GetIndex1d() + Index{1}])
+            <= tolerance_reduction) {
           vector_space.Erase(erasure_position);
         } else {
           parameter_space = parameter_space_backup;
