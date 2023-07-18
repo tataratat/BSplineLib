@@ -56,12 +56,12 @@ ParameterSpace<parametric_dimensionality>::ParameterSpace(
                                   + to_string(multiplicity)
                                   + " of the first or last "
                                     "knot "
-                                  + to_string(unique_knot.Get()) + " must be "
+                                  + to_string(unique_knot) + " must be "
                                   + to_string(clamped_multiplicity) + ".");
             } else if (multiplicity > degree) {
               throw DomainError(
                   kClamped + "the multiplicity " + to_string(multiplicity)
-                  + " of the interior knot " + to_string(unique_knot.Get())
+                  + " of the interior knot " + to_string(unique_knot)
                   + " must not exceed the degree " + to_string(degree) + ".");
             }
           }
@@ -94,8 +94,6 @@ template<int parametric_dimensionality>
 bool IsEqual(ParameterSpace<parametric_dimensionality> const& lhs,
              ParameterSpace<parametric_dimensionality> const& rhs,
              Tolerance const& tolerance) {
-  using BSplineBasisFunctions = typename ParameterSpace<
-      parametric_dimensionality>::BSplineBasisFunctions_::value_type;
   using utilities::std_container_operations::DoesContainPointersToEqualValues;
 
 #ifndef NDEBUG
@@ -290,10 +288,10 @@ ParameterSpace<parametric_dimensionality>::EvaluateBasisValuesPerDimension(
     for (int k{1}; k < this_dim_n_basis; ++k) {
       this_dim_output.push_back(1.);
 
-      left[k] = this_dim_parametric_coordinate.Get()
-                - this_knots[this_zero_degree_support + 1 - k].Get();
+      left[k] = this_dim_parametric_coordinate
+                - this_knots[this_zero_degree_support + 1 - k];
       right[k] = this_knots[this_zero_degree_support + k]
-                 - this_dim_parametric_coordinate.Get();
+                 - this_dim_parametric_coordinate;
 
       saved = 0.0;
       for (int j{}; j < k; j++) {
@@ -370,10 +368,10 @@ ParameterSpace<parametric_dimensionality>::
       for (int k{1}; k < this_dim_n_basis; ++k) {
         this_dim_output.push_back(1.);
 
-        left[k] = this_dim_parametric_coordinate.Get()
-                  - this_knots[this_zero_degree_support + 1 - k].Get();
+        left[k] = this_dim_parametric_coordinate
+                  - this_knots[this_zero_degree_support + 1 - k];
         right[k] = this_knots[this_zero_degree_support + k]
-                   - this_dim_parametric_coordinate.Get();
+                   - this_dim_parametric_coordinate;
 
         saved = 0.0;
         for (int j{}; j < k; j++) {
@@ -396,10 +394,10 @@ ParameterSpace<parametric_dimensionality>::
 
     ndu[0][0] = 1.;
     for (int j{1}; j < this_dim_n_basis; ++j) {
-      left[j] = this_dim_parametric_coordinate.Get()
+      left[j] = this_dim_parametric_coordinate
                 - this_knots[this_zero_degree_support + 1 - j];
       right[j] = this_knots[this_zero_degree_support + j]
-                 - this_dim_parametric_coordinate.Get();
+                 - this_dim_parametric_coordinate;
 
       saved = 0.0;
       for (int r{}; r < j; ++r) {
@@ -620,7 +618,7 @@ typename ParameterSpace<parametric_dimensionality>::ParametricCoordinates_
 ParameterSpace<parametric_dimensionality>::Sample(
     NumberOfParametricCoordinates_ const& number_of_parametric_coordinates)
     const {
-  using Knot = typename Knot_::Type_;
+  using Knot = Knot_;
 
   Index_ index = Index_::First(number_of_parametric_coordinates);
   ParametricCoordinates_ parametric_coordinates{};
@@ -757,10 +755,9 @@ ParameterSpace<parametric_dimensionality>::DetermineInsertionInformation(
               ParametricCoordinate const& lower_knot =
                   knot_vector[current_knot];
               current_knot_ratios.push_back(
-                  (knot - lower_knot).Get()
+                  (knot - lower_knot)
                   / (knot_vector[current_knot + Index{remaining_mulitplicity}]
-                     - lower_knot)
-                        .Get());
+                     - lower_knot));
             });
         knot_ratios.push_back(current_knot_ratios);
       });
@@ -851,7 +848,7 @@ void ParameterSpace<parametric_dimensionality>::
     throw DomainError("for dimension" + to_string(dimension_value)
                       + ": Cannot insert or remove the first or last "
                         "knot "
-                      + to_string(knot.Get())
+                      + to_string(knot)
                       + " as only clamped knot vectors are allowed.");
 }
 #endif

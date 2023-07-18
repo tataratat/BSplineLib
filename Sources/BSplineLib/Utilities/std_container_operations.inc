@@ -76,11 +76,10 @@ constexpr ContainerTypeTo TransformNamedTypes(ContainerTypeFrom const& from) {
   return to;
 }
 
-template<typename ContainerType>
-constexpr bool DoesContainEqualValues(
-    ContainerType const& lhs,
-    ContainerType const& rhs,
-    typename ContainerType::value_type::Type_ const& tolerance) {
+template<typename ContainerType, typename ToleranceType>
+constexpr bool DoesContainEqualValues(ContainerType const& lhs,
+                                      ContainerType const& rhs,
+                                      ToleranceType const& tolerance) {
   using ValueType = typename ContainerType::value_type;
   using std::begin, std::end;
 
@@ -99,7 +98,8 @@ constexpr bool DoesContainEqualValues(
       begin(rhs),
       end(rhs),
       [&](ValueType const& lhs_value, ValueType const& rhs_value) {
-        return IsEqual(lhs_value, rhs_value, tolerance);
+        return std::abs(static_cast<ToleranceType>(lhs_value - rhs_value))
+               < tolerance;
       });
 }
 

@@ -43,7 +43,6 @@ struct DependentFalse : std::false_type {};
 template<typename Type>
 constexpr bool const is_false{DependentFalse<Type>::value};
 
-#ifndef NDEBUG
 using DomainError = std::domain_error;
 using InvalidArgument = std::invalid_argument;
 using Message = std::string;
@@ -56,11 +55,9 @@ void Throw(Exception const& exception,
            int const& dimension = -1);
 
 #include "BSplineLib/Utilities/error_handling.inc"
-#endif
 
 } // namespace bsplinelib::utilities::error_handling
 
-#ifndef NDEBUG
 namespace bsplinelib {
 
 using utilities::error_handling::DomainError,
@@ -70,6 +67,5 @@ using utilities::error_handling::DomainError,
 using utilities::error_handling::Throw;
 
 } // namespace bsplinelib
-#endif
 
 #endif // SOURCES_UTILITIES_ERROR_HANDLING_HPP_
