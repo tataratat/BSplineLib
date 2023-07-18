@@ -37,7 +37,7 @@ using utilities::numeric_operations::ThrowIfToleranceIsNegative;
 #endif
 
 KnotVector::KnotVector(Knots_ knots, Tolerance const& tolerance)
-    : knots_(move(knots)) {
+    : knots_(std::move(knots)) {
 #ifndef NDEBUG
   Message const kName{"bsplinelib::parameter_spaces::KnotVector::KnotVector"};
 
@@ -230,7 +230,7 @@ void KnotVector::Insert(Knot_ knot,
 #endif
   knots_.insert(knots_.begin() + FindSpan(knot, tolerance).Get() + 1,
                 multiplicity.Get(),
-                move(knot));
+                std::move(knot));
 }
 
 Multiplicity KnotVector::Remove(Knot_ const& knot,

@@ -60,7 +60,7 @@ BSplineBasisFunction::CreateDynamic(KnotVector const& knot_vector,
   } else {
     return new NonZeroDegreeBSplineBasisFunction(knot_vector,
                                                  start_of_support,
-                                                 move(degree),
+                                                 std::move(degree),
                                                  tolerance);
   }
 }
@@ -102,7 +102,7 @@ SharedPointer<BSplineBasisFunction> BSplineBasisFunction::CreateDynamic(
       new_basis = std::make_shared<NonZeroDegreeBSplineBasisFunction>(
           knot_vector,
           start_of_support,
-          move(degree),
+          std::move(degree),
           unique_basis_functions,
           tolerance);
 
@@ -115,7 +115,7 @@ BSplineBasisFunction::BSplineBasisFunction(KnotVector const& knot_vector,
                                            KnotSpan const& start_of_support,
                                            Degree degree,
                                            Tolerance const& tolerance)
-    : degree_(move(degree)),
+    : degree_(std::move(degree)),
       start_of_support_(start_of_support.Get()),
       start_knot_(knot_vector[Index{start_of_support_}]),
       end_knot_(knot_vector[Index{start_of_support_ + degree_.Get() + 1}]),

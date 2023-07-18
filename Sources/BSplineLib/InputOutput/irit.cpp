@@ -38,7 +38,7 @@ using ParameterSpace =
                              parametric_dimensionality>::ParameterSpace_;
 using StringVectorConstIterator =
     utilities::string_operations::StringVectorConstIterator;
-using std::make_shared, std::move, std::to_string,
+using std::make_shared, std::to_string,
     utilities::string_operations::ConvertToNumber,
     utilities::string_operations::StartsWith,
     utilities::string_operations::TrimCharacter,
@@ -210,31 +210,35 @@ SplineEntry CreateSpline(StringVectorConstIterator& entry) {
         knot_vectors[current_dimension] = make_shared<KnotVector>(knots);
       });
   SharedPointer<ParameterSpace> parameter_space{
-      make_shared<ParameterSpace>(move(knot_vectors), move(degrees))};
+      make_shared<ParameterSpace>(std::move(knot_vectors), std::move(degrees))};
   SplineEntry spline;
   DimensionType const& dimensionality =
       ConvertToNumber<DimensionType>(point_type.substr(1, 1));
   bool const& is_non_rational = StartsWith(point_type, "E");
   switch (dimensionality) {
   case 1:
-    spline = CreateSpline<parametric_dimensionality, 1>(move(parameter_space),
-                                                        is_non_rational,
-                                                        entry);
+    spline =
+        CreateSpline<parametric_dimensionality, 1>(std::move(parameter_space),
+                                                   is_non_rational,
+                                                   entry);
     break;
   case 2:
-    spline = CreateSpline<parametric_dimensionality, 2>(move(parameter_space),
-                                                        is_non_rational,
-                                                        entry);
+    spline =
+        CreateSpline<parametric_dimensionality, 2>(std::move(parameter_space),
+                                                   is_non_rational,
+                                                   entry);
     break;
   case 3:
-    spline = CreateSpline<parametric_dimensionality, 3>(move(parameter_space),
-                                                        is_non_rational,
-                                                        entry);
+    spline =
+        CreateSpline<parametric_dimensionality, 3>(std::move(parameter_space),
+                                                   is_non_rational,
+                                                   entry);
     break;
   case 4:
-    spline = CreateSpline<parametric_dimensionality, 4>(move(parameter_space),
-                                                        is_non_rational,
-                                                        entry);
+    spline =
+        CreateSpline<parametric_dimensionality, 4>(std::move(parameter_space),
+                                                   is_non_rational,
+                                                   entry);
     break;
   default:
 #ifndef NDEBUG
@@ -274,8 +278,9 @@ SplineEntry CreateSpline(
           ConvertToNumber<Coordinate>(TrimCharacter(*(entry++), ']'));
       coordinates.emplace_back(scalar_coordinates);
     });
-    return make_shared<BSpline>(move(parameter_space),
-                                make_shared<VectorSpace>(move(coordinates)));
+    return make_shared<BSpline>(
+        std::move(parameter_space),
+        make_shared<VectorSpace>(std::move(coordinates)));
   } else {
     using Nurbs = Nurbs<parametric_dimensionality, dimensionality>;
     using WeightedVectorSpace = typename Nurbs::WeightedVectorSpace_;
@@ -295,8 +300,8 @@ SplineEntry CreateSpline(
       coordinates.emplace_back(scalar_coordinates);
     });
     return make_shared<Nurbs>(
-        move(parameter_space),
-        make_shared<WeightedVectorSpace>(move(coordinates)));
+        std::move(parameter_space),
+        make_shared<WeightedVectorSpace>(std::move(coordinates)));
   }
 }
 
