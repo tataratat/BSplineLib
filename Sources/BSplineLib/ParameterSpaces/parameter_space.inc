@@ -322,60 +322,43 @@ ParameterSpace<parametric_dimensionality>::EvaluateBasisValuesPerDimension(
 
   // prepare output
   BasisValuesPerDimension_ output;
-
   for (int i{}; i < parametric_dimensionality; ++i) {
 
     // get this dim's info
     const auto& this_dim_degree = degrees_[i].Get();
-    const auto& this_dim_basis = basis_functions_[i];
     const auto& this_dim_start_support =
         first_non_zeros[bsplinelib::Dimension{i}].Get();
-    const auto this_dim_end_support = this_dim_start_support + this_dim_degree;
     const auto this_dim_n_basis = this_dim_degree + 1;
     const auto& this_dim_parametric_coordinate = parametric_coordinate[i];
+    const auto& this_knots = knot_vectors_[i]->GetKnots();
+    const int this_zero_degree_support =
+        this_dim_start_support + this_dim_degree;
 
     // this dim's output
     auto& this_dim_output = output[i];
     this_dim_output.reserve(this_dim_n_basis);
+    this_dim_output.push_back(1.);
 
-    // prepare lookup
-    auto evaluation_lookup = EvaluationLookUp(new Type_[this_dim_degree]);
-    // first node visit - even 0 degree should be visited at least once
-    this_dim_output.emplace_back(
-        this_dim_basis[this_dim_start_support]->ConsecutiveTopNodeEvaluation(
-            this_dim_parametric_coordinate,
-            evaluation_lookup,
-            this_dim_end_support,
-            true,
-            false,
-            tolerance));
+    TemporaryArray<double> left(this_dim_n_basis), right(this_dim_n_basis);
 
-    // special case -> in case this one is zero, we exit this dim now
-    if (this_dim_degree == 0) {
-      continue;
+    double saved, temp;
+
+    for (int k{1}; k < this_dim_n_basis; ++k) {
+      this_dim_output.push_back(1.);
+
+      left[k] = this_dim_parametric_coordinate.Get()
+                - this_knots[this_zero_degree_support + 1 - k].Get();
+      right[k] = this_knots[this_zero_degree_support + k]
+                 - this_dim_parametric_coordinate.Get();
+
+      saved = 0.0;
+      for (int j{}; j < k; j++) {
+        temp = this_dim_output[j] / (right[j + 1] + left[k - j]);
+        this_dim_output[j] = saved + right[j + 1] * temp;
+        saved = left[k - j] * temp;
+      }
+      this_dim_output[k] = saved;
     }
-
-    // mid visit - without the last one
-    for (int j{1}; j < this_dim_degree; ++j) {
-      this_dim_output.emplace_back(
-          this_dim_basis[this_dim_start_support + j]
-              ->ConsecutiveTopNodeEvaluation(this_dim_parametric_coordinate,
-                                             evaluation_lookup,
-                                             this_dim_end_support,
-                                             false,
-                                             false,
-                                             tolerance));
-    }
-
-    // last visit - we should only reach here if this dim's degree is > 0
-    this_dim_output.emplace_back(
-        this_dim_basis[this_dim_end_support]->ConsecutiveTopNodeEvaluation(
-            this_dim_parametric_coordinate,
-            evaluation_lookup,
-            this_dim_end_support,
-            false,
-            true,
-            tolerance));
   }
 
   return output;
@@ -448,63 +431,135 @@ ParameterSpace<parametric_dimensionality>::
     const auto& this_dim_derivative = derivative[i];
     // we could check here, if derivative query is bigger than the degree
     // skip for now
-    const auto& this_dim_basis = basis_functions_[i];
     const auto& this_dim_start_support =
         first_non_zeros[bsplinelib::Dimension{i}].Get();
-    const auto this_dim_end_support = this_dim_start_support + this_dim_degree;
     const auto this_dim_n_basis = this_dim_degree + 1;
     const auto& this_dim_parametric_coordinate = parametric_coordinate[i];
+    const auto& this_knots = knot_vectors_[i]->GetKnots();
+    const int this_zero_degree_support =
+        this_dim_start_support + this_dim_degree;
 
     // this dim's output
     auto& this_dim_output = output[i];
-    this_dim_output.reserve(this_dim_n_basis);
 
-    // prepare lookup
-    auto derivative_lookup = EvaluationLookUp(new Type_[this_dim_derivative]);
-    auto evaluation_lookup = EvaluationLookUp(new Type_[this_dim_degree]);
-
-    // first node visit - even 0 degree should be visited at least once
-    this_dim_output.emplace_back(this_dim_basis[this_dim_start_support]
-                                     ->ConsecutiveTopNodeDerivativeEvaluation(
-                                         this_dim_parametric_coordinate,
-                                         this_dim_derivative,
-                                         derivative_lookup,
-                                         evaluation_lookup,
-                                         this_dim_end_support,
-                                         true,
-                                         false,
-                                         tolerance));
-
-    // special case -> in case this one is zero, we exit this dim now
-    if (this_dim_degree == 0) {
+    // special case for early exit - derivetive query is bigger than degree
+    // all zeros.
+    if (this_dim_derivative.Get() > this_dim_degree) {
+      this_dim_output.assign(this_dim_n_basis, 0.);
       continue;
     }
 
-    // mid visit - without the last one
-    for (int j{1}; j < this_dim_degree; ++j) {
-      this_dim_output.emplace_back(this_dim_basis[this_dim_start_support + j]
-                                       ->ConsecutiveTopNodeDerivativeEvaluation(
-                                           this_dim_parametric_coordinate,
-                                           this_dim_derivative,
-                                           derivative_lookup,
-                                           evaluation_lookup,
-                                           this_dim_end_support,
-                                           false,
-                                           false,
-                                           tolerance));
+    // temporary ones that we need for second special case
+    TemporaryArray<double> left(this_dim_n_basis), right(this_dim_n_basis);
+    double saved, temp, d;
+
+    // special case 2 - derivative 0 query is evaluation query
+    if (this_dim_derivative.Get() == 0) {
+      // just raw copy of evaluation
+      this_dim_output.reserve(this_dim_n_basis);
+      this_dim_output.push_back(1.);
+
+      for (int k{1}; k < this_dim_n_basis; ++k) {
+        this_dim_output.push_back(1.);
+
+        left[k] = this_dim_parametric_coordinate.Get()
+                  - this_knots[this_zero_degree_support + 1 - k].Get();
+        right[k] = this_knots[this_zero_degree_support + k]
+                   - this_dim_parametric_coordinate.Get();
+
+        saved = 0.0;
+        for (int j{}; j < k; j++) {
+          temp = this_dim_output[j] / (right[j + 1] + left[k - j]);
+          this_dim_output[j] = saved + right[j + 1] * temp;
+          saved = left[k - j] * temp;
+        }
+        this_dim_output[k] = saved;
+      }
+      continue;
     }
 
-    // last visit - we should only reach here if this dim's degree is > 0
-    this_dim_output.emplace_back(this_dim_basis[this_dim_end_support]
-                                     ->ConsecutiveTopNodeDerivativeEvaluation(
-                                         this_dim_parametric_coordinate,
-                                         this_dim_derivative,
-                                         derivative_lookup,
-                                         evaluation_lookup,
-                                         this_dim_end_support,
-                                         false,
-                                         true,
-                                         tolerance));
+    // here, proper derivative query.
+    this_dim_output.resize(this_dim_n_basis);
+
+    // more temporary variables
+    TemporaryArray2D<double> a(2, this_dim_n_basis),
+        ndu(this_dim_n_basis, this_dim_n_basis);
+    int j1, j2;
+
+    ndu[0][0] = 1.;
+    for (int j{1}; j < this_dim_n_basis; ++j) {
+      left[j] = this_dim_parametric_coordinate.Get()
+                - this_knots[this_zero_degree_support + 1 - j];
+      right[j] = this_knots[this_zero_degree_support + j]
+                 - this_dim_parametric_coordinate.Get();
+
+      saved = 0.0;
+      for (int r{}; r < j; ++r) {
+        ndu[j][r] = right[r + 1] + left[j - r];
+        temp = ndu[r][j - 1] / ndu[j][r];
+        ndu[r][j] = saved + right[r + 1] * temp;
+        saved = left[j - r] * temp;
+      }
+      ndu[j][j] = saved;
+    }
+
+    if (this_dim_derivative.Get() == 0) {
+      for (int j{}; j < this_dim_n_basis; ++j) {
+        this_dim_output[j] = ndu[j][this_dim_degree];
+      }
+      continue;
+    }
+
+    for (int r{}; r < this_dim_n_basis; ++r) {
+      int s1{}, s2{1}, j;
+      a[0][0] = 1.0;
+      for (int k{1}; k < this_dim_derivative.Get() + 1; ++k) {
+        d = 0.0;
+        const int rk = r - k;
+        const int pk = this_dim_degree - k;
+        if (r >= k) {
+          a[s2][0] = a[s1][0] / ndu[pk + 1][rk];
+          d = a[s2][0] * ndu[rk][pk];
+        }
+
+        if (rk >= -1) {
+          j1 = 1;
+        } else {
+          j1 = -rk;
+        }
+
+        if (r - 1 <= pk) {
+          j2 = k - 1;
+        } else {
+          j2 = this_dim_degree - r;
+        }
+
+        for (j = j1; j < j2 + 1; ++j) {
+          a[s2][j] = (a[s1][j] - a[s1][j - 1]) / ndu[pk + 1][rk + j];
+          d += a[s2][j] * ndu[rk + j][pk];
+        }
+
+        if (r <= pk) {
+          a[s2][k] = -a[s1][k - 1] / ndu[pk + 1][r];
+          d += a[s2][j] * ndu[rk + j][pk];
+        }
+        // here, we could also gather lower derivative queries
+        // for now, just rewrite at the same place
+        this_dim_output[r] = d;
+
+        j = s1;
+        s1 = s2;
+        s2 = j;
+      }
+    }
+
+    temp = this_dim_degree;
+    for (int k{1}; k < this_dim_derivative.Get(); ++k) {
+      temp *= (this_dim_degree - k);
+    }
+    for (int j{}; j < this_dim_n_basis; ++j) {
+      this_dim_output[j] *= temp;
+    }
   }
 
   return output;
