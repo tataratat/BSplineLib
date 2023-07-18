@@ -136,6 +136,7 @@ public:
   constexpr NamedType(NamedType&& other) noexcept = default;
   constexpr NamedType& operator=(NamedType const& rhs) = default;
   constexpr NamedType& operator=(NamedType&& rhs) noexcept = default;
+  constexpr NamedType& operator=(Type_ const& rhs) { value_ = rhs; }
   ~NamedType() = default;
 
   constexpr NamedType& operator+=(NamedType const& rhs);
@@ -231,12 +232,12 @@ using Degree = utilities::NamedType<struct DegreeName, int>;
 using Derivative = utilities::NamedType<struct DerivativeName, int>;
 using KnotSpan = utilities::NamedType<struct KnotSpanName, int>;
 using Multiplicity = utilities::NamedType<struct MultiplicityName, int>;
-using ParametricCoordinate =
-    utilities::NamedType<struct ParametricCoordinateName, double>;
+using ParametricCoordinate = double;
+//    utilities::NamedType<struct ParametricCoordinateName, double>;
 
 namespace parameter_spaces {
 
-using Type = ParametricCoordinate::Type_;
+using Type = ParametricCoordinate;
 using BinomialRatio = Type;
 using KnotRatio = Type;
 using Tolerance = Type;
