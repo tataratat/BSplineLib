@@ -121,7 +121,6 @@ RecursiveCombine_(const Array<Vector<BasisValueType>, array_dim>& factors,
                                              * fac};
         ++j;
       }
-
       ++index_offset;
     } else {
       RecursiveCombine_<static_cast<std::size_t>(depth - 1)>(factors,
@@ -155,6 +154,24 @@ RecursiveCombine(const Array<Vector<ValueType>, array_dim>& factors,
                                    static_cast<ValueType>(1),
                                    result);
 }
+
+template<typename T>
+struct TemporaryArray {
+  T* data_;
+  TemporaryArray(const int n) : data_(new T[n]) {}
+  ~TemporaryArray() { delete[] data_; }
+  constexpr T& operator[](const int& i) { return data_[i]; }
+  constexpr const T& operator[](const int& i) const { return data_[i]; }
+};
+template<typename T>
+struct TemporaryArray2D {
+  T* data_;
+  int dim_;
+  TemporaryArray2D(const int n, const int d) : data_(new T[n * d]), dim_(d) {}
+  ~TemporaryArray2D() { delete[] data_; }
+  constexpr T* operator[](const int& i) { return &data_[i * dim_]; }
+  constexpr const T& operator[](const int& i) const { return &data_[i * dim_]; }
+};
 
 // ParameterSpaces provide the B-spline basis functions corresponding to given
 // knot vectors and degrees.  Only clamped knot vectors of degree p — i.e., both

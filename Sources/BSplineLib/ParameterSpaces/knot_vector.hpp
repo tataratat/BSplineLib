@@ -70,6 +70,7 @@ public:
   virtual int GetSize() const;
   virtual Knot_ const& GetFront() const;
   virtual Knot_ const& GetBack() const;
+  virtual Knots_ const& GetKnots() const { return knots_; }
 
   virtual bool DoesParametricCoordinateEqualBack(
       ParametricCoordinate const& parametric_coordinate,
