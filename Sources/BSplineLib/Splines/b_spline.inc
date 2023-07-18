@@ -145,69 +145,6 @@ BSpline<parametric_dimensionality, dimensionality>::operator()(
   return evaluated_b_spline_derivative;
 }
 
-template<int parametric_dimensionality, int dimensionality>
-typename Spline<parametric_dimensionality, dimensionality>::Coordinate_
-BSpline<parametric_dimensionality, dimensionality>::FullyRecursiveEvaluate(
-    ParametricCoordinate_ const& parametric_coordinate,
-    Tolerance const& tolerance) const {
-#ifndef NDEBUG
-  try {
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, "bsplinelib::splines::BSpline::operator()");
-  }
-#endif
-  ParameterSpace_ const& parameter_space = *Base_::parameter_space_;
-  Coordinate_ evaluated_b_spline{};
-  for (Index_ non_zero_basis_function{parameter_space.First()};
-       non_zero_basis_function != parameter_space.Behind();
-       ++non_zero_basis_function) {
-    Index_ const& basis_function =
-        (parameter_space.FindFirstNonZeroBasisFunction(parametric_coordinate)
-         + non_zero_basis_function.GetIndex());
-    utilities::std_container_operations::AddAndAssignToFirst(
-        evaluated_b_spline,
-        utilities::std_container_operations::Multiply(
-            (*vector_space_)[basis_function.GetIndex1d()],
-            parameter_space.EvaluateBasisFunction(basis_function,
-                                                  parametric_coordinate)));
-  }
-  return evaluated_b_spline;
-}
-
-template<int parametric_dimensionality, int dimensionality>
-typename Spline<parametric_dimensionality, dimensionality>::Coordinate_
-BSpline<parametric_dimensionality, dimensionality>::FullyRecursiveDerivative(
-    ParametricCoordinate_ const& parametric_coordinate,
-    Derivative_ const& derivative,
-    Tolerance const& tolerance) const {
-#ifndef NDEBUG
-  try {
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, "bsplinelib::splines::BSpline::operator()");
-  }
-#endif
-  ParameterSpace_ const& parameter_space = *Base_::parameter_space_;
-  Coordinate_ evaluated_b_spline_derivative{};
-  for (Index_ non_zero_basis_function{parameter_space.First()};
-       non_zero_basis_function != parameter_space.Behind();
-       ++non_zero_basis_function) {
-    Index_ const& basis_function =
-        (parameter_space.FindFirstNonZeroBasisFunction(parametric_coordinate)
-         + non_zero_basis_function.GetIndex());
-    utilities::std_container_operations::AddAndAssignToFirst(
-        evaluated_b_spline_derivative,
-        utilities::std_container_operations::Multiply(
-            ((*vector_space_))[basis_function.GetIndex1d()],
-            parameter_space.EvaluateBasisFunctionDerivative(
-                basis_function,
-                parametric_coordinate,
-                derivative)));
-  }
-  return evaluated_b_spline_derivative;
-}
-
 // Cf. NURBS book Eq. (5.15).
 template<int parametric_dimensionality, int dimensionality>
 void BSpline<parametric_dimensionality, dimensionality>::InsertKnot(

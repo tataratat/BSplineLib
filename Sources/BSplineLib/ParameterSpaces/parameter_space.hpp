@@ -26,7 +26,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include <numeric>
 #include <utility>
 
-#include "BSplineLib/ParameterSpaces/b_spline_basis_function.hpp"
 #include "BSplineLib/ParameterSpaces/knot_vector.hpp"
 #include "BSplineLib/Utilities/error_handling.hpp"
 #include "BSplineLib/Utilities/index.hpp"
@@ -203,14 +202,6 @@ class ParameterSpace {
 private:
   using StringArray_ = StringArray<parametric_dimensionality>;
 
-protected:
-  using BSplineBasisFunctions_ =
-      BSplineBasisFunctions<parametric_dimensionality>;
-  // Not to be confused with parameter_spaces::UniqueBSplineBasisFunctions
-  // Named this way just to be consistent with `BSplineBasisFunctions_`.
-  using UniqueBSplineBasisFunctions_ =
-      UniqueBSplineBasisFunctionsArray<parametric_dimensionality>;
-
 public:
   using BinomialRatios_ = Vector<BinomialRatio>;
   using Degrees_ = Array<Degree, parametric_dimensionality>;
@@ -231,8 +222,7 @@ public:
   using ParametricCoordinate_ =
       Array<ParametricCoordinate, parametric_dimensionality>;
   using ParametricCoordinates_ = Vector<ParametricCoordinate_>;
-  using Type_ = typename BSplineBasisFunctions_::value_type::value_type::
-      element_type::Type_;
+  using Type_ = Type;
   using InsertionCoefficients_ = Vector<KnotRatios_>;
   using InsertionInformation_ = Tuple<Index, InsertionCoefficients_>;
   using Knots_ = typename KnotVectors_::value_type::element_type::Knots_;
@@ -280,11 +270,6 @@ public:
   DetermineBezierExtractionKnots(Dimension const& dimension,
                                  Tolerance const& tolerance = kEpsilon) const;
 
-  virtual Type_
-  EvaluateBasisFunction(Index_ const& basis_function_index,
-                        ParametricCoordinate_ const& parametric_coordinate,
-                        Tolerance const& tolerance = kEpsilon) const;
-
   virtual BasisValuesPerDimension_ EvaluateBasisValuesPerDimension(
       ParametricCoordinate_ const& parametric_coordinate,
       Tolerance const& tolerance = kEpsilon) const;
@@ -292,12 +277,6 @@ public:
   virtual BasisValues_
   EvaluateBasisValues(ParametricCoordinate_ const& parametric_coordinate,
                       Tolerance const& tolerance = kEpsilon) const;
-
-  virtual Type_ EvaluateBasisFunctionDerivative(
-      Index_ const& basis_function_index,
-      ParametricCoordinate_ const& parametric_coordinate,
-      Derivative_ const& derivative,
-      Tolerance const& tolerance = kEpsilon) const;
 
   virtual BasisValuesPerDimension_ EvaluateBasisDerivativeValuesPerDimension(
       ParametricCoordinate_ const& parametric_coordinate,
@@ -350,33 +329,17 @@ public:
 
   virtual const KnotVectors_& GetKnotVectors() const { return knot_vectors_; }
   virtual const Degrees_& GetDegrees() const { return degrees_; }
-  virtual const BSplineBasisFunctions_& GetBSplineBasisFunctions() const {
-    return basis_functions_;
-  }
-  virtual const UniqueBSplineBasisFunctions_&
-  GetUniqueBSplineBasisFunctions() const {
-    return unique_basis_functions_;
-  }
   virtual KnotVectors_& GetKnotVectors() { return knot_vectors_; }
   virtual Degrees_& GetDegrees() { return degrees_; }
-  virtual BSplineBasisFunctions_& GetBSplineBasisFunctions() {
-    return basis_functions_;
-  }
-  virtual UniqueBSplineBasisFunctions_& GetUniqueBSplineBasisFunctions() {
-    return unique_basis_functions_;
-  }
 
 protected:
   KnotVectors_ knot_vectors_;
   Degrees_ degrees_;
-  BSplineBasisFunctions_ basis_functions_;
-  UniqueBSplineBasisFunctions_ unique_basis_functions_;
 
 private:
   using MultiplicityType_ = Multiplicity::Type_;
 
   void CopyKnotVectors(KnotVectors_ const& knot_vectors);
-  void RecreateBasisFunctions(Tolerance const& tolerance = kEpsilon);
 
   // Number of non-zero basis functions is equal to p+1 - see NURBS book P2.2.
   int GetNumberOfNonZeroBasisFunctions(Dimension const& dimension) const;

@@ -94,15 +94,6 @@ public:
                          Derivative_ const& derivative,
                          Tolerance const& tolerance = kEpsilon) const override;
 
-  // Original implementation of SplineLib
-  Coordinate_
-  FullyRecursiveEvaluate(ParametricCoordinate_ const& parametric_coordinate,
-                         Tolerance const& tolerance = kEpsilon) const;
-  Coordinate_
-  FullyRecursiveDerivative(ParametricCoordinate_ const& parametric_coordinate,
-                           Derivative_ const& derivative,
-                           Tolerance const& tolerance = kEpsilon) const;
-
   void InsertKnot(Dimension const& dimension,
                   Knot_ knot,
                   Multiplicity const& multiplicity = kMultiplicity,

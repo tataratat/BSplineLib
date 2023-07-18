@@ -19,15 +19,12 @@
 # SOFTWARE.
 
 set(HEADERS
-    b_spline_basis_function.hpp knot_vector.hpp
-    non_zero_degree_b_spline_basis_function.hpp parameter_space.hpp
-    parameter_space.inc zero_degree_b_spline_basis_function.hpp)
+    knot_vector.hpp
+    parameter_space.hpp
+    parameter_space.inc)
 
 set(SOURCES
-    b_spline_basis_function.cpp
     knot_vector.cpp
-    non_zero_degree_b_spline_basis_function.cpp
-    zero_degree_b_spline_basis_function.cpp
     #
     ${HEADERS})
 set_source_files_properties(${HEADERS} PROPERTIES LANGUAGE CXX HEADER_FILE_ONLY
