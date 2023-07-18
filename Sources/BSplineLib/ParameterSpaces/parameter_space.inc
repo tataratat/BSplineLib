@@ -72,14 +72,12 @@ ParameterSpace<parametric_dimensionality>::ParameterSpace(
     Throw(exception, kName);
   }
 #endif
-  RecreateBasisFunctions(tolerance);
 }
 
 template<int parametric_dimensionality>
 ParameterSpace<parametric_dimensionality>::ParameterSpace(
     ParameterSpace const& other)
-    : degrees_{other.degrees_},
-      basis_functions_(other.basis_functions_) {
+    : degrees_{other.degrees_} {
   CopyKnotVectors(other.knot_vectors_);
 }
 
@@ -89,7 +87,6 @@ ParameterSpace<parametric_dimensionality>::operator=(
     ParameterSpace const& rhs) {
   CopyKnotVectors(rhs.knot_vectors_);
   degrees_ = rhs.degrees_;
-  basis_functions_ = rhs.basis_functions_;
   return *this;
 }
 
@@ -108,22 +105,9 @@ bool IsEqual(ParameterSpace<parametric_dimensionality> const& lhs,
     Throw(exception, "bsplinelib::parameter_spaces::IsEqual::ParameterSpace");
   }
 #endif
-  return (DoesContainPointersToEqualValues(lhs.knot_vectors_,
-                                           rhs.knot_vectors_,
-                                           tolerance)
-          && (lhs.degrees_ == rhs.degrees_))
-             ? std::equal(
-                 lhs.basis_functions_.begin(),
-                 lhs.basis_functions_.end(),
-                 rhs.basis_functions_.begin(),
-                 rhs.basis_functions_.end(),
-                 [&](BSplineBasisFunctions const& lhs_basis_functions,
-                     BSplineBasisFunctions const& rhs_basis_functions) {
-                   return DoesContainPointersToEqualValues(lhs_basis_functions,
-                                                           rhs_basis_functions,
-                                                           tolerance);
-                 })
-             : false;
+  return DoesContainPointersToEqualValues(lhs.knot_vectors_,
+                                          rhs.knot_vectors_,
+                                          tolerance);
 }
 
 template<int parametric_dimensionality>
@@ -182,8 +166,6 @@ ParameterSpace<parametric_dimensionality>::RemoveOneParametricDimension(
 
     auto& out_degrees = out_pspace->GetDegrees();
     auto& out_knot_vectors = out_pspace->GetKnotVectors();
-    auto& out_basis = out_pspace->GetBSplineBasisFunctions();
-    auto& out_unique_basis = out_pspace->GetUniqueBSplineBasisFunctions();
 
     int out_dim_id{};
     for (int i{}; i < parametric_dimensionality; ++i) {
@@ -192,8 +174,6 @@ ParameterSpace<parametric_dimensionality>::RemoveOneParametricDimension(
       }
       out_degrees[out_dim_id] = degrees_[i];
       out_knot_vectors[out_dim_id] = knot_vectors_[i];
-      out_basis[out_dim_id] = basis_functions_[i];
-      out_unique_basis[out_dim_id] = unique_basis_functions_[i];
       ++out_dim_id;
     }
 
@@ -275,42 +255,6 @@ ParameterSpace<parametric_dimensionality>::DetermineBezierExtractionKnots(
 }
 
 template<int parametric_dimensionality>
-typename ParameterSpace<parametric_dimensionality>::Type_
-ParameterSpace<parametric_dimensionality>::EvaluateBasisFunction(
-    Index_ const& basis_function_index,
-    ParametricCoordinate_ const& parametric_coordinate,
-    Tolerance const& tolerance) const {
-#ifndef NDEBUG
-  Message const kName{"bsplinelib::parameter_spaces::ParameterSpace::"
-                      "EvaluateBasisFunction"};
-
-  try {
-    ThrowIfBasisFunctionIndexIsInvalid(basis_function_index);
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, kName);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, kName);
-  }
-#endif
-
-  Type_ basis_function_value{1.0};
-  Dimension::ForEach(
-      0,
-      parametric_dimensionality,
-      [&](Dimension const& dimension) {
-        Dimension::Type_ const& current_dimension = dimension.Get();
-
-        basis_function_value +=
-            (*basis_functions_[current_dimension]
-                              [basis_function_index[dimension].Get()])(
-                parametric_coordinate[current_dimension],
-                tolerance);
-      });
-  return basis_function_value;
-}
-
-template<int parametric_dimensionality>
 typename ParameterSpace<parametric_dimensionality>::BasisValuesPerDimension_
 ParameterSpace<parametric_dimensionality>::EvaluateBasisValuesPerDimension(
     ParametricCoordinate_ const& parametric_coordinate,
@@ -371,42 +315,6 @@ ParameterSpace<parametric_dimensionality>::EvaluateBasisValues(
     Tolerance const& tolerance) const {
   return RecursiveCombine(
       EvaluateBasisValuesPerDimension(parametric_coordinate, tolerance));
-}
-
-template<int parametric_dimensionality>
-typename ParameterSpace<parametric_dimensionality>::Type_
-ParameterSpace<parametric_dimensionality>::EvaluateBasisFunctionDerivative(
-    Index_ const& basis_function_index,
-    ParametricCoordinate_ const& parametric_coordinate,
-    Derivative_ const& derivative,
-    Tolerance const& tolerance) const {
-#ifndef NDEBUG
-  Message const kName{"bsplinelib::parameter_spaces::ParameterSpace::"
-                      "EvaluateBasisFunctionDerivative"};
-
-  try {
-    ThrowIfBasisFunctionIndexIsInvalid(basis_function_index);
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, kName);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, kName);
-  }
-#endif
-  Type_ basis_function_derivative_value{1.0};
-  Dimension::ForEach(
-      0,
-      parametric_dimensionality,
-      [&](Dimension const& dimension) {
-        Dimension::Type_ const& current_dimension = dimension.Get();
-        basis_function_derivative_value *=
-            (*basis_functions_[current_dimension]
-                              [basis_function_index[dimension].Get()])(
-                parametric_coordinate[current_dimension],
-                derivative[current_dimension],
-                tolerance);
-      });
-  return basis_function_derivative_value;
 }
 
 template<int parametric_dimensionality>
@@ -613,7 +521,6 @@ ParameterSpace<parametric_dimensionality>::InsertKnot(
   InsertionInformation_ const& insertion_information =
       DetermineInsertionInformation(dimension, knot, insertion, tolerance);
   knot_vector.Insert(std::move(knot), insertion, tolerance);
-  RecreateBasisFunctions(tolerance);
   return insertion_information;
 }
 
@@ -645,7 +552,6 @@ ParameterSpace<parametric_dimensionality>::RemoveKnot(
   if (Multiplicity const& removals =
           knot_vectors_[dimension_value]->Remove(knot, multiplicity, tolerance);
       removals != Multiplicity{}) {
-    RecreateBasisFunctions(tolerance);
     return DetermineInsertionInformation(dimension, knot, removals, tolerance);
   } else {
     return InsertionInformation_{};
@@ -678,7 +584,6 @@ ParameterSpace<parametric_dimensionality>::ElevateDegree(
       DetermineElevationInformation(dimension, multiplicity);
   knot_vectors_[dimension_value]->IncreaseMultiplicities(multiplicity);
   degrees_[dimension_value] += Degree{multiplicity.Get()};
-  RecreateBasisFunctions(tolerance);
   return bezier_information;
 }
 
@@ -707,7 +612,6 @@ ParameterSpace<parametric_dimensionality>::ReduceDegree(
   Multiplicity const reduction{std::min(multiplicity.Get(), degree.Get() - 1)};
   knot_vectors_[dimension_value]->DecreaseMultiplicities(reduction);
   degree -= Degree{reduction.Get()};
-  RecreateBasisFunctions(tolerance);
   return DetermineElevationInformation(dimension, reduction);
 }
 
@@ -791,45 +695,6 @@ void ParameterSpace<parametric_dimensionality>::CopyKnotVectors(
         knot_vectors_[current_dimension] =
             std::make_shared<KnotVector>(*knot_vectors[current_dimension]);
       });
-}
-
-template<int parametric_dimensionality>
-void ParameterSpace<parametric_dimensionality>::RecreateBasisFunctions(
-    Tolerance const& tolerance) {
-
-  Dimension::ForEach(
-      0,
-      parametric_dimensionality,
-      [&](Dimension const& dimension) {
-        Dimension::Type_ const& current_dimension = dimension.Get();
-        Length::Type_ const number_of_basis_functions{
-            GetNumberOfBasisFunctions(dimension).Get()};
-        // basis and unique basis functions of current dimension
-        typename BSplineBasisFunctions_::value_type& basis_functions =
-            basis_functions_[current_dimension];
-        auto& unique_basis_functions =
-            unique_basis_functions_[current_dimension];
-
-        // clear existing
-        basis_functions.clear();
-        basis_functions.reserve(number_of_basis_functions);
-        unique_basis_functions.clear();
-
-        KnotSpan::ForEach(
-            0,
-            number_of_basis_functions,
-            [&](KnotSpan const& start_of_support) {
-              basis_functions.emplace_back(BSplineBasisFunction::CreateDynamic(
-                  *knot_vectors_[current_dimension],
-                  start_of_support,
-                  degrees_[current_dimension],
-                  unique_basis_functions,
-                  tolerance) /* BSplineBasisFunction::CreateDynamic() */
-              );             /* basis_functions.emplace_back() */
-            }                /* [&] (KnotSpan&) */
-        );                   /* KnotSpan::ForEach() */
-      }                      /* [&] (Dimension&) */
-  );                         /* Dimension::ForEach() */
 }
 
 template<int parametric_dimensionality>
