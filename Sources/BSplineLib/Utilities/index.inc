@@ -19,7 +19,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 template<int size>
 Index<size>::Index(Length_ length, Value_ value, bool invalid) {
-  using std::move;
 
 #ifndef NDEBUG
   try {
@@ -29,9 +28,9 @@ Index<size>::Index(Length_ length, Value_ value, bool invalid) {
   }
 #endif
 
-  length_ = move(length);
-  value_ = move(value);
-  invalid_ = move(invalid);
+  length_ = std::move(length);
+  value_ = std::move(value);
+  invalid_ = std::move(invalid);
 }
 
 template<int size>
@@ -238,8 +237,6 @@ Index<size> Index<size>::First(Length_ length) {
 
 template<int size>
 Index<size> Index<size>::Last(Length_ length) {
-  using std::move;
-
   Value_ value;
   std::transform(length.begin(),
                  length.end(),
@@ -253,8 +250,8 @@ Index<size> Index<size>::Last(Length_ length) {
                    }
                  });
   return Index{
-      move(length),
-      move(value),
+      std::move(length),
+      std::move(value),
   };
 }
 

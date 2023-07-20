@@ -324,7 +324,7 @@ SplineEntry CreateSpline(SplineDataInt const& spline_data_int,
   using WeightedVectorSpace = typename Nurbs::WeightedVectorSpace_;
   using KnotVectors = typename ParameterSpace::KnotVectors_;
   using KnotVector = typename KnotVectors::value_type::element_type;
-  using std::make_shared, std::move;
+  using std::make_shared;
 
   SplineDataInt::const_iterator spline_datum_int{spline_data_int.begin() + 1};
   typename ParameterSpace::NumberOfBasisFunctions_ number_of_coordinates;
@@ -358,7 +358,7 @@ SplineEntry CreateSpline(SplineDataInt const& spline_data_int,
         knot_vectors[current_dimension] = make_shared<KnotVector>(knots);
       });
   SharedPointer<ParameterSpace> parameter_space{
-      make_shared<ParameterSpace>(move(knot_vectors), move(degrees))};
+      make_shared<ParameterSpace>(std::move(knot_vectors), std::move(degrees))};
   int const& total_number_of_coordinates =
       parameter_space->GetTotalNumberOfBasisFunctions();
   typename WeightedVectorSpace::Weights_ weights{};
@@ -374,12 +374,14 @@ SplineEntry CreateSpline(SplineDataInt const& spline_data_int,
                            Coordinate{*(spline_datum_double++)}});
   });
   if (*(spline_datum_int + 2) == 1) {
-    return make_shared<BSpline>(move(parameter_space),
-                                make_shared<VectorSpace>(move(coordinates)));
+    return make_shared<BSpline>(
+        std::move(parameter_space),
+        make_shared<VectorSpace>(std::move(coordinates)));
   } else {
     return make_shared<Nurbs>(
-        move(parameter_space),
-        make_shared<WeightedVectorSpace>(move(coordinates), move(weights)));
+        std::move(parameter_space),
+        make_shared<WeightedVectorSpace>(std::move(coordinates),
+                                         std::move(weights)));
   }
 }
 

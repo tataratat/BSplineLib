@@ -169,7 +169,7 @@ void Write(Splines const& splines,
 
 namespace {
 
-using std::make_shared, std::move;
+using std::make_shared;
 
 template<int parametric_dimensionality>
 SplineEntry CreateSpline(Node const& spline_entry) {
@@ -190,30 +190,35 @@ SplineEntry CreateSpline(Node const& spline_entry) {
                        child = child.next_sibling();
                      });
   SharedPointer<ParameterSpace> parameter_space{make_shared<ParameterSpace>(
-      move(knot_vectors),
-      move(utilities::std_container_operations::TransformNamedTypes<Degrees>(
-          ConvertToNumbers<typename Degrees::value_type>(
-              spline_entry.child("deg").first_child().value(),
-              ' '))))};
+      std::move(knot_vectors),
+      std::move(
+          utilities::std_container_operations::TransformNamedTypes<Degrees>(
+              ConvertToNumbers<typename Degrees::value_type>(
+                  spline_entry.child("deg").first_child().value(),
+                  ' '))))};
   SplineEntry spline;
   int const& dimensionality = ConvertToNumber<int>(
       TrimCharacter(spline_entry.attribute("spaceDim").value(), ' '));
   switch (dimensionality) {
   case 1:
-    spline = CreateSpline<parametric_dimensionality, 1>(move(parameter_space),
-                                                        spline_entry);
+    spline =
+        CreateSpline<parametric_dimensionality, 1>(std::move(parameter_space),
+                                                   spline_entry);
     break;
   case 2:
-    spline = CreateSpline<parametric_dimensionality, 2>(move(parameter_space),
-                                                        spline_entry);
+    spline =
+        CreateSpline<parametric_dimensionality, 2>(std::move(parameter_space),
+                                                   spline_entry);
     break;
   case 3:
-    spline = CreateSpline<parametric_dimensionality, 3>(move(parameter_space),
-                                                        spline_entry);
+    spline =
+        CreateSpline<parametric_dimensionality, 3>(std::move(parameter_space),
+                                                   spline_entry);
     break;
   case 4:
-    spline = CreateSpline<parametric_dimensionality, 4>(move(parameter_space),
-                                                        spline_entry);
+    spline =
+        CreateSpline<parametric_dimensionality, 4>(std::move(parameter_space),
+                                                   spline_entry);
     break;
   default:
 #ifndef NDEBUG
@@ -270,15 +275,16 @@ SplineEntry CreateSpline(
          - dimensionality);
   });
   if (spline_entry.child("wght").empty()) {
-    return make_shared<BSpline>(move(parameter_space),
-                                make_shared<VectorSpace>(move(coordinates)));
+    return make_shared<BSpline>(
+        std::move(parameter_space),
+        make_shared<VectorSpace>(std::move(coordinates)));
   } else {
     return make_shared<Nurbs>(
-        move(parameter_space),
+        std::move(parameter_space),
         make_shared<WeightedVectorSpace>(
-            move(coordinates),
-            move(ConvertToNumbers<
-                 typename WeightedVectorSpace::Weights_::value_type>(
+            std::move(coordinates),
+            std::move(ConvertToNumbers<
+                      typename WeightedVectorSpace::Weights_::value_type>(
                 spline_entry.child("wght").first_child().value(),
                 ' '))));
   }
