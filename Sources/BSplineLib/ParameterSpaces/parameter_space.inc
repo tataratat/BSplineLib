@@ -199,14 +199,25 @@ ParameterSpace<parametric_dimensionality>::FindFirstNonZeroBasisFunction(
       parametric_dimensionality,
       [&](Dimension const& dimension) {
         Dimension::Type_ const& current_dimension = dimension.Get();
-        first_non_zero_basis_function_index_value[current_dimension] = Index{
-            knot_vectors_[current_dimension]
-                ->FindSpan(parametric_coordinate[current_dimension], tolerance)
-                .Get()
-            - degrees_[current_dimension].Get()};
+        first_non_zero_basis_function_index_value[current_dimension] =
+            Index{knot_vectors_[current_dimension]->FindSpan(
+                      parametric_coordinate[current_dimension],
+                      tolerance)
+                  - degrees_[current_dimension].Get()};
       });
   return Index_{GetNumberOfBasisFunctions(),
                 first_non_zero_basis_function_index_value};
+}
+template<int parametric_dimensionality>
+typename ParameterSpace<parametric_dimensionality>::KnotSpans_
+ParameterSpace<parametric_dimensionality>::FindKnotSpans(
+    ParametricCoordinate_ const& parametric_coordinate,
+    Tolerance const& tolerance) const {
+  KnotSpans_ out;
+  for (int i{}; i < parametric_dimensionality; ++i) {
+    out[i] = knot_vectors_[i]->FindSpan(parametric_coordinate[i], tolerance);
+  }
+  return out;
 }
 
 template<int parametric_dimensionality>
@@ -258,23 +269,19 @@ ParameterSpace<parametric_dimensionality>::EvaluateBasisValuesPerDimension(
     ParametricCoordinate_ const& parametric_coordinate,
     Tolerance const& tolerance) const {
 
-  // prepare related info
-  const auto first_non_zeros =
-      FindFirstNonZeroBasisFunction(parametric_coordinate);
-
   // prepare output
   BasisValuesPerDimension_ output;
   for (int i{}; i < parametric_dimensionality; ++i) {
 
     // get this dim's info
     const auto& this_dim_degree = degrees_[i].Get();
-    const auto& this_dim_start_support =
-        first_non_zeros[bsplinelib::Dimension{i}].Get();
     const auto this_dim_n_basis = this_dim_degree + 1;
     const auto& this_dim_parametric_coordinate = parametric_coordinate[i];
-    const auto& this_knots = knot_vectors_[i]->GetKnots();
+    const auto& this_knot_vector = *knot_vectors_[i];
+    const auto& this_knots = this_knot_vector.GetKnots();
     const int this_zero_degree_support =
-        this_dim_start_support + this_dim_degree;
+        this_knot_vector.FindSpan(this_dim_parametric_coordinate, tolerance)
+            .Get();
 
     // this dim's output
     auto& this_dim_output = output[i];
@@ -323,10 +330,6 @@ ParameterSpace<parametric_dimensionality>::
         Derivative_ const& derivative,
         Tolerance const& tolerance) const {
 
-  // prepare related info
-  const auto first_non_zeros =
-      FindFirstNonZeroBasisFunction(parametric_coordinate);
-
   // prepare output
   BasisValuesPerDimension_ output;
 
@@ -335,16 +338,7 @@ ParameterSpace<parametric_dimensionality>::
     // get this dim's info
     const auto& this_dim_degree = degrees_[i].Get();
     const auto& this_dim_derivative = derivative[i];
-    // we could check here, if derivative query is bigger than the degree
-    // skip for now
-    const auto& this_dim_start_support =
-        first_non_zeros[bsplinelib::Dimension{i}].Get();
     const auto this_dim_n_basis = this_dim_degree + 1;
-    const auto& this_dim_parametric_coordinate = parametric_coordinate[i];
-    const auto& this_knots = knot_vectors_[i]->GetKnots();
-    const int this_zero_degree_support =
-        this_dim_start_support + this_dim_degree;
-
     // this dim's output
     auto& this_dim_output = output[i];
 
@@ -354,6 +348,13 @@ ParameterSpace<parametric_dimensionality>::
       this_dim_output.assign(this_dim_n_basis, 0.);
       continue;
     }
+
+    const auto& this_dim_parametric_coordinate = parametric_coordinate[i];
+    const auto& this_knot_vector = *knot_vectors_[i];
+    const auto& this_knots = this_knot_vector.GetKnots();
+    const int this_zero_degree_support =
+        this_knot_vector.FindSpan(this_dim_parametric_coordinate, tolerance)
+            .Get();
 
     // temporary ones that we need for second special case
     TemporaryArray<double> left(this_dim_n_basis), right(this_dim_n_basis);
