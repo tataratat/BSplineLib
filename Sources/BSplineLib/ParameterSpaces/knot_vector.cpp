@@ -94,7 +94,7 @@ Knot const& KnotVector::GetBack() const { return knots_[knots_.size() - 1]; }
 void KnotVector::UpdateKnot(const int id, Knot const& knot) {
   if (knots_[id - 1] > knot || knots_[id + 1] < knot) {
     throw RuntimeError(
-        "KnotVector::UpdateKnot - updating not must be non-decreasing.");
+        "KnotVector::UpdateKnot - updated knot must be non-decreasing.");
   }
   knots_[id] = knot;
 }
