@@ -169,7 +169,7 @@ struct TemporaryArray2D {
   TemporaryArray2D(const int n, const int d) : data_(new T[n * d]), dim_(d) {}
   ~TemporaryArray2D() { delete[] data_; }
   constexpr T* operator[](const int& i) { return &data_[i * dim_]; }
-  constexpr const T& operator[](const int& i) const { return &data_[i * dim_]; }
+  constexpr const T* operator[](const int& i) const { return &data_[i * dim_]; }
 };
 
 // ParameterSpaces provide the B-spline basis functions corresponding to given
@@ -228,6 +228,7 @@ public:
   using Knots_ = typename KnotVectors_::value_type::element_type::Knots_;
   using BezierInformation_ = Tuple<int, Knots_>;
   using Knot_ = typename Knots_::value_type;
+  using KnotSpans_ = Array<KnotSpan, parametric_dimensionality>;
 
   // for evaluated basis values
   using BasisValues_ = Vector<Type_>;
@@ -266,6 +267,10 @@ public:
   virtual Index_ FindFirstNonZeroBasisFunction(
       ParametricCoordinate_ const& parametric_coordinate,
       Tolerance const& tolerance = kEpsilon) const;
+
+  virtual KnotSpans_
+  FindKnotSpans(ParametricCoordinate_ const& parametric_coordinate,
+                Tolerance const& tolerance = kEpsilon) const;
   virtual BezierInformation_
   DetermineBezierExtractionKnots(Dimension const& dimension,
                                  Tolerance const& tolerance = kEpsilon) const;
