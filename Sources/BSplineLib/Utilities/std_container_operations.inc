@@ -56,10 +56,9 @@ constexpr ContainerTypeTo TransformNamedTypes(ContainerTypeFrom const& from) {
   static_assert(is_named_type<TypeFrom>,
                 "Source standard library container must contain NamedTypes.");
 
-  std::function<TypeTo(TypeFrom const&)> const& transformation =
-      [](TypeFrom const& value) {
-        return TypeTo{static_cast<TypeTo>(value.Get())};
-      };
+  auto transformation = [](TypeFrom const& value) -> TypeTo {
+    return TypeTo{static_cast<TypeTo>(value.Get())};
+  };
   ContainerTypeTo to;
   if constexpr (is_array<ContainerTypeTo>) {
 #ifndef NDEBUG
