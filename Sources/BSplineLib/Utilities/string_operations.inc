@@ -87,12 +87,17 @@ Numbers<Type> ConvertToNumbers(String delimited_string, char const& delimiter) {
 
 template<typename Type>
 String Write(Type const& value, Precision const& precision) {
-  static_assert(is_named_type<Type>, "Source type must be a NamedType.");
-
-  std::ostringstream string_stream;
-  string_stream.precision(precision.Get());
-  string_stream << value.Get();
-  return string_stream.str();
+  if constexpr (is_named_type<Type>) {
+    std::ostringstream string_stream;
+    string_stream.precision(precision.Get());
+    string_stream << value.Get();
+    return string_stream.str();
+  } else {
+    std::ostringstream string_stream;
+    string_stream.precision(precision.Get());
+    string_stream << value;
+    return string_stream.str();
+  }
 }
 
 template<typename ContainerTypeTo, typename ContainerTypeFrom>
@@ -109,7 +114,7 @@ ContainerTypeTo Write(ContainerTypeFrom const& from,
     int const& from_size = from.size();
     if constexpr (is_container_vector)
       to.reserve(from_size);
-    if constexpr (is_named_type<TypeFrom>) {
+    if constexpr (is_named_type<TypeFrom> || std::is_arithmetic_v<TypeFrom>) {
       std::function<String(TypeFrom const&)> const& write =
           [&](TypeFrom const& value) { return Write(value, precision); };
       if constexpr (is_container_vector) {

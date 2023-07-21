@@ -56,10 +56,9 @@ constexpr ContainerTypeTo TransformNamedTypes(ContainerTypeFrom const& from) {
   static_assert(is_named_type<TypeFrom>,
                 "Source standard library container must contain NamedTypes.");
 
-  std::function<TypeTo(TypeFrom const&)> const& transformation =
-      [](TypeFrom const& value) {
-        return TypeTo{static_cast<TypeTo>(value.Get())};
-      };
+  auto transformation = [](TypeFrom const& value) -> TypeTo {
+    return TypeTo{static_cast<TypeTo>(value.Get())};
+  };
   ContainerTypeTo to;
   if constexpr (is_array<ContainerTypeTo>) {
 #ifndef NDEBUG
@@ -76,11 +75,10 @@ constexpr ContainerTypeTo TransformNamedTypes(ContainerTypeFrom const& from) {
   return to;
 }
 
-template<typename ContainerType>
-constexpr bool DoesContainEqualValues(
-    ContainerType const& lhs,
-    ContainerType const& rhs,
-    typename ContainerType::value_type::Type_ const& tolerance) {
+template<typename ContainerType, typename ToleranceType>
+constexpr bool DoesContainEqualValues(ContainerType const& lhs,
+                                      ContainerType const& rhs,
+                                      ToleranceType const& tolerance) {
   using ValueType = typename ContainerType::value_type;
   using std::begin, std::end;
 
@@ -99,7 +97,8 @@ constexpr bool DoesContainEqualValues(
       begin(rhs),
       end(rhs),
       [&](ValueType const& lhs_value, ValueType const& rhs_value) {
-        return IsEqual(lhs_value, rhs_value, tolerance);
+        return std::abs(static_cast<ToleranceType>(lhs_value - rhs_value))
+               < tolerance;
       });
 }
 
@@ -164,8 +163,7 @@ constexpr ContainerType Add(ContainerType const& lhs,
     AddAndAssignToFirst(sum, rhs...);
 #ifndef NDEBUG
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "bsplinelib::utilities::std_container_operations::Add");
+    Throw(exception, "bsplinelib::utilities::std_container_operations::Add");
   }
 #endif
   return sum;
@@ -217,10 +215,10 @@ constexpr ContainerType Subtract(ContainerType const& lhs,
   return difference;
 }
 
-template<typename ContainerType>
-constexpr ContainerType
-Multiply(ContainerType const& container,
-         typename ContainerType::value_type::Type_ const& factor) {
+template<typename ContainerType, typename FactorType>
+constexpr ContainerType Multiply(ContainerType const& container,
+                                 FactorType const& factor) {
+  static_assert(std::is_arithmetic_v<FactorType>);
   using std::bind, std::multiplies, std::placeholders::_1, std::transform;
 
   ContainerType multiplied;
@@ -242,15 +240,12 @@ Multiply(ContainerType const& container,
   return multiplied;
 }
 
-template<typename ContainerType>
-ContainerType& DivideAndAssignToFirst(
-    ContainerType& container,
-    typename ContainerType::value_type::Type_ const& divisor,
-    typename ContainerType::value_type::Type_ const& tolerance) {
+template<typename ContainerType, typename DivisorType, typename ToleranceType>
+ContainerType& DivideAndAssignToFirst(ContainerType& container,
+                                      DivisorType const& divisor,
+                                      ToleranceType const& tolerance) {
 #ifndef NDEBUG
-  if (numeric_operations::IsEqual(divisor,
-                                  typename ContainerType::value_type::Type_{},
-                                  tolerance))
+  if (numeric_operations::IsEqual(divisor, DivisorType{}, tolerance))
     Throw(InvalidArgument("Division by zero (" + std::to_string(divisor)
                           + ") encountered."),
           "bsplinelib::utilities::std_container_operations::"
@@ -259,15 +254,19 @@ ContainerType& DivideAndAssignToFirst(
   std::transform(container.begin(),
                  container.end(),
                  container.begin(),
-                 std::bind(std::divides{}, std::placeholders::_1, divisor));
+                 std::bind(std::multiplies{},
+                           std::placeholders::_1,
+                           static_cast<DivisorType>(1.) / divisor));
   return container;
 }
 
-template<typename ContainerType>
-constexpr ContainerType
-Divide(ContainerType const& container,
-       typename ContainerType::value_type::Type_ const& divisor,
-       typename ContainerType::value_type::Type_ const& tolerance) {
+template<typename ContainerType, typename DivisorType, typename ToleranceType>
+constexpr ContainerType Divide(ContainerType const& container,
+                               DivisorType const& divisor,
+                               ToleranceType const& tolerance) {
+  static_assert(std::is_arithmetic_v<DivisorType>);
+  static_assert(std::is_arithmetic_v<ToleranceType>);
+
   ContainerType divided{container};
 #ifndef NDEBUG
   try {
@@ -275,8 +274,7 @@ Divide(ContainerType const& container,
     DivideAndAssignToFirst(divided, divisor, tolerance);
 #ifndef NDEBUG
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "bsplinelib::utilities::std_container_operations::Divide");
+    Throw(exception, "bsplinelib::utilities::std_container_operations::Divide");
   }
 #endif
   return divided;
@@ -304,8 +302,8 @@ DotProduct(ContainerType const& lhs, ContainerType const& rhs) {
 template<typename ContainerType>
 constexpr typename ContainerType::value_type
 TwoNorm(ContainerType const& container) {
-  return typename ContainerType::value_type{
-      std::sqrt(DotProduct(container, container).Get())};
+  return std::sqrt(static_cast<typename ContainerType::value_type>(
+      DotProduct(container, container)));
 }
 
 template<typename ContainerType>

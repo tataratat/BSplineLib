@@ -20,8 +20,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include "BSplineLib/InputOutput/operations.hpp"
 
 #include "BSplineLib/InputOutput/iges.hpp"
-#include "BSplineLib/InputOutput/irit.hpp"
-#include "BSplineLib/InputOutput/xml.hpp"
 #include "BSplineLib/Utilities/error_handling.hpp"
 #include "BSplineLib/Utilities/string_operations.hpp"
 
@@ -30,18 +28,11 @@ namespace bsplinelib::input_output::operations {
 FileFormat DetermineFileFormat(String const& file_name) {
   using utilities::string_operations::EndsWith;
 
-  if (EndsWith(file_name, ".iges")) {
+  if (EndsWith(file_name, ".iges") || EndsWith(file_name, ".igs")) {
     return FileFormat::kIges;
-  } else if (EndsWith(file_name, ".itd")) {
-    return FileFormat::kIrit;
-  } else if (EndsWith(file_name, ".vtk")) {
-    return FileFormat::kVtk;
-  } else if (EndsWith(file_name, ".xml")) {
-    return FileFormat::kXml;
   } else {
 #ifndef NDEBUG
-    throw RuntimeError("Only IGES (.iges), IRIT (.itd), VTK (.vtk), and XML "
-                       "(.xml) file formats are supported.");
+    throw RuntimeError("Only IGES (.iges) file format is supported.");
 #endif
     return FileFormat::kInvalid;
   }
@@ -51,18 +42,6 @@ Splines Read(String const& file_name) {
   switch (DetermineFileFormat(file_name)) {
   case FileFormat::kIges:
     return iges::Read(file_name);
-    break;
-  case FileFormat::kIrit:
-    return irit::Read(file_name);
-    break;
-  case FileFormat::kVtk:
-#ifndef NDEBUG
-    throw RuntimeError("VTK (.vtk) files cannot be read.");
-#endif
-    return Splines{};
-    break;
-  case FileFormat::kXml:
-    return xml::Read(file_name);
     break;
   default: // case FileFormat::kInvalid
     return Splines{};

@@ -41,15 +41,17 @@ namespace bsplinelib::parameter_spaces {
 //                  &knot_span_1_0 = knot_vector.FindSpan(knot);  // The last
 //                  knot span i = 3 is treated special.
 //   Multiplicity const &zero =
-//   knot_vector.DetermineMultiplicity(parametric_coordinate);  // Multiplicity
-//   s = 0. knot_vector.DoesParametricCoordinateEqualBack(knot);  // Evaluates
-//   to true as 1.0 is the last knot.
+//   knot_vector.DetermineMultiplicity(parametric_coordinate);
+//   Multiplicity s = 0. knot_vector.DoesParametricCoordinateEqualBack(knot);
+//   Evaluates to true as 1.0 is the last knot.
 class KnotVector {
 public:
-  using Knot_ = ParametricCoordinate;
+  // using Knot_ = ParametricCoordinate;
+  using Knot_ = double;
   using OutputInformation_ = StringVector;
   using Knots_ = Vector<Knot_>;
-  using Type_ = Knot_::Type_;
+  // using Type_ = Knot_::Type_;
+  using Type_ = Knot_;
 
   KnotVector() = default;
   explicit KnotVector(Knots_ knots, Tolerance const& tolerance = kEpsilon);
@@ -66,22 +68,34 @@ public:
   // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
   friend bool operator==(KnotVector const& lhs, KnotVector const& rhs);
   virtual Knot_ const& operator[](Index const& index) const;
+  virtual Knot_ const& operator[](int const& index) const;
 
   virtual int GetSize() const;
   virtual Knot_ const& GetFront() const;
   virtual Knot_ const& GetBack() const;
+  virtual Knots_ const& GetKnots() const { return knots_; }
+  virtual Knots_& GetKnots() { return knots_; }
 
-  virtual bool DoesParametricCoordinateEqualBack(
-      ParametricCoordinate const& parametric_coordinate,
-      Tolerance const& tolerance = kEpsilon) const;
+  /// inplace update. validates before
+  virtual void UpdateKnot(const int id, Knot_ const& knot);
+
+  /// scales knots
+  virtual void Scale(Knot_ const& min, Knot_ const& max);
+
+  virtual bool
+  DoesParametricCoordinateEqualBack(Knot_ const& parametric_coordinate,
+                                    Knot_ const& tolerance = kEpsilon) const;
   virtual bool DoesParametricCoordinateEqualFrontOrBack(
-      ParametricCoordinate const& parametric_coordinate,
+      Knot_ const& parametric_coordinate,
       Tolerance const& tolerance = kEpsilon) const;
   // Returns the (m-s)th or ith knot span if the parametric coordinate u equals
   // the last knot u_m of multiplicity s or is in the interval [u_i, u_{i+1})
   // (implying the knot span is non-zero, i.e., u_i < u_{i+1}), respectively.
-  virtual KnotSpan FindSpan(ParametricCoordinate const& parametric_coordinate,
+  virtual KnotSpan FindSpan(Knot_ const& parametric_coordinate,
                             Tolerance const& tolerance = kEpsilon) const;
+  virtual int FindSpan_(Knot_ const& parametric_coordinate) const {
+    return FindSpan(parametric_coordinate).Get();
+  }
   virtual Multiplicity
   DetermineMultiplicity(Knot_ const& knot,
                         Tolerance const& tolerance = kEpsilon) const;
@@ -105,19 +119,18 @@ public:
 
 #ifndef NDEBUG
   virtual void ThrowIfParametricCoordinateIsOutsideScope(
-      ParametricCoordinate const& parametric_coordinate,
+      Knot_ const& parametric_coordinate,
       Tolerance const& tolerance = kEpsilon) const;
 #endif
+
+  void ThrowIfTooSmallOrNotNonDecreasing(
+      Tolerance const& tolerance = kEpsilon) const;
 
 protected:
   Knots_ knots_;
 
 private:
   using ConstIterator_ = typename Knots_::const_iterator;
-
-#ifndef NDEBUG
-  void ThrowIfTooSmallOrNotNonDecreasing(Tolerance const& tolerance) const;
-#endif
 };
 
 bool IsEqual(KnotVector const& lhs,

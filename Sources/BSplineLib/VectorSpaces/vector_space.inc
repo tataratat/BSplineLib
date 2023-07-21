@@ -57,8 +57,7 @@ VectorSpace<dimensionality>::operator[](Index const& coordinate) const {
   try {
     ThrowIfIndexIsInvalid(coordinate);
   } catch (OutOfRange const& exception) {
-    Throw(exception,
-          "bsplinelib::vector_spaces::VectorSpace::operator[]");
+    Throw(exception, "bsplinelib::vector_spaces::VectorSpace::operator[]");
   }
 #endif
   return coordinates_[coordinate.Get()];
@@ -126,12 +125,7 @@ Coordinate VectorSpace<dimensionality>::DetermineMaximumDistanceFromOrigin(
                 [&](Coordinate_ const& coordinate) {
                   maximum_distance = std::max(
                       utilities::std_container_operations::TwoNorm(coordinate),
-                      maximum_distance,
-                      std::bind(utilities::IsLess<typename Coordinate::Name_,
-                                                  typename Coordinate::Type_>,
-                                std::placeholders::_1,
-                                std::placeholders::_2,
-                                tolerance));
+                      maximum_distance);
                 });
   return maximum_distance;
 }

@@ -33,8 +33,7 @@ bool IsEqual(WeightedVectorSpace<dimensionality> const& lhs,
   try {
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "bsplinelib::vector_spaces::IsEqual::WeightedVectorSpace");
+    Throw(exception, "bsplinelib::vector_spaces::IsEqual::WeightedVectorSpace");
   }
 #endif
   return IsEqual(static_cast<Base const&>(lhs),
@@ -56,9 +55,10 @@ WeightedVectorSpace<dimensionality>::Project(
   std::transform(homogeneous_coordinate.begin(),
                  std::prev(homogeneous_coordinate.end()),
                  coordinate.begin(),
-                 std::bind(std::divides{},
+                 std::bind(std::multiplies{},
                            std::placeholders::_1,
-                           homogeneous_coordinate[dimensionality].Get()));
+                           static_cast<typename Coordinate_::value_type>(1.)
+                               / homogeneous_coordinate[dimensionality]));
   return coordinate;
 }
 
@@ -80,26 +80,14 @@ WeightedVectorSpace<dimensionality>::
   }
 #endif
   Coordinate maximum_distance{};
-  Weight minimum_weight{std::numeric_limits<Weight::Type_>::max()};
+  Weight minimum_weight{std::numeric_limits<Weight>::max()};
   for (HomogeneousCoordinate_ const& homogeneous_coordinate :
        Base_::coordinates_) {
-    maximum_distance =
-        std::max(utilities::std_container_operations::TwoNorm(
-                     Project(homogeneous_coordinate)),
-                 maximum_distance,
-                 std::bind(utilities::IsLess<typename Coordinate::Name_,
-                                             typename Coordinate::Type_>,
-                           _1,
-                           _2,
-                           tolerance));
-    minimum_weight = std::min(
-        Weight{homogeneous_coordinate[dimensionality].Get()},
-        minimum_weight,
-        std::bind(
-            utilities::IsLess<typename Weight::Name_, typename Weight::Type_>,
-            _1,
-            _2,
-            tolerance));
+    maximum_distance = std::max(utilities::std_container_operations::TwoNorm(
+                                    Project(homogeneous_coordinate)),
+                                maximum_distance);
+    minimum_weight =
+        std::min(homogeneous_coordinate[dimensionality], minimum_weight);
   }
   return {maximum_distance, minimum_weight};
 }
@@ -188,7 +176,7 @@ WeightedVectorSpace<dimensionality>::HomogenizeCoordinates(
     Coordinate_ const& coordinate = coordinates[coordinate_index_value];
     HomogeneousCoordinate_ homogeneous_coordinate;
     Coordinate& weight = homogeneous_coordinate[dimensionality];
-    weight = Coordinate{weights[coordinate_index_value].Get()};
+    weight = weights[coordinate_index_value];
     std::transform(coordinate.begin(),
                    coordinate.end(),
                    homogeneous_coordinate.begin(),

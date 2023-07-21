@@ -1,8 +1,0 @@
-input:
-@xml_file@
-
-output:
-@xml_itd@
-
-splines:
-all

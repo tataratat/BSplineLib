@@ -136,6 +136,7 @@ public:
   constexpr NamedType(NamedType&& other) noexcept = default;
   constexpr NamedType& operator=(NamedType const& rhs) = default;
   constexpr NamedType& operator=(NamedType&& rhs) noexcept = default;
+  constexpr NamedType& operator=(Type_ const& rhs) { value_ = rhs; }
   ~NamedType() = default;
 
   constexpr NamedType& operator+=(NamedType const& rhs);
@@ -194,10 +195,16 @@ public:
   constexpr Type_ const& Get() const;
   constexpr Type_& Get();
 
+#ifndef NDEBUG
   static void
   ForEach(int const& first,
           int const& size,
           std::function<void(NamedType<Name, int> const&)> const& function);
+#else
+  template<typename Function>
+  static void
+  ForEach(int const& first, int const& size, Function const& function);
+#endif
 
 #ifndef NDEBUG
   static void
@@ -231,12 +238,12 @@ using Degree = utilities::NamedType<struct DegreeName, int>;
 using Derivative = utilities::NamedType<struct DerivativeName, int>;
 using KnotSpan = utilities::NamedType<struct KnotSpanName, int>;
 using Multiplicity = utilities::NamedType<struct MultiplicityName, int>;
-using ParametricCoordinate =
-    utilities::NamedType<struct ParametricCoordinateName, double>;
+using ParametricCoordinate = double;
+//    utilities::NamedType<struct ParametricCoordinateName, double>;
 
 namespace parameter_spaces {
 
-using Type = ParametricCoordinate::Type_;
+using Type = ParametricCoordinate;
 using BinomialRatio = Type;
 using KnotRatio = Type;
 using Tolerance = Type;
@@ -250,14 +257,15 @@ constexpr Tolerance const kEpsilon{
 } // namespace parameter_spaces
 
 // vector spaces
-using Coordinate =
-    utilities::NamedType<struct CoordinateName, parameter_spaces::Type>;
-using Weight = utilities::NamedType<struct WeightName, Coordinate::Type_>;
+using Coordinate = double;
+//    utilities::NamedType<struct CoordinateName, parameter_spaces::Type>;
+using Weight = double;
+// utilities::NamedType<struct WeightName, Coordinate::Type_>;
 
 namespace vector_spaces {
 
-using Type = Coordinate::Type_;
-using Tolerance = Type;
+using Type = double;      // Coordinate::Type_;
+using Tolerance = double; // Type;
 
 constexpr Precision const kPrecision{
     utilities::numeric_operations::GetPrecision<Type>()};
@@ -292,19 +300,6 @@ constexpr Tolerance const kEpsilon{
     utilities::numeric_operations::GetEpsilon<Tolerance>()};
 
 } // namespace input_output
-
-// models
-namespace models {
-
-using Type = splines::Type;
-using Tolerance = Type;
-
-constexpr Precision const kPrecision{
-    utilities::numeric_operations::GetPrecision<Type>()};
-constexpr Tolerance const kEpsilon{
-    utilities::numeric_operations::GetEpsilon<Tolerance>()};
-
-} // namespace models
 
 } // namespace bsplinelib
 
