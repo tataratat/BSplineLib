@@ -275,6 +275,10 @@ public:
   DetermineBezierExtractionKnots(Dimension const& dimension,
                                  Tolerance const& tolerance = kEpsilon) const;
 
+  /// @brief Implements The NURBS Book A2.2
+  /// @param parametric_coordinate
+  /// @param tolerance
+  /// @return
   virtual BasisValuesPerDimension_ EvaluateBasisValuesPerDimension(
       ParametricCoordinate_ const& parametric_coordinate,
       Tolerance const& tolerance = kEpsilon) const;
@@ -283,6 +287,11 @@ public:
   EvaluateBasisValues(ParametricCoordinate_ const& parametric_coordinate,
                       Tolerance const& tolerance = kEpsilon) const;
 
+  /// @brief Implements The NURBS Book A2.3
+  /// @param parametric_coordinate
+  /// @param derivative
+  /// @param tolerance
+  /// @return
   virtual BasisValuesPerDimension_ EvaluateBasisDerivativeValuesPerDimension(
       ParametricCoordinate_ const& parametric_coordinate,
       Derivative_ const& derivative,

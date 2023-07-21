@@ -151,8 +151,6 @@ bool KnotVector::DoesParametricCoordinateEqualFrontOrBack(
          || DoesParametricCoordinateEqualBack(parametric_coordinate, tolerance);
 }
 
-// KnotSpan KnotVector::FindSpan(ParametricCoordinate const&
-// parametric_coordinate,
 KnotSpan KnotVector::FindSpan(Knot const& parametric_coordinate,
                               Tolerance const& tolerance) const {
 #ifndef NDEBUG

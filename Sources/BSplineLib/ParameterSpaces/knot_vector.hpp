@@ -41,9 +41,9 @@ namespace bsplinelib::parameter_spaces {
 //                  &knot_span_1_0 = knot_vector.FindSpan(knot);  // The last
 //                  knot span i = 3 is treated special.
 //   Multiplicity const &zero =
-//   knot_vector.DetermineMultiplicity(parametric_coordinate);  // Multiplicity
-//   s = 0. knot_vector.DoesParametricCoordinateEqualBack(knot);  // Evaluates
-//   to true as 1.0 is the last knot.
+//   knot_vector.DetermineMultiplicity(parametric_coordinate);
+//   Multiplicity s = 0. knot_vector.DoesParametricCoordinateEqualBack(knot);
+//   Evaluates to true as 1.0 is the last knot.
 class KnotVector {
 public:
   // using Knot_ = ParametricCoordinate;
