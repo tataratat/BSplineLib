@@ -241,11 +241,19 @@ constexpr Type& NamedType<Name, Type>::Get() {
   return value_;
 }
 
+#ifndef NDEBUG
 template<typename Name, typename Type>
 void NamedType<Name, Type>::ForEach(
     int const& first,
     int const& size,
     std::function<void(NamedType<Name, int> const&)> const& function) {
+#else
+template<typename Name, typename Type>
+template<typename Function>
+void NamedType<Name, Type>::ForEach(int const& first,
+                                    int const& size,
+                                    Function const& function) {
+#endif
   static_assert(std::is_same_v<Type_, int>,
                 "NamedType must be of integer type!");
 

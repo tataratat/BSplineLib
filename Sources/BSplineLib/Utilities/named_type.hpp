@@ -195,10 +195,16 @@ public:
   constexpr Type_ const& Get() const;
   constexpr Type_& Get();
 
+#ifndef NDEBUG
   static void
   ForEach(int const& first,
           int const& size,
           std::function<void(NamedType<Name, int> const&)> const& function);
+#else
+  template<typename Function>
+  static void
+  ForEach(int const& first, int const& size, Function const& function);
+#endif
 
 #ifndef NDEBUG
   static void
