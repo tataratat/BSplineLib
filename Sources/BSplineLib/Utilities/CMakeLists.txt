@@ -19,21 +19,21 @@
 # SOFTWARE.
 
 set(HEADERS
-    error_handling.inc
+    error_handling.inl
     error_handling.hpp
-    index.inc
+    index.inl
     index.hpp
     math_operations.hpp
-    named_type.inc
+    named_type.inl
     named_type.hpp
-    numeric_operations.inc
+    numeric_operations.inl
     numeric_operations.hpp
-    std_container_operations.inc
+    std_container_operations.inl
     std_container_operations.hpp
-    string_operations.inc
+    string_operations.inl
     string_operations.hpp
     system_operations.hpp
-    system_operations.inc)
+    system_operations.inl)
 
 set(SOURCES
     math_operations.cpp string_operations.cpp system_operations.cpp

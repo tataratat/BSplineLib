@@ -82,7 +82,7 @@ Write(ContainerTypeFrom const& from,
       Precision const& precision = Precision{numeric_operations::GetPrecision<
           typename ContainerTypeFrom::value_type::Type_>()});
 
-#include "BSplineLib/Utilities/string_operations.inc"
+#include "BSplineLib/Utilities/string_operations.inl"
 
 } // namespace bsplinelib::utilities::string_operations
 

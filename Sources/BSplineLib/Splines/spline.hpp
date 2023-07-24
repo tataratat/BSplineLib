@@ -135,7 +135,7 @@ protected:
   SharedPointer<ParameterSpace_> parameter_space_;
 };
 
-#include "BSplineLib/Splines/spline.inc"
+#include "BSplineLib/Splines/spline.inl"
 
 } // namespace bsplinelib::splines
 

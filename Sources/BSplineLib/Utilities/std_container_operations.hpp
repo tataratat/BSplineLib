@@ -176,7 +176,7 @@ void ThrowIfContainerSizesDiffer(ContainerTypeLhs const& lhs,
                                  ContainerTypeRhs const& rhs);
 #endif
 
-#include "BSplineLib/Utilities/std_container_operations.inc"
+#include "BSplineLib/Utilities/std_container_operations.inl"
 
 } // namespace bsplinelib::utilities::std_container_operations
 

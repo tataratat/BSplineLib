@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-set(HEADERS knot_vector.hpp parameter_space.hpp parameter_space.inc)
+set(HEADERS knot_vector.hpp parameter_space.hpp parameter_space.inl)
 
 set(SOURCES
     knot_vector.cpp

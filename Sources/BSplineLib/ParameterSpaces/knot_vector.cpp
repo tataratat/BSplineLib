@@ -312,7 +312,8 @@ void KnotVector::ThrowIfParametricCoordinateIsOutsideScope(
     Knot const& parametric_coordinate,
     Tolerance const& tolerance) const {
   Knot const &first_knot = GetFront(), &last_knot = GetBack();
-  if (parametric_coordinate < first_knot || parametric_coordinate > last_knot)
+  if ((parametric_coordinate + tolerance) < first_knot
+      || (parametric_coordinate - tolerance) > last_knot)
     throw OutOfRange(
         "The parametric coordinate " + to_string(parametric_coordinate)
         + " is outside of the "
@@ -332,7 +333,7 @@ void KnotVector::ThrowIfTooSmallOrNotNonDecreasing(
     Index::Type_ const& index = knot.Get();
     Knot const &current_knot = knots_[index],
                &previous_knot = knots_[index - 1];
-    if (current_knot < previous_knot)
+    if ((current_knot + tolerance) < previous_knot)
       throw DomainError("The knot vector has to be a non-decreasing sequence "
                         "of real numbers but the knot "
                         + to_string(current_knot) + " at index "

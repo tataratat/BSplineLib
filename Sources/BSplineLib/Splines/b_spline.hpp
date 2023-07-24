@@ -136,7 +136,7 @@ private:
                                 Tolerance const& tolerance = kEpsilon) const;
 };
 
-#include "BSplineLib/Splines/b_spline.inc"
+#include "BSplineLib/Splines/b_spline.inl"
 
 } // namespace bsplinelib::splines
 

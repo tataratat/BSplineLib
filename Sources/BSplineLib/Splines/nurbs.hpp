@@ -127,7 +127,7 @@ protected:
   SharedPointer<WeightedVectorSpace_> weighted_vector_space_;
 };
 
-#include "BSplineLib/Splines/nurbs.inc"
+#include "BSplineLib/Splines/nurbs.inl"
 
 } // namespace bsplinelib::splines
 

@@ -55,7 +55,7 @@ auto CastToSpline(SplineEntry const& spline_entry);
 template<typename Coordinate>
 String WriteCoordinate3d(Coordinate const& coordinate, String const& delimiter);
 
-#include "BSplineLib/InputOutput/operations.inc"
+#include "BSplineLib/InputOutput/operations.inl"
 
 } // namespace bsplinelib::input_output::operations
 

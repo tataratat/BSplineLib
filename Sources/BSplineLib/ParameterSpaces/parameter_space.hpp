@@ -379,7 +379,7 @@ private:
 #endif
 };
 
-#include "BSplineLib/ParameterSpaces/parameter_space.inc"
+#include "BSplineLib/ParameterSpaces/parameter_space.inl"
 
 } // namespace bsplinelib::parameter_spaces
 

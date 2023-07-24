@@ -101,7 +101,7 @@ private:
 #endif
 };
 
-#include "BSplineLib/VectorSpaces/vector_space.inc"
+#include "BSplineLib/VectorSpaces/vector_space.inl"
 
 } // namespace bsplinelib::vector_spaces
 

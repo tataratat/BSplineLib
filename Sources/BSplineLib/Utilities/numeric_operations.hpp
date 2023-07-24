@@ -63,7 +63,7 @@ template<typename Type>
 constexpr void ThrowIfToleranceIsNegative(Type const& tolerance);
 #endif
 
-#include "BSplineLib/Utilities/numeric_operations.inc"
+#include "BSplineLib/Utilities/numeric_operations.inl"
 
 } // namespace bsplinelib::utilities::numeric_operations
 
