@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-set(HEADERS iges.hpp)
+set(HEADERS iges.hpp operations.hpp operations.inl)
 
 set(SOURCES
     iges.cpp operations.cpp

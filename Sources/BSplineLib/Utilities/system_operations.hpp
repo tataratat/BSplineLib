@@ -49,7 +49,7 @@ LocalTime GetLocalTime();
 template<typename FileStream, Mode mode>
 FileStream Open(File const& file);
 
-#include "BSplineLib/Utilities/system_operations.inc"
+#include "BSplineLib/Utilities/system_operations.inl"
 
 } // namespace bsplinelib::utilities::system_operations
 

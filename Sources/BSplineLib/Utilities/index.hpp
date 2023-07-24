@@ -114,7 +114,7 @@ private:
 #endif
 };
 
-#include "BSplineLib/Utilities/index.inc"
+#include "BSplineLib/Utilities/index.inl"
 
 } // namespace bsplinelib::utilities
 

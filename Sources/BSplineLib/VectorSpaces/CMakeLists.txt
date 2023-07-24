@@ -18,8 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-set(HEADERS vector_space.hpp vector_space.inc weighted_vector_space.hpp
-            weighted_vector_space.inc)
+set(HEADERS vector_space.hpp vector_space.inl weighted_vector_space.hpp
+            weighted_vector_space.inl)
 
 set(SOURCES #
     ${HEADERS})

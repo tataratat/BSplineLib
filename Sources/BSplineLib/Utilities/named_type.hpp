@@ -216,7 +216,7 @@ private:
   Type_ value_;
 };
 
-#include "BSplineLib/Utilities/named_type.inc"
+#include "BSplineLib/Utilities/named_type.inl"
 
 template<typename Type>
 constexpr bool const is_named_type{false};

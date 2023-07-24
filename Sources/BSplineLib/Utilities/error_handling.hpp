@@ -54,7 +54,7 @@ void Throw(Exception const& exception,
            Message const& name,
            int const& dimension = -1);
 
-#include "BSplineLib/Utilities/error_handling.inc"
+#include "BSplineLib/Utilities/error_handling.inl"
 
 } // namespace bsplinelib::utilities::error_handling
 

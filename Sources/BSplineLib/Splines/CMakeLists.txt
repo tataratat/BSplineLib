@@ -20,11 +20,11 @@
 
 set(HEADERS
     b_spline.hpp
-    b_spline.inc
+    b_spline.inl
     nurbs.hpp
-    nurbs.inc
+    nurbs.inl
     spline.hpp
-    spline.inc
+    spline.inl
     spline_item.hpp)
 
 set(SOURCES

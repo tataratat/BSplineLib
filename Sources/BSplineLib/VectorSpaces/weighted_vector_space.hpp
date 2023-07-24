@@ -112,7 +112,7 @@ private:
                                                 Weights_ const& weights) const;
 };
 
-#include "BSplineLib/VectorSpaces/weighted_vector_space.inc"
+#include "BSplineLib/VectorSpaces/weighted_vector_space.inl"
 
 } // namespace bsplinelib::vector_spaces
 
