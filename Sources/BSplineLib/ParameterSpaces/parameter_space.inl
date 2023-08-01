@@ -19,63 +19,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 template<int parametric_dimensionality>
 ParameterSpace<parametric_dimensionality>::ParameterSpace(
-    KnotVectors_ knot_vectors,
-    Degrees_ degrees,
-    Tolerance const& tolerance)
-    : knot_vectors_(std::move(knot_vectors)),
-      degrees_(std::move(degrees)) {
-  using std::to_string;
-
-#ifndef NDEBUG
-  Message const kName{
-      "bsplinelib::parameter_spaces::ParameterSpace::ParameterSpace"};
-
-  try {
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-    Dimension::ForEach(
-        0,
-        parametric_dimensionality,
-        [&](Dimension const& dimension) {
-          Dimension::Type_ const& current_dimension = dimension.Get();
-          Message const kClamped{"for dimension " + to_string(current_dimension)
-                                 + ": For a clamped knot vector, "};
-
-          KnotVector const& knot_vector = *knot_vectors_[current_dimension];
-          for (ParametricCoordinate const& unique_knot :
-               knot_vector.GetUniqueKnots(tolerance)) {
-            Degree::Type_ const& degree = degrees_[current_dimension].Get();
-            MultiplicityType_ const multiplicity{
-                knot_vector.DetermineMultiplicity(unique_knot, tolerance)
-                    .Get()},
-                clamped_multiplicity{degree + 1};
-            if (knot_vector.DoesParametricCoordinateEqualFrontOrBack(
-                    unique_knot,
-                    tolerance)) {
-              if (multiplicity != clamped_multiplicity)
-                throw DomainError(kClamped + "the multiplicity "
-                                  + to_string(multiplicity)
-                                  + " of the first or last "
-                                    "knot "
-                                  + to_string(unique_knot) + " must be "
-                                  + to_string(clamped_multiplicity) + ".");
-            } else if (multiplicity > degree) {
-              throw DomainError(
-                  kClamped + "the multiplicity " + to_string(multiplicity)
-                  + " of the interior knot " + to_string(unique_knot)
-                  + " must not exceed the degree " + to_string(degree) + ".");
-            }
-          }
-        });
-  } catch (DomainError const& exception) {
-    Throw(exception, kName);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, kName);
-  }
-#endif
-}
-
-template<int parametric_dimensionality>
-ParameterSpace<parametric_dimensionality>::ParameterSpace(
     ParameterSpace const& other)
     : degrees_{other.degrees_} {
   CopyKnotVectors(other.knot_vectors_);

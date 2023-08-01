@@ -237,9 +237,9 @@ public:
       Array<BasisValues_, parametric_dimensionality>;
 
   ParameterSpace() = default;
-  ParameterSpace(KnotVectors_ knot_vectors,
-                 Degrees_ degrees,
-                 Tolerance const& tolerance = kEpsilon);
+  ParameterSpace(KnotVectors_ knot_vectors, Degrees_ degrees)
+      : knot_vectors_(std::move(knot_vectors)),
+        degrees_(std::move(degrees)){};
   ParameterSpace(ParameterSpace const& other);
   ParameterSpace(ParameterSpace&& other) noexcept = default;
   ParameterSpace& operator=(ParameterSpace const& rhs);
