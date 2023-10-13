@@ -33,23 +33,4 @@ SplineItem::SplineItem(int parametric_dimensionality,
       parametric_dimensionality_(std::move(parametric_dimensionality)),
       is_rational_(std::move(is_rational)) {}
 
-bool IsEqual(SplineItem const& lhs,
-             SplineItem const& rhs,
-             Tolerance const& tolerance) {
-#ifndef NDEBUG
-  try {
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (RuntimeError const& exception) {
-    Throw(exception, "bsplinelib::splines::IsEqual::SplineItem");
-  }
-#endif
-  return ((lhs.parametric_dimensionality_ == rhs.parametric_dimensionality_)
-          && (lhs.dimensionality_ == rhs.dimensionality_)
-          && (lhs.is_rational_ == rhs.is_rational_));
-}
-
-bool operator==(SplineItem const& lhs, SplineItem const& rhs) {
-  return IsEqual(lhs, rhs);
-}
-
 } // namespace bsplinelib::splines

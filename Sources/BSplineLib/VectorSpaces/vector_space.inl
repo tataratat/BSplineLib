@@ -22,35 +22,6 @@ VectorSpace<dimensionality>::VectorSpace(Coordinates_ coordinates)
     : coordinates_(std::move(coordinates)) {}
 
 template<int dimensionality>
-bool IsEqual(VectorSpace<dimensionality> const& lhs,
-             VectorSpace<dimensionality> const& rhs,
-             Tolerance const& tolerance) {
-#ifndef NDEBUG
-  try {
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, "bsplinelib::vector_spaces::IsEqual::VectorSpace");
-  }
-#endif
-  return std::equal(
-      lhs.coordinates_.begin(),
-      lhs.coordinates_.end(),
-      rhs.coordinates_.begin(),
-      rhs.coordinates_.end(),
-      std::bind(utilities::std_container_operations::DoesContainEqualValues<
-                    typename VectorSpace<dimensionality>::Coordinate_>,
-                std::placeholders::_1,
-                std::placeholders::_2,
-                tolerance));
-}
-
-template<int dimensionality>
-bool operator==(VectorSpace<dimensionality> const& lhs,
-                VectorSpace<dimensionality> const& rhs) {
-  return IsEqual(lhs, rhs);
-}
-
-template<int dimensionality>
 typename VectorSpace<dimensionality>::Coordinate_ const&
 VectorSpace<dimensionality>::operator[](Index const& coordinate) const {
 #ifndef NDEBUG

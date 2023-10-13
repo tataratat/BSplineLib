@@ -61,25 +61,6 @@ BSpline<parametric_dimensionality, dimensionality>::operator=(
 }
 
 template<int parametric_dimensionality, int dimensionality>
-bool IsEqual(BSpline<parametric_dimensionality, dimensionality> const& lhs,
-             BSpline<parametric_dimensionality, dimensionality> const& rhs,
-             Tolerance const& tolerance) {
-  using Base =
-      typename BSpline<parametric_dimensionality, dimensionality>::Base_;
-
-  return (IsEqual(*lhs.vector_space_, *rhs.vector_space_, tolerance)
-          && IsEqual(static_cast<Base const&>(lhs),
-                     static_cast<Base const&>(rhs),
-                     tolerance));
-}
-
-template<int parametric_dimensionality, int dimensionality>
-bool operator==(BSpline<parametric_dimensionality, dimensionality> const& lhs,
-                BSpline<parametric_dimensionality, dimensionality> const& rhs) {
-  return IsEqual(lhs, rhs);
-}
-
-template<int parametric_dimensionality, int dimensionality>
 typename Spline<parametric_dimensionality, dimensionality>::Coordinate_
 BSpline<parametric_dimensionality, dimensionality>::operator()(
     ParametricCoordinate_ const& parametric_coordinate,

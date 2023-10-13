@@ -37,14 +37,6 @@ namespace bsplinelib::splines {
 template<int parametric_dimensionality, int dimensionality>
 class BSpline;
 
-template<int parametric_dimensionality, int dimensionality>
-bool IsEqual(BSpline<parametric_dimensionality, dimensionality> const& lhs,
-             BSpline<parametric_dimensionality, dimensionality> const& rhs,
-             Tolerance const& tolerance = kEpsilon);
-template<int parametric_dimensionality, int dimensionality>
-bool operator==(BSpline<parametric_dimensionality, dimensionality> const& lhs,
-                BSpline<parametric_dimensionality, dimensionality> const& rhs);
-
 // B-splines are non-rational splines.  Currently only single-patch B-splines
 // are supported.
 //
@@ -78,15 +70,6 @@ public:
   BSpline& operator=(BSpline&& rhs) noexcept = default;
   ~BSpline() override = default;
 
-  // Comparison based on tolerance.
-  friend bool IsEqual<parametric_dimensionality, dimensionality>(
-      BSpline const& lhs,
-      BSpline const& rhs,
-      Tolerance const& tolerance);
-  // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
-  friend bool
-  operator==<parametric_dimensionality, dimensionality>(BSpline const& lhs,
-                                                        BSpline const& rhs);
   // Default evaluation uses lookup tricks
   Coordinate_ operator()(ParametricCoordinate_ const& parametric_coordinate,
                          Tolerance const& tolerance = kEpsilon) const override;

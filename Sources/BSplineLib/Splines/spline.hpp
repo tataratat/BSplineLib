@@ -36,14 +36,6 @@ namespace bsplinelib::splines {
 template<int parametric_dimensionality, int dimensionality>
 class Spline;
 
-template<int parametric_dimensionality, int dimensionality>
-bool IsEqual(Spline<parametric_dimensionality, dimensionality> const& lhs,
-             Spline<parametric_dimensionality, dimensionality> const& rhs,
-             Tolerance const& tolerance = kEpsilon);
-template<int parametric_dimensionality, int dimensionality>
-bool operator==(Spline<parametric_dimensionality, dimensionality> const& lhs,
-                Spline<parametric_dimensionality, dimensionality> const& rhs);
-
 // Splines are (non-)rational mappings from parameter spaces of arbitrary
 // parametric_dimensionality to vector spaces of arbitrary dimensionality.  They
 // can be used, e.g., to seamlessly integrate geometry representation,
@@ -71,15 +63,6 @@ public:
 
   ~Spline() override = default;
 
-  // Comparison based on tolerance.
-  friend bool IsEqual<parametric_dimensionality, dimensionality>(
-      Spline const& lhs,
-      Spline const& rhs,
-      Tolerance const& tolerance);
-  // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
-  friend bool
-  operator==<parametric_dimensionality, dimensionality>(Spline const& lhs,
-                                                        Spline const& rhs);
   virtual Coordinate_
   operator()(ParametricCoordinate_ const& parametric_coordinate,
              Tolerance const& tolerance = kEpsilon) const = 0;

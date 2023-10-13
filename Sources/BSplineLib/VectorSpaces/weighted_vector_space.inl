@@ -24,30 +24,6 @@ WeightedVectorSpace<dimensionality>::WeightedVectorSpace(
     : Base_{HomogenizeCoordinates(coordinates, weights)} {}
 
 template<int dimensionality>
-bool IsEqual(WeightedVectorSpace<dimensionality> const& lhs,
-             WeightedVectorSpace<dimensionality> const& rhs,
-             Tolerance const& tolerance) {
-  using Base = typename WeightedVectorSpace<dimensionality>::Base_;
-
-#ifndef NDEBUG
-  try {
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, "bsplinelib::vector_spaces::IsEqual::WeightedVectorSpace");
-  }
-#endif
-  return IsEqual(static_cast<Base const&>(lhs),
-                 static_cast<Base const&>(rhs),
-                 tolerance);
-}
-
-template<int dimensionality>
-bool operator==(WeightedVectorSpace<dimensionality> const& lhs,
-                WeightedVectorSpace<dimensionality> const& rhs) {
-  return IsEqual(lhs, rhs);
-}
-
-template<int dimensionality>
 typename WeightedVectorSpace<dimensionality>::Coordinate_
 WeightedVectorSpace<dimensionality>::Project(
     HomogeneousCoordinate_ const& homogeneous_coordinate) {

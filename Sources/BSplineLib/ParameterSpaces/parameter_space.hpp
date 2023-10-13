@@ -40,14 +40,6 @@ namespace bsplinelib::parameter_spaces {
 template<int parametric_dimensionality>
 class ParameterSpace;
 
-template<int parametric_dimensionality>
-bool IsEqual(ParameterSpace<parametric_dimensionality> const& lhs,
-             ParameterSpace<parametric_dimensionality> const& rhs,
-             Tolerance const& tolerance = kEpsilon);
-template<int parametric_dimensionality>
-bool operator==(ParameterSpace<parametric_dimensionality> const& lhs,
-                ParameterSpace<parametric_dimensionality> const& rhs);
-
 /// recursive combime adapted from bezman
 template<std::size_t depth, typename ValueType, std::size_t array_dim>
 constexpr void
@@ -246,13 +238,6 @@ public:
   ParameterSpace& operator=(ParameterSpace&& rhs) noexcept = default;
   virtual ~ParameterSpace() = default;
 
-  // Comparison based on tolerance.
-  friend bool IsEqual<parametric_dimensionality>(ParameterSpace const& lhs,
-                                                 ParameterSpace const& rhs,
-                                                 Tolerance const& tolerance);
-  // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
-  friend bool operator==<parametric_dimensionality>(ParameterSpace const& lhs,
-                                                    ParameterSpace const& rhs);
   virtual Index_ First() const;
   virtual Index_ Behind() const;
 

@@ -52,25 +52,6 @@ KnotVector::KnotVector(Knots_ knots, Tolerance const& tolerance)
 #endif
 }
 
-bool IsEqual(KnotVector const& lhs,
-             KnotVector const& rhs,
-             Tolerance const& tolerance) {
-#ifndef NDEBUG
-  try {
-    ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, "bsplinelib::parameter_spaces::IsEqual::KnotVector");
-  }
-#endif
-  return utilities::std_container_operations::DoesContainEqualValues(lhs.knots_,
-                                                                     rhs.knots_,
-                                                                     tolerance);
-}
-
-bool operator==(KnotVector const& lhs, KnotVector const& rhs) {
-  return IsEqual(lhs, rhs);
-}
-
 Knot const& KnotVector::operator[](Index const& index) const {
 #ifndef NDEBUG
   try {

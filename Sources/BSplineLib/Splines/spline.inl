@@ -18,30 +18,6 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 template<int parametric_dimensionality, int dimensionality>
-bool IsEqual(Spline<parametric_dimensionality, dimensionality> const& lhs,
-             Spline<parametric_dimensionality, dimensionality> const& rhs,
-             Tolerance const& tolerance) {
-  using Base =
-      typename Spline<parametric_dimensionality, dimensionality>::Base_;
-
-#ifndef NDEBUG
-  try {
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, "bsplinelib::splines::IsEqual::Spline");
-  }
-#endif
-  return ((static_cast<Base const&>(lhs) == static_cast<Base const&>(rhs))
-          && IsEqual(*lhs.parameter_space_, *rhs.parameter_space_, tolerance));
-}
-
-template<int parametric_dimensionality, int dimensionality>
-bool operator==(Spline<parametric_dimensionality, dimensionality> const& lhs,
-                Spline<parametric_dimensionality, dimensionality> const& rhs) {
-  return IsEqual(lhs, rhs);
-}
-
-template<int parametric_dimensionality, int dimensionality>
 void Spline<parametric_dimensionality, dimensionality>::RefineKnots(
     Dimension const& dimension,
     Knots_ knots,
