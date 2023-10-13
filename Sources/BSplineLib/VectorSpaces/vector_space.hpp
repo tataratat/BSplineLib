@@ -32,17 +32,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace bsplinelib::vector_spaces {
 
-template<int dimensionality>
-class VectorSpace;
-
-template<int dimensionality>
-bool IsEqual(VectorSpace<dimensionality> const& lhs,
-             VectorSpace<dimensionality> const& rhs,
-             Tolerance const& tolerance = kEpsilon);
-template<int dimensionality>
-bool operator==(VectorSpace<dimensionality> const& lhs,
-                VectorSpace<dimensionality> const& rhs);
-
 // VectorSpaces group coordinates.
 //
 // Example:
@@ -71,13 +60,6 @@ public:
   VectorSpace& operator=(VectorSpace&& rhs) noexcept = default;
   virtual ~VectorSpace() = default;
 
-  // Comparison based on tolerance.
-  friend bool IsEqual<dimensionality>(VectorSpace const& lhs,
-                                      VectorSpace const& rhs,
-                                      Tolerance const& tolerance);
-  // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
-  friend bool operator==<dimensionality>(VectorSpace const& lhs,
-                                         VectorSpace const& rhs);
   virtual Coordinate_ const& operator[](Index const& coordinate) const;
   virtual Coordinates_& GetCoordinates() { return coordinates_; }
   virtual Coordinates_ const& GetCoordinates() const { return coordinates_; }

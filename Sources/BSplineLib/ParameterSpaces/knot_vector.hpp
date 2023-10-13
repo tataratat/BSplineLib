@@ -61,12 +61,6 @@ public:
   KnotVector& operator=(KnotVector&& rhs) noexcept = default;
   virtual ~KnotVector() = default;
 
-  // Comparison based on tolerance.
-  friend bool IsEqual(KnotVector const& lhs,
-                      KnotVector const& rhs,
-                      Tolerance const& tolerance);
-  // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
-  friend bool operator==(KnotVector const& lhs, KnotVector const& rhs);
   virtual Knot_ const& operator[](Index const& index) const;
   virtual Knot_ const& operator[](int const& index) const;
 
@@ -132,11 +126,6 @@ protected:
 private:
   using ConstIterator_ = typename Knots_::const_iterator;
 };
-
-bool IsEqual(KnotVector const& lhs,
-             KnotVector const& rhs,
-             Tolerance const& tolerance = kEpsilon);
-bool operator==(KnotVector const& lhs, KnotVector const& rhs);
 
 template<int parametric_dimensionality>
 using KnotVectors = Array<SharedPointer<KnotVector>, parametric_dimensionality>;

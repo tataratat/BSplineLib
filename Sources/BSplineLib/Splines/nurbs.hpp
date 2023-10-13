@@ -40,14 +40,6 @@ namespace bsplinelib::splines {
 template<int parametric_dimensionality, int dimensionality>
 class Nurbs;
 
-template<int parametric_dimensionality, int dimensionality>
-bool IsEqual(Nurbs<parametric_dimensionality, dimensionality> const& lhs,
-             Nurbs<parametric_dimensionality, dimensionality> const& rhs,
-             Tolerance const& tolerance = kEpsilon);
-template<int parametric_dimensionality, int dimensionality>
-bool operator==(Nurbs<parametric_dimensionality, dimensionality> const& lhs,
-                Nurbs<parametric_dimensionality, dimensionality> const& rhs);
-
 // NURBSs are rational B-splines.  Currently only single-patch NURBSs are
 // supported.
 //
@@ -81,15 +73,6 @@ public:
   Nurbs& operator=(Nurbs&& rhs) noexcept = default;
   ~Nurbs() override = default;
 
-  // Comparison based on tolerance.
-  friend bool IsEqual<parametric_dimensionality, dimensionality>(
-      Nurbs const& lhs,
-      Nurbs const& rhs,
-      Tolerance const& tolerance);
-  // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
-  friend bool
-  operator==<parametric_dimensionality, dimensionality>(Nurbs const& lhs,
-                                                        Nurbs const& rhs);
   Coordinate_ operator()(ParametricCoordinate_ const& parametric_coordinate,
                          Tolerance const& tolerance = kEpsilon) const final;
   Coordinate_ operator()(ParametricCoordinate_ const& parametric_coordinate,

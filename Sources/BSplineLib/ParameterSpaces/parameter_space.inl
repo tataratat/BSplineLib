@@ -34,30 +34,6 @@ ParameterSpace<parametric_dimensionality>::operator=(
 }
 
 template<int parametric_dimensionality>
-bool IsEqual(ParameterSpace<parametric_dimensionality> const& lhs,
-             ParameterSpace<parametric_dimensionality> const& rhs,
-             Tolerance const& tolerance) {
-  using utilities::std_container_operations::DoesContainPointersToEqualValues;
-
-#ifndef NDEBUG
-  try {
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, "bsplinelib::parameter_spaces::IsEqual::ParameterSpace");
-  }
-#endif
-  return DoesContainPointersToEqualValues(lhs.knot_vectors_,
-                                          rhs.knot_vectors_,
-                                          tolerance);
-}
-
-template<int parametric_dimensionality>
-bool operator==(ParameterSpace<parametric_dimensionality> const& lhs,
-                ParameterSpace<parametric_dimensionality> const& rhs) {
-  return IsEqual(lhs, rhs);
-}
-
-template<int parametric_dimensionality>
 typename ParameterSpace<parametric_dimensionality>::Index_
 ParameterSpace<parametric_dimensionality>::First() const {
   return Index_::First(GetNumberOfNonZeroBasisFunctions());

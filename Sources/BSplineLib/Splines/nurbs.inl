@@ -63,21 +63,6 @@ Nurbs<parametric_dimensionality, dimensionality>::operator=(Nurbs const& rhs) {
 }
 
 template<int parametric_dimensionality, int dimensionality>
-bool IsEqual(Nurbs<parametric_dimensionality, dimensionality> const& lhs,
-             Nurbs<parametric_dimensionality, dimensionality> const& rhs,
-             Tolerance const& tolerance) {
-  return IsEqual(*lhs.homogeneous_b_spline_,
-                 *rhs.homogeneous_b_spline_,
-                 tolerance);
-}
-
-template<int parametric_dimensionality, int dimensionality>
-bool operator==(Nurbs<parametric_dimensionality, dimensionality> const& lhs,
-                Nurbs<parametric_dimensionality, dimensionality> const& rhs) {
-  return IsEqual(lhs, rhs);
-}
-
-template<int parametric_dimensionality, int dimensionality>
 typename Spline<parametric_dimensionality, dimensionality>::Coordinate_
 Nurbs<parametric_dimensionality, dimensionality>::operator()(
     ParametricCoordinate_ const& parametric_coordinate,
