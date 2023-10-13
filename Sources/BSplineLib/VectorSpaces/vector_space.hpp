@@ -24,6 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include <functional>
 #include <utility>
 
+#include "BSplineLib/Utilities/containers.hpp"
 #include "BSplineLib/Utilities/error_handling.hpp"
 #include "BSplineLib/Utilities/named_type.hpp"
 #include "BSplineLib/Utilities/numeric_operations.hpp"
@@ -44,39 +45,111 @@ namespace bsplinelib::vector_spaces {
 //   vector_space[Index{1}];  // Coordinate P_1 = {1.0, 0.0, 0.0}.
 //   ScalarCoordinate const &one_point_zero =
 //   vector_space.DetermineMaximumDistanceFromOrigin();
-template<int dimensionality>
 class VectorSpace {
 public:
-  using Coordinate_ = Array<Coordinate, dimensionality>;
-  using Coordinates_ = Vector<Coordinate_>;
+  using DataType_ = Coordinate;
+
+  template<typename T>
+  using Array_ = bsplinelib::utilities::containers::Array<T, 1>;
+  template<typename T>
+  using Array2D_ = bsplinelib::utilities::containers::Array<T, 2>;
+  template<typename T>
+  using Vector_ =
+      bsplinelib::utilities::containers::DefaultInitializationVector<T>;
+
+  using Coordinate_ = Array_<DataType>;
+  using ConstCoordinate_ = Array_<const DataType>;
+  using Coordinates_ = Array2D_<DataType>;
 
   VectorSpace() = default;
-  explicit VectorSpace(Coordinates_ coordinates);
+
+  /// @brief coordinate copy ctor
+  /// @param coordinates
+  explicit VectorSpace(const Coordinates_& coordinates) {
+    // copy
+    coordinates_ = coordinates;
+  }
+
+  /// @brief coordinate move ctor
+  /// @param coordinates
+  explicit VectorSpace(Coordinates_&& coordinates) {
+    coordinates_ = std::move(coordinates);
+  }
+
+  /// @brief data pointer ctor
+  /// @param data
+  /// @param shape0
+  /// @param shape1
+  explicit VectorSpace(Coordinate* data, const int& shape0, const int& shape1) {
+    // take data and make a 2d view
+    coordinates_.SetData(data);
+    coordinates_.SetShape(shape0, shape1);
+  }
+
   VectorSpace(VectorSpace const& other) = default;
   VectorSpace(VectorSpace&& other) noexcept = default;
   VectorSpace& operator=(VectorSpace const& rhs) = default;
   VectorSpace& operator=(VectorSpace&& rhs) noexcept = default;
   virtual ~VectorSpace() = default;
 
-  virtual Coordinate_ const& operator[](Index const& coordinate) const;
+  /// @brief dim - shape[1] of coordinates_
+  /// @return
+  virtual int Dim() const { return coordinates_.Shape()[1]; }
+
+  virtual Coordinate_ CoordinateView(const int& i) {
+    return Coordinate_(&coordinates_(i, 0), coordinates_.Shape()[1]);
+  }
+
+  virtual ConstCoordinate_ CoordinateView(const int& i) const {
+    return ConstCoordinate_(&coordinates_(i, 0), coordinates_.Shape()[1]);
+  }
+
+  virtual DataType_* CoordinateBegin(const int& i) {
+    return &coordinates_(i, 0);
+  }
+
+  virtual const DataType_* CoordinateBegin(const int& i) const {
+    return &coordinates_(i, 0);
+  }
+
+  /// @brief coordinates getter - if you change size, call
+  /// @return
   virtual Coordinates_& GetCoordinates() { return coordinates_; }
+
+  /// @brief const coordinates getter
+  /// @return
   virtual Coordinates_ const& GetCoordinates() const { return coordinates_; }
 
-  virtual int GetNumberOfCoordinates() const;
-  virtual void Replace(Index const& coordinate_index, Coordinate_ coordinate);
-  virtual void Insert(Index const& coordinate_index, Coordinate_ coordinate);
-  virtual void Erase(Index const& coordinate_index);
+  /// @brief shape[0] of coordinates array
+  /// @return
+  virtual int GetNumberOfCoordinates() const { return coordinates_.Shape()[0]; }
 
-  virtual Coordinate DetermineMaximumDistanceFromOrigin(
-      Tolerance const& tolerance = kEpsilon) const;
+  /// @brief Replace coordinate value
+  /// @param coordinate_index
+  /// @param coordinate
+  virtual void Replace(int const& coordinate_index,
+                       const Coordinate_& coordinate);
+
+  /// @brief Inserts a coordinate. This will invalidate any iterator / pointer
+  /// to existing coordinates
+  /// @param coordinate_index
+  /// @param coordinate
+  virtual void ReallocateInsert(int const& coordinate_index,
+                                const Coordinate_& coordinate);
+
+  /// @brief Erases a coordinate. This will invalidate any iterator / pointer to
+  /// existing coords. Doesn't reallocate.
+  /// @param coordinate_index
+  virtual void Erase(int const& coordinate_index);
+
+  /// @brief Computes max norm of the coordinate.
+  /// @param tolerance
+  /// @return
+  virtual DataType_ DetermineMaximumDistanceFromOrigin() const;
 
 protected:
+  /// 2D, contiguous array. For Insert and Erase, you need to own the data
   Coordinates_ coordinates_;
-
-private:
-#ifndef NDEBUG
-  void ThrowIfIndexIsInvalid(Index const& coordinate) const;
-#endif
 };
 
 #include "BSplineLib/VectorSpaces/vector_space.inl"

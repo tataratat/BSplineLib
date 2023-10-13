@@ -17,94 +17,63 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-template<int dimensionality>
-VectorSpace<dimensionality>::VectorSpace(Coordinates_ coordinates)
-    : coordinates_(std::move(coordinates)) {}
-
-template<int dimensionality>
-typename VectorSpace<dimensionality>::Coordinate_ const&
-VectorSpace<dimensionality>::operator[](Index const& coordinate) const {
-#ifndef NDEBUG
-  try {
-    ThrowIfIndexIsInvalid(coordinate);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, "bsplinelib::vector_spaces::VectorSpace::operator[]");
-  }
-#endif
-  return coordinates_[coordinate.Get()];
+void VectorSpace::Replace(int const& coordinate_index,
+                          const Coordinate& coordinate) {
+  std::copy_n(coodinate.begin(),
+              coordinate.size(),
+              &coordinates_(coordinate_index, 0));
 }
 
-template<int dimensionality>
-int VectorSpace<dimensionality>::GetNumberOfCoordinates() const {
-  return coordinates_.size();
+void VectorSpace::ReallocateInsert(int const& coordinate_index,
+                                   const Coordinate_& coordinate) {
+  // This is a lot of copy
+  const auto& shape = coordinates_.Shape();
+  const auto& n_coord = shape[0];
+  const auto& dim = shape[1];
+
+  assert(dim == coordinate.size());
+
+  Coordinates_ new_coordinates(n_coord + 1, dim);
+
+  // copy (index) elements
+  std::copy_n(coordinates_.begin(),
+              coordinate_index * dim,
+              new_coordinates.begin());
+
+  // copy at index
+  std::copy_n(coordinate.begin(), dim, &new_coordinates(coordinate_index, 0));
+
+  // copy after index
+  std::copy(&coordinates_(coordinate_index, 0),
+            coordinates_.end(),
+            &new_coordinates(coordinate_index + 1, 0));
+
+  // move assign new coords as coords
+  coordinates_ = std::move(new_coordinates);
 }
 
-template<int dimensionality>
-void VectorSpace<dimensionality>::Replace(Index const& coordinate_index,
-                                          Coordinate_ coordinate) {
-#ifndef NDEBUG
-  try {
-    ThrowIfIndexIsInvalid(coordinate_index);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, "bsplinelib::vector_spaces::VectorSpace::Replace");
-  }
-#endif
-  coordinates_[coordinate_index.Get()] = std::move(coordinate);
+void VectorSpace::Erase(int const& coordinate_index) {
+  // we just need to "shorten" data at erase space
+  std::copy(&coordinates_(coodinate_index + 1, 0),
+            coordinates_.end(),
+            &coordinates_(coordinate_index, 0));
+
+  // adjust shape only.
+  coordinates_.SetShape(coordinates_.Shape()[0] - 1, coordiantes_.Shape()[1])
 }
 
-template<int dimensionality>
-void VectorSpace<dimensionality>::Insert(Index const& coordinate_index,
-                                         Coordinate_ coordinate) {
-#ifndef NDEBUG
-  try {
-    ThrowIfIndexIsInvalid(coordinate_index);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, "bsplinelib::vector_spaces::VectorSpace::Insert");
-  }
-#endif
-  coordinates_.insert(coordinates_.begin() + coordinate_index.Get(),
-                      std::move(coordinate));
-}
-
-template<int dimensionality>
-void VectorSpace<dimensionality>::Erase(Index const& coordinate_index) {
-#ifndef NDEBUG
-  try {
-    ThrowIfIndexIsInvalid(coordinate_index);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, "bsplinelib::vector_spaces::VectorSpace::Erase");
-  }
-#endif
-  coordinates_.erase(coordinates_.begin() + coordinate_index.Get());
-}
-
-template<int dimensionality>
-Coordinate VectorSpace<dimensionality>::DetermineMaximumDistanceFromOrigin(
-    Tolerance const& tolerance) const {
-#ifndef NDEBUG
-  try {
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "bsplinelib::vector_spaces::VectorSpace::"
-          "DetermineMaximumDistanceFromOrigin");
-  }
-#endif
+DataType_ VectorSpace::DetermineMaximumDistanceFromOrigin() const {
   Coordinate maximum_distance{};
-  std::for_each(coordinates_.begin(),
-                coordinates_.end(),
-                [&](Coordinate_ const& coordinate) {
-                  maximum_distance = std::max(
-                      utilities::std_container_operations::TwoNorm(coordinate),
-                      maximum_distance);
-                });
+  const auto& n_coords = coordinates_.Shape()[0];
+  const auto& dim = coordinates_.Shape()[1];
+
+  ConstCoordinate_ view;
+  view.SetShape(dim);
+
+  for (int i{}; i < n_coords; ++i) {
+    view.SetData(CoordinateBegin(i));
+    maximum_distance = std::max(view.NormL2(), maximum_distance);
+  }
+
   return maximum_distance;
 }
-
-#ifndef NDEBUG
-template<int dimensionality>
-void VectorSpace<dimensionality>::ThrowIfIndexIsInvalid(
-    Index const& coordinate) const {
-  Index::ThrowIfNamedIntegerIsOutOfBounds(coordinate, coordinates_.size() - 1);
-}
-#endif
