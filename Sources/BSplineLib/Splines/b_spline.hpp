@@ -58,8 +58,6 @@ public:
   using ParameterSpace_ = typename Base_::ParameterSpace_;
   using ParametricCoordinate_ = typename Base_::ParametricCoordinate_;
   using VectorSpace_ = typename Base_::VectorSpace_;
-  using OutputInformation_ = Tuple<typename ParameterSpace_::OutputInformation_,
-                                   typename VectorSpace_::OutputInformation_>;
 
   BSpline();
   BSpline(SharedPointer<ParameterSpace_> parameter_space,
@@ -99,7 +97,6 @@ public:
 
   Coordinate ComputeUpperBoundForMaximumDistanceFromOrigin(
       Tolerance const& tolerance = kEpsilon) const override;
-  OutputInformation_ Write(Precision const& precision = kPrecision) const;
 
 protected:
   SharedPointer<VectorSpace_> vector_space_;

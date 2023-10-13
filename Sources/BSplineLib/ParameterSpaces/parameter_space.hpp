@@ -33,7 +33,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include "BSplineLib/Utilities/named_type.hpp"
 #include "BSplineLib/Utilities/numeric_operations.hpp"
 #include "BSplineLib/Utilities/std_container_operations.hpp"
-#include "BSplineLib/Utilities/string_operations.hpp"
 
 namespace bsplinelib::parameter_spaces {
 
@@ -191,9 +190,6 @@ struct TemporaryArray2D {
 //   // Elevate the degree p for the second parametric dimension by one.
 template<int parametric_dimensionality>
 class ParameterSpace {
-private:
-  using StringArray_ = StringArray<parametric_dimensionality>;
-
 public:
   using BinomialRatios_ = Vector<BinomialRatio>;
   using Degrees_ = Array<Degree, parametric_dimensionality>;
@@ -207,10 +203,6 @@ public:
   using KnotVectors_ = KnotVectors<parametric_dimensionality>;
   using NumberOfBasisFunctions_ = IndexLength_;
   using NumberOfParametricCoordinates_ = IndexLength_;
-  using OutputInformation_ =
-      Tuple<KnotVectorsOutputInformation<parametric_dimensionality>,
-            StringArray_,
-            StringArray_>;
   using ParametricCoordinate_ =
       Array<ParametricCoordinate, parametric_dimensionality>;
   using ParametricCoordinates_ = Vector<ParametricCoordinate_>;
@@ -316,8 +308,6 @@ public:
   virtual ParametricCoordinates_
   Sample(NumberOfParametricCoordinates_ const& number_of_parametric_coordinates)
       const;
-  virtual OutputInformation_
-  Write(Precision const& precision = kPrecision) const;
 
 #ifndef NDEBUG
   virtual void ThrowIfParametricCoordinateIsOutsideScope(

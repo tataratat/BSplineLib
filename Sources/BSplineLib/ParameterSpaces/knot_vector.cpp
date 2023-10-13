@@ -31,7 +31,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 namespace bsplinelib::parameter_spaces {
 
 using Knot = KnotVector::Knot_;
-using std::move, std::to_string;
+using std::to_string;
 #ifndef NDEBUG
 using utilities::numeric_operations::ThrowIfToleranceIsNegative;
 #endif
@@ -280,12 +280,6 @@ void KnotVector::DecreaseMultiplicities(Multiplicity const& multiplicity,
   if (GetSize() > 2)
     for (Knot const& knot : GetUniqueKnots(tolerance))
       Remove(knot, multiplicity, tolerance);
-}
-
-typename KnotVector::OutputInformation_
-KnotVector::Write(Precision const& precision) const {
-  return utilities::string_operations::Write<OutputInformation_>(knots_,
-                                                                 precision);
 }
 
 #ifndef NDEBUG

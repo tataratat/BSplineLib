@@ -101,13 +101,6 @@ Coordinate VectorSpace<dimensionality>::DetermineMaximumDistanceFromOrigin(
   return maximum_distance;
 }
 
-template<int dimensionality>
-typename VectorSpace<dimensionality>::OutputInformation_
-VectorSpace<dimensionality>::Write(Precision const& precision) const {
-  return OutputInformation_{utilities::string_operations::Write<
-      std::tuple_element_t<0, OutputInformation_>>(coordinates_, precision)};
-}
-
 #ifndef NDEBUG
 template<int dimensionality>
 void VectorSpace<dimensionality>::ThrowIfIndexIsInvalid(

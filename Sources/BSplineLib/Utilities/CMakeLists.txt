@@ -29,14 +29,10 @@ set(HEADERS
     numeric_operations.inl
     numeric_operations.hpp
     std_container_operations.inl
-    std_container_operations.hpp
-    string_operations.inl
-    string_operations.hpp
-    system_operations.hpp
-    system_operations.inl)
+    std_container_operations.hpp)
 
 set(SOURCES
-    math_operations.cpp string_operations.cpp system_operations.cpp
+    math_operations.cpp
     #
     ${HEADERS})
 set_source_files_properties(${HEADERS} PROPERTIES LANGUAGE CXX HEADER_FILE_ONLY

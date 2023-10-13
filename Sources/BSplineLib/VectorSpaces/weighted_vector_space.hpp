@@ -29,7 +29,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include "BSplineLib/Utilities/named_type.hpp"
 #include "BSplineLib/Utilities/numeric_operations.hpp"
 #include "BSplineLib/Utilities/std_container_operations.hpp"
-#include "BSplineLib/Utilities/string_operations.hpp"
 #include "BSplineLib/VectorSpaces/vector_space.hpp"
 
 namespace bsplinelib::vector_spaces {
@@ -63,8 +62,6 @@ public:
   using Coordinates_ = typename VectorSpace_::Coordinates_;
   using HomogeneousCoordinate_ = typename Base_::Coordinate_;
   using MaximumDistanceFromOriginAndMinimumWeight_ = Tuple<Coordinate, Weight>;
-  using OutputInformation_ =
-      Tuple<Vector<StringArray<dimensionality>>, StringVector>;
   using Weights_ = Vector<Weight>;
 
   // Make Base Constructor public
@@ -83,11 +80,6 @@ public:
   virtual MaximumDistanceFromOriginAndMinimumWeight_
   DetermineMaximumDistanceFromOriginAndMinimumWeight(
       Tolerance const& tolerance = kEpsilon) const;
-
-  virtual OutputInformation_
-  WriteProjected(Precision const& precision = kPrecision) const;
-  virtual OutputInformation_
-  WriteWeighted(Precision const& precision = kPrecision) const;
 
 private:
   using HomogeneousCoordinates_ = typename Base_::Coordinates_;

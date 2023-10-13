@@ -60,9 +60,6 @@ public:
   using ParametricCoordinate_ = typename Base_::ParametricCoordinate_;
   using WeightedVectorSpace_ =
       vector_spaces::WeightedVectorSpace<dimensionality>;
-  using OutputInformation_ =
-      Tuple<typename ParameterSpace_::OutputInformation_,
-            typename WeightedVectorSpace_::OutputInformation_>;
 
   Nurbs();
   Nurbs(SharedPointer<ParameterSpace_> parameter_space,
@@ -98,9 +95,6 @@ public:
 
   Coordinate ComputeUpperBoundForMaximumDistanceFromOrigin(
       Tolerance const& tolerance = kEpsilon) const final;
-  OutputInformation_ Write(Precision const& precision = kPrecision) const;
-  OutputInformation_
-  WriteWeighted(Precision const& precision = kPrecision) const;
 
 protected:
   using HomogeneousBSpline_ =

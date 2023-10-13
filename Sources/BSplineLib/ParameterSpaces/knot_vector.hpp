@@ -22,7 +22,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "BSplineLib/Utilities/named_type.hpp"
 #include "BSplineLib/Utilities/std_container_operations.hpp"
-#include "BSplineLib/Utilities/string_operations.hpp"
 
 namespace bsplinelib::parameter_spaces {
 
@@ -48,7 +47,6 @@ class KnotVector {
 public:
   // using Knot_ = ParametricCoordinate;
   using Knot_ = double;
-  using OutputInformation_ = StringVector;
   using Knots_ = Vector<Knot_>;
   // using Type_ = Knot_::Type_;
   using Type_ = Knot_;
@@ -108,9 +106,6 @@ public:
   DecreaseMultiplicities(Multiplicity const& multiplicity = kMultiplicity,
                          Tolerance const& tolerance = kEpsilon);
 
-  virtual OutputInformation_
-  Write(Precision const& precision = kPrecision) const;
-
 #ifndef NDEBUG
   virtual void ThrowIfParametricCoordinateIsOutsideScope(
       Knot_ const& parametric_coordinate,
@@ -129,9 +124,6 @@ private:
 
 template<int parametric_dimensionality>
 using KnotVectors = Array<SharedPointer<KnotVector>, parametric_dimensionality>;
-template<int parametric_dimensionality>
-using KnotVectorsOutputInformation =
-    Array<KnotVector::OutputInformation_, parametric_dimensionality>;
 } // namespace bsplinelib::parameter_spaces
 
 #endif // SOURCES_PARAMETERSPACES_KNOT_VECTOR_HPP_
