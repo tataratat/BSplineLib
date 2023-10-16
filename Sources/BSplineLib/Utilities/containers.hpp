@@ -324,36 +324,101 @@ public:
 
   /// @brief this[:] = v
   /// @param v
-  constexpr void Fill(const DataType& v) {
+  constexpr Array& Fill(const DataType& v) {
     assert(data_);
 
     std::fill_n(data_, size_, v);
+
+    return *this;
+  }
+
+  /// @brief this[i] = a[i]
+  /// @param a
+  /// @return
+  constexpr Array& Copy(const DataType* a) {
+    assert(data_);
+
+    std::copy_n(a, size_, data_);
   }
 
   /// @brief this[i] += a[i]
   /// @tparam Iterable
   /// @param a
   template<typename Iterable>
-  constexpr void Add(const Iterable& a) {
+  constexpr Array& Add(const Iterable& a) {
     assert(a.size() == size_);
     assert(data_);
 
     for (IndexType i{}; i < size_; ++i) {
       data_[i] += a[i];
     }
+    return *this;
+  }
+
+  /// @brief this[i] *= a * this[i]
+  /// @param a
+  constexpr Array& Multiply(const DataType& a) {
+    assert(data_);
+
+    for (DataType* d = begin(); d != end();) {
+      *d++ *= a;
+    }
+
+    return *this;
+  }
+
+  /// @brief this[i] = a * b[i]. Must set size and data beforehand.
+  /// @param a
+  /// @param v
+  constexpr Array& MultiplyAssign(const DataType& a, const DataType* b) {
+    assert(data_);
+
+    for (IndexType i{}; i < size_; ++i) {
+      data_[i] = a * v[i];
+    }
+
+    return *this;
   }
 
   /// @brief this[i] -= a[i]
   /// @tparam Iterable
   /// @param a
   template<typename Iterable>
-  constexpr void Subtract(const Iterable& a) {
+  constexpr Array& Subtract(const Iterable& a) {
     assert(a.size() == size_);
     assert(data_);
 
     for (IndexType i{}; i < size_; ++i) {
       data_[i] -= a[i];
     }
+
+    return *this;
+  }
+
+  /// @brief this[i] -= a[i]
+  /// @tparam Iterable
+  /// @param a
+  constexpr Array& Subtract(const DataType* a) {
+    assert(data_);
+
+    for (IndexType i{}; i < size_; ++i) {
+      data_[i] -= a[i];
+    }
+
+    return *this;
+  }
+
+  /// @brief this[i] = a[i] - this[i]. Must set size and data beforehand.
+  /// @param a
+  /// @param b
+  constexpr Array& FlipSubtract(const DataType* a) {
+    assert(data_);
+
+    for (IndexType i{}; i < size_; ++i) {
+      data_[i] = a[i] - data_[i];
+    }
+
+    return *this;
   }
 
   /// @brief c = (this) dot (a).
@@ -466,6 +531,26 @@ public:
     return n;
   }
 };
+
+/// @brief x[i] = a * v[i] + b * w[i].
+/// @tparam DataType
+/// @tparam ArrayType
+/// @param a
+/// @param v
+/// @param b
+/// @param w
+/// @param x
+template<typename DataType, typename ArrayType>
+inline void Add(const DataType& a,
+                const DataType* v,
+                const DataType& b,
+                const DataType* w,
+                ArrayType& x) {
+  const auto size = e.size();
+  for (std::remove_const_t<delctype(size)> i{}; i < size; ++i) {
+    x[i] = a * v[i] + c * w[i];
+  }
+}
 
 /// Adapted from a post from Casey
 /// http://stackoverflow.com/a/21028912/273767

@@ -58,6 +58,10 @@ public:
   using ParameterSpace_ = typename Base_::ParameterSpace_;
   using ParametricCoordinate_ = typename Base_::ParametricCoordinate_;
   using VectorSpace_ = typename Base_::VectorSpace_;
+  using DataType_ = typename VectorSpace_::DataType_;
+
+  template<typename T>
+  using Array_ = VectorSpace_::Array_<T>;
 
   BSpline();
   BSpline(SharedPointer<ParameterSpace_> parameter_space,

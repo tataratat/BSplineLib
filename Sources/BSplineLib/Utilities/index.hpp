@@ -101,6 +101,8 @@ public:
   Value_ GetIndex() const;
   Index_ GetIndex1d() const;
 
+  void SetValue(Value_ const& value) { value_ = value; }
+
 protected:
   bool invalid_;
   Length_ length_;

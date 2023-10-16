@@ -133,8 +133,7 @@ void BSpline<parametric_dimensionality, dimensionality>::InsertKnot(
     Knot_ knot,
     Multiplicity const& multiplicity,
     Tolerance const& tolerance) const {
-  using utilities::std_container_operations::Add,
-      utilities::std_container_operations::Multiply;
+  using utilities::containers::Add;
 
   ParameterSpace_& parameter_space = *Base_::parameter_space_;
   Dimension::Type_ const& dimension_value = dimension.Get();
@@ -160,8 +159,9 @@ void BSpline<parametric_dimensionality, dimensionality>::InsertKnot(
       parameter_space.GetNumberOfBasisFunctions()};
   auto const& [start_value, coefficients] =
       parameter_space.InsertKnot(dimension, knot, multiplicity, tolerance);
-  // TODO(all): use std::for_each once clang supports capturing of variables
-  // from structured bindings
+
+  // create tmp_coord to hold new coordinate values
+  Array_<DataType_> tmp_coord(vector_space.Dim());
   for (KnotRatios_ const& current_coefficients : coefficients) {
     IndexLength_ number_of_coordinates_in_slice{number_of_coordinates};
     number_of_coordinates_in_slice[dimension_value] = Length{};
@@ -178,25 +178,41 @@ void BSpline<parametric_dimensionality, dimensionality>::InsertKnot(
       typename KnotRatios_::const_reverse_iterator coefficient{
           current_coefficients.rbegin()};
       Index const insertion_position = coordinate.GetIndex1d();
-      vector_space.Insert(
-          insertion_position,
-          Add(Multiply(vector_space[Index_{previous_number_of_coordinates,
-                                           coordinate_value}
-                                        .GetIndex1d()
-                                    + slice_coordinate.GetIndex1d()],
-                       *coefficient),
-              Multiply(
-                  vector_space[coordinate.Decrement(dimension).GetIndex1d()],
-                  k1_0 - *coefficient)));
+
+      Add(*coefficient,
+          vector_space.CoordinateBegin(
+              (slice_coordinate + coordinate_value).GetIndex1d().Get()),
+          k1_0 - *coefficient,
+          vector_space.CoordinateBegin(
+              coordinate.Decrement(dimension).GetIndex1d().Get()),
+          tmp_coord);
+      vector_space.ReallocateInsert(insertion_position, tmp_coord);
+      // vector_space.Insert(
+      //     insertion_position,
+      //     Add(Multiply(vector_space[Index_{previous_number_of_coordinates,
+      //                                      coordinate_value}
+      //                                   .GetIndex1d()
+      //                               + slice_coordinate.GetIndex1d()],
+      //                  *coefficient),
+      //         Multiply(vector_space[coordinate.Decrement(dimension)
+      //                                   .GetIndex1d()],
+      //                  k1_0 - *coefficient)));
       ++coefficient;
       for (; coefficient < current_coefficients.rend(); ++coefficient) {
         Index const& replacement_position = coordinate.GetIndex1d();
-        vector_space.Replace(
-            replacement_position,
-            Add(Multiply(vector_space[replacement_position], *coefficient),
-                Multiply(
-                    vector_space[coordinate.Decrement(dimension).GetIndex1d()],
-                    k1_0 - *coefficient)));
+        Add(*coefficient,
+            vector_space.CoordinateBegin(replacement_position.Get()),
+            k1_0 - *coefficient,
+            vector_space.CoordinateBegin(
+                coordinate.Decrement(dimension).GetIndex1d().Get()),
+            tmp_coord);
+        vector_space.Replace(replacement_position, tmp_coord);
+        // vector_space.Replace(
+        //     replacement_position,
+        //     Add(Multiply(vector_space[replacement_position], *coefficient),
+        //         Multiply(vector_space[coordinate.Decrement(dimension)
+        //                                   .GetIndex1d()],
+        //                  k1_0 - *coefficient)));
       }
     }
   }
@@ -209,9 +225,6 @@ Multiplicity BSpline<parametric_dimensionality, dimensionality>::RemoveKnot(
     Tolerance const& tolerance_removal,
     Multiplicity const& multiplicity,
     Tolerance const& tolerance) const {
-  using utilities::std_container_operations::Divide,
-      utilities::std_container_operations::Multiply,
-      utilities::std_container_operations::Subtract;
 
   Dimension::Type_ const& dimension_value = dimension.Get();
 #ifndef NDEBUG
@@ -230,6 +243,7 @@ Multiplicity BSpline<parametric_dimensionality, dimensionality>::RemoveKnot(
     Throw(exception, kName, dimension_value);
   }
 #endif
+  // dereference and gather infos for the loop
   ParameterSpace_& parameter_space = *Base_::parameter_space_;
   ParameterSpace_ parameter_space_backup{parameter_space};
   IndexLength_ number_of_coordinates{
@@ -237,6 +251,14 @@ Multiplicity BSpline<parametric_dimensionality, dimensionality>::RemoveKnot(
   auto const& [start_value, coefficients] =
       parameter_space.RemoveKnot(dimension, knot, multiplicity, tolerance);
   Multiplicity::Type_ const& removals = coefficients.size();
+
+  // create tmp coord to process coefficient multiplications
+  // replacement is a view
+  const int vector_space_dim = vector_space_->Dim();
+  Array_ replacement_coord;
+  replacement_coord.SetShape(vector_space_dim);
+  // comparison is owning array
+  Array_ comparison_value(vector_space_dim);
   for (Multiplicity removal{removals}; removal > Multiplicity{}; --removal) {
     VectorSpace_& vector_space = *vector_space_;
     VectorSpace_ const vector_space_backup{vector_space};
@@ -263,26 +285,48 @@ Multiplicity BSpline<parametric_dimensionality, dimensionality>::RemoveKnot(
         KnotRatio_ const& current_coefficient = *coefficient;
         lower_coordinate_index = coordinate_index;
         coordinate_index = coordinate.Increment(dimension).GetIndex1d();
-        vector_space.Replace(
-            coordinate_index,
-            Divide(Subtract(vector_space[coordinate_index],
-                            Multiply(vector_space[lower_coordinate_index],
-                                     k1_0 - current_coefficient)),
-                   current_coefficient));
+        // replace
+        replacement_coord.SetData(
+            vector_space.CoordinateBegin(coordinate_index.Get()));
+        replacement_coord.MultiplyAssign(
+            (k1_0 - current_coefficient).Get(),
+            vector_space.CoordinateBegin(lower_coordinate_index.Get()));
+        replacement_coord.FlipSubtract(
+            vector_space.CoordinateBegin(coordinate_index.Get()));
+        replacement_coord.Multiply(1. / current_coefficient);
+
+        // vector_space.Replace(
+        //     coordinate_index,
+        //     Divide(Subtract(vector_space[coordinate_index],
+        //                     Multiply(vector_space[lower_coordinate_index],
+        //                              k1_0 - current_coefficient)),
+        //            current_coefficient));
       }
       KnotRatio_ const& current_coefficient = *coefficient;
       lower_coordinate_index = coordinate_index;
       coordinate_index = coordinate.Increment(dimension).GetIndex1d();
-      if ( // IsLessOrEqual(
-          utilities::std_container_operations::EuclidianDistance(
-              Divide(Subtract(vector_space[coordinate_index],
-                              Multiply(vector_space[lower_coordinate_index],
-                                       k1_0 - current_coefficient)),
-                     current_coefficient),
-              vector_space[Index_{number_of_coordinates, coordinate.GetIndex()}
-                               .GetIndex1d()
-                           + slice_coordinate.GetIndex1d() + Index{1}])
-          <= tolerance_removal) {
+      // compute value to compare
+      comparison_value.MultiplyAssign(
+          (k1_0 - current_coefficient).Get(),
+          vector_space.CoordinateBegin(lower_coordinate_index.Get()));
+      comparison_value.FlipSubstract(
+          vector_space.CoordinateBegin(coordinate_index.Get()));
+      comparison_value.Multiply(1. / current_coefficient.Get());
+      const Index subtact_id =
+          (slice_coordinate + coordinate.GetIndex()).GetIndex1d() + Index{1};
+      comparison_value.Subtract(
+          vector_space.CoordinateBegin(subtract_id.Get()));
+      // if (utilities::std_container_operations::EuclidianDistance(
+      //         Divide(Subtract(vector_space[coordinate_index],
+      //                         Multiply(vector_space[lower_coordinate_index],
+      //                                  k1_0 - current_coefficient)),
+      //                current_coefficient),
+      //         vector_space[Index_{number_of_coordinates,
+      //         coordinate.GetIndex()}
+      //                          .GetIndex1d()
+      //                      + slice_coordinate.GetIndex1d() + Index{1}])
+      //     <= tolerance_removal) {
+      if (comparison_value.NormL2() <= tolerance_removal) {
         vector_space.Erase(coordinate_index);
       } else {
         Multiplicity const& successful_removals = (multiplicity - removal);
@@ -325,6 +369,11 @@ void BSpline<parametric_dimensionality, dimensionality>::ElevateDegree(
 #endif
   ParameterSpace_& parameter_space = *Base_::parameter_space_;
   VectorSpace_& vector_space = *vector_space_;
+  const int vector_space_dim = vector_space.Dim();
+  // allocate an array to insert
+  Array_ coordinate(vector_space_dim);
+  Array_ tmp_coordinate(vector_space_dim);
+  tmp_coordinate.SetShape(vector_space_dim);
   auto const& [number_of_segments, knots_inserted] =
       MakeBezier(dimension, tolerance);
   IndexLength_ number_of_coordinates{
@@ -356,23 +405,40 @@ void BSpline<parametric_dimensionality, dimensionality>::ElevateDegree(
         IndexValue_ current_last_coordinate_value{coordinate_value};
         current_last_coordinate_value[dimension_value] +=
             (maximum_interior_coordinate - interior_coordinate);
-        Coordinate_ coordinate{
-            Multiply(vector_space[Index_{previous_number_of_coordinates,
-                                         current_last_coordinate_value}
-                                      .GetIndex1d()
-                                  + slice_coordinate.GetIndex1d()],
-                     GetBack(current_coefficients))};
-        std::for_each(
-            current_coefficients.rbegin() + 1,
-            current_coefficients.rend(),
-            [&](BinomialRatio_ const& coefficient) {
-              AddAndAssignToFirst(
-                  coordinate,
-                  Multiply(vector_space[current_coordinate.Decrement(dimension)
-                                            .GetIndex1d()],
-                           coefficient));
-            });
-        vector_space.Insert(insertion_position, coordinate);
+
+        // compute coordinate to insert
+        coordinate.MultiplyAssign(
+            GetBack(current_coefficients).Get(),
+            vector_space.CoordinateBegin(
+                (slice_coordinate + current_last_coordinate_value)
+                    .GetIndex1d()
+                    .Get()));
+
+        // Coordinate_ coordinate{
+        //     Multiply(vector_space[Index_{previous_number_of_coordinates,
+        //                                  current_last_coordinate_value}
+        //                               .GetIndex1d()
+        //                           + slice_coordinate.GetIndex1d()],
+        //              GetBack(current_coefficients))};
+        std::for_each(current_coefficients.rbegin() + 1,
+                      current_coefficients.rend(),
+                      [&](BinomialRatio_ const& coefficient) {
+                        tmp_coordinate.MultiplyAssign(
+                            coefficient.Get(),
+                            vector_space.CoordinateBegin(
+                                current_coordinate.Decrement(dimension)
+                                    .GetIndex1d()
+                                    .Get()));
+
+                        coordinate.Add(tmp_coordinate);
+
+                        // AddAndAssignToFirst(
+                        //     coordinate,
+                        //     Multiply(vector_space[current_coordinate.Decrement(dimension)
+                        //                               .GetIndex1d()],
+                        //              coefficient));
+                      });
+        vector_space.ReallocateInsert(insertion_position.Get(), coordinate);
       }
     }
     for (; interior_coordinate >= Index{}; --interior_coordinate) {
@@ -387,19 +453,31 @@ void BSpline<parametric_dimensionality, dimensionality>::ElevateDegree(
         coordinate_value[dimension_value] = last_coordinate;
         Index_ current_coordinate{number_of_coordinates, coordinate_value};
         Index const& replacement_position = current_coordinate.GetIndex1d();
-        Coordinate_ coordinate{Multiply(vector_space[replacement_position],
-                                        GetBack(current_coefficients))};
-        std::for_each(
-            current_coefficients.rbegin() + 1,
-            current_coefficients.rend(),
-            [&](BinomialRatio_ const& coefficient) {
-              AddAndAssignToFirst(
-                  coordinate,
-                  Multiply(vector_space[current_coordinate.Decrement(dimension)
-                                            .GetIndex1d()],
-                           coefficient));
-            });
-        vector_space.Replace(replacement_position, coordinate);
+
+        // get replacement coordinate and work on it directly
+        coordinate.SetData(
+            vector_space.CoordinateBegin(replacement_position.Get()));
+        coordinate.Multiply(GetBack(current_coefficients).Get());
+        // Coordinate_ coordinate{Multiply(vector_space[replacement_position],
+        //                                 GetBack(current_coefficients))};
+        std::for_each(current_coefficients.rbegin() + 1,
+                      current_coefficients.rend(),
+                      [&](BinomialRatio_ const& coefficient) {
+                        tmp_coordinate.MultiplyAssign(
+                            coefficient.Get(),
+                            vector_space.CoordinateBegin(
+                                current_coordinate.Decrement(dimension)
+                                    .GetIndex1d()
+                                    .Get()));
+
+                        coordinate.Add(tmp_coordinate);
+                        // AddAndAssignToFirst(
+                        //     coordinate,
+                        //     Multiply(vector_space[current_coordinate.Decrement(dimension)
+                        //                               .GetIndex1d()],
+                        //              coefficient));
+                      });
+        // vector_space.Replace(replacement_position, coordinate);
       }
     }
   }
@@ -412,9 +490,7 @@ bool BSpline<parametric_dimensionality, dimensionality>::ReduceDegree(
     Tolerance const& tolerance_reduction,
     Multiplicity const& multiplicity,
     Tolerance const& tolerance) const {
-  using std::for_each, utilities::std_container_operations::GetBack,
-      utilities::std_container_operations::Multiply,
-      utilities::std_container_operations::SubtractAndAssignToFirst;
+  using std::for_each, utilities::std_container_operations::GetBack;
 
   Dimension::Type_ const& dimension_value = dimension.Get();
 #ifndef NDEBUG
@@ -437,6 +513,7 @@ bool BSpline<parametric_dimensionality, dimensionality>::ReduceDegree(
   ParameterSpace_ parameter_space_backup{parameter_space};
   VectorSpace_& vector_space = *vector_space_;
   VectorSpace_ vector_space_backup{vector_space};
+  const int vector_space_dim = vector_space.Dim();
   auto const& [number_of_segments, knots_inserted] =
       MakeBezier(dimension, tolerance);
   IndexLength_ number_of_coordinates{
@@ -446,6 +523,10 @@ bool BSpline<parametric_dimensionality, dimensionality>::ReduceDegree(
   Degree::Type_ const& elevatetd_degree = (coefficients.size() + 1);
   IndexLength_ number_of_coordinates_in_slice{number_of_coordinates};
   number_of_coordinates_in_slice[dimension_value] = Length{};
+  // array
+  Array_ view_coordinate;
+  view_coordinate.SetShape(vector_space_dim);
+  Array_ tmp_coordinate(vector_space_dim);
   for (int segment{number_of_segments - 1}; segment >= 0; --segment) {
     Index interior_coordinate{},
         coordinate_index{1 + (segment * elevatetd_degree)};
@@ -461,21 +542,32 @@ bool BSpline<parametric_dimensionality, dimensionality>::ReduceDegree(
         coordinate_value[dimension_value] = coordinate_index;
         Index_ current_coordinate{number_of_coordinates, coordinate_value};
         Index const& replacement_position = current_coordinate.GetIndex1d();
-        Coordinate_ coordinate{vector_space[replacement_position]};
-        for_each(
-            current_coefficients.begin(),
-            std::prev(current_coefficients.end()),
-            [&](BinomialRatio_ const& coefficient) {
-              SubtractAndAssignToFirst(
-                  coordinate,
-                  Multiply(vector_space[current_coordinate.Decrement(dimension)
-                                            .GetIndex1d()],
-                           coefficient));
-            });
-        vector_space.Replace(replacement_position,
-                             utilities::std_container_operations::Divide(
-                                 coordinate,
-                                 GetBack(current_coefficients)));
+        // Coordinate_ coordinate{vector_space[replacement_position]};
+        view_coordinate.SetData(
+            vector_space.CoordinateBegin(replacement_position.Get()));
+
+        for_each(current_coefficients.begin(),
+                 std::prev(current_coefficients.end()),
+                 [&](BinomialRatio_ const& coefficient) {
+                   tmp_coordinate.MultiplyAssign(
+                       coefficient.Get(),
+                       vector_space.CoordinateBegin(
+                           current_coordinate.Decrement(dimension)
+                               .GetIndex1d()
+                               .Get()));
+                   view_coordinate.Subtract(tmp_coordinate);
+                   // SubtractAndAssignToFirst(
+                   //     coordinate,
+                   //     Multiply(vector_space[current_coordinate.Decrement(dimension)
+                   //                               .GetIndex1d()],
+                   //              coefficient));
+                 });
+
+        view_coordinate.Multiply(1. / GetBack(current_coefficients).Get());
+        // vector_space.Replace(replacement_position,
+        //                      utilities::std_container_operations::Divide(
+        //                          coordinate,
+        //                          GetBack(current_coefficients)));
       }
       ++coordinate_index;
     }
@@ -498,27 +590,45 @@ bool BSpline<parametric_dimensionality, dimensionality>::ReduceDegree(
         IndexValue_ current_last_coordinate_value{coordinate_value};
         current_last_coordinate_value[dimension_value] +=
             (maximum_interior_coordinate - interior_coordinate);
-        Coordinate_ coordinate{vector_space[erasure_position]};
-        for_each(
-            current_coefficients.rbegin() + 1,
-            current_coefficients.rend(),
-            [&](BinomialRatio_ const& coefficient) {
-              SubtractAndAssignToFirst(
-                  coordinate,
-                  Multiply(vector_space[current_coordinate.Decrement(dimension)
-                                            .GetIndex1d()],
-                           coefficient));
-            });
-        if ( // IsLessOrEqual(
-            utilities::std_container_operations::EuclidianDistance(
-                utilities::std_container_operations::DivideAndAssignToFirst(
-                    coordinate,
-                    GetBack(current_coefficients)),
-                vector_space[Index_{number_of_coordinates,
-                                    current_last_coordinate_value}
-                                 .GetIndex1d()
-                             + slice_coordinate.GetIndex1d() + Index{1}])
-            <= tolerance_reduction) {
+        // Coordinate_ coordinate{vector_space[erasure_position]};
+
+        // so, this point will be removed if the removal works. We will just use
+        // this
+        view_coordinate.SetData(
+            vector_space.CoordinateBegin(erasure_position.Get()));
+        for_each(current_coefficients.rbegin() + 1,
+                 current_coefficients.rend(),
+                 [&](BinomialRatio_ const& coefficient) {
+                   tmp_coordinate.MultiplyAssign(
+                       coefficient.Get(),
+                       vector_space.CoordinateBegin(
+                           current_coordinate.Decrement(dimension)
+                               .GetIndex1d()
+                               .Get()));
+                   view_coordinate.Subtract(tmp_coordinate);
+                   // SubtractAndAssignToFirst(
+                   //     coordinate,
+                   //     Multiply(vector_space[current_coordinate.Decrement(dimension)
+                   //                               .GetIndex1d()],
+                   //              coefficient));
+                 });
+        view_coordinate.Multiply(1. / GetBack(current_coefficients).Get());
+        view_coordinate.Subtract(vector_space.CoordinateBegin(
+            ((slice_coordinate + current_last_coordinate_value).GetIndex1d()
+             + Index{1})
+                .Get()));
+
+        if (view_coordinate.NormL2() <= tolerance_reduction) {
+          // if ( // IsLessOrEqual(
+          //     utilities::std_container_operations::EuclidianDistance(
+          //         utilities::std_container_operations::DivideAndAssignToFirst(
+          //             coordinate,
+          //             GetBack(current_coefficients)),
+          //         vector_space[Index_{number_of_coordinates,
+          //                             current_last_coordinate_value}
+          //                          .GetIndex1d()
+          //                      + slice_coordinate.GetIndex1d() + Index{1}])
+          //     <= tolerance_reduction) {
           vector_space.Erase(erasure_position);
         } else {
           parameter_space = parameter_space_backup;

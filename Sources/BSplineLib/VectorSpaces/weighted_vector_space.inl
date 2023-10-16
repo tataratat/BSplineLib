@@ -79,7 +79,9 @@ void WeightedVectorSpace::HomogenizeCoordinates(Coordinates_ const& coordinates,
         + " are needed to associate each weight with a coordinate.");
 
   // those are homogenized coordinates
-  Base_::coordinates_.Reallocate(number_of_coordinates, dim + 1);
+  // first set shape -> this computes size
+  Base_::coordinates_.SetShape(number_of_coordinates, dim + 1);
+  Base_::coordinates_.Reallocate(Base_::coordinates_.size());
 
   auto* h_coord = Base_::coordinates_.begin();
   const auto* coord = coordinates.begin();
