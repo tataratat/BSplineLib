@@ -29,15 +29,23 @@ void WeightedVectorSpace::Project(
 
   assert(homogeneous_coordinate.size() == projected.size() + 1);
 
-  const int dim = coordinate.size();
+  Project(homogeneous_coordinate, projected.data());
+}
 
-  const Weight w_inv =
+void WeightedVectorSpace::Project(
+    HomogeneousCoordinate_ const& homogeneous_coordinate,
+    DataType_* projected) {
+
+  const int dim = homogeneous_coordinate.size() - 1;
+
+  const DataType_ w_inv =
       static_cast<DataType_>(1.0) / homogeneous_coordinate[dim];
 
   for (int i{}; i < dim; ++i) {
     projected[i] = homogeneous_coordinate[i] * w_inv;
   }
 }
+
 
 typename WeightedVectorSpace::MaximumDistanceFromOriginAndMinimumWeight_
 WeightedVectorSpace::DetermineMaximumDistanceFromOriginAndMinimumWeight()

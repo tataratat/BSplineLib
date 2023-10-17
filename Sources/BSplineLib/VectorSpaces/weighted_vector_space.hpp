@@ -58,8 +58,6 @@ public:
   WeightedVectorSpace& operator=(WeightedVectorSpace&& rhs) noexcept = default;
   ~WeightedVectorSpace() override = default;
 
-  static void Project(HomogeneousCoordinate_ const& homogeneous_coordinate,
-                      Coordinate_& projected);
   virtual MaximumDistanceFromOriginAndMinimumWeight_
   DetermineMaximumDistanceFromOriginAndMinimumWeight(
       Tolerance const& tolerance = kEpsilon) const;

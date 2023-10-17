@@ -101,7 +101,7 @@ ParameterSpace<parametric_dimensionality>::RemoveOneParametricDimension(
 template<int parametric_dimensionality>
 typename ParameterSpace<parametric_dimensionality>::Index_
 ParameterSpace<parametric_dimensionality>::FindFirstNonZeroBasisFunction(
-    ParametricCoordinate_ const& parametric_coordinate,
+    const Type_* parametric_coordinate,
     Tolerance const& tolerance) const {
 #ifndef NDEBUG
   try {
@@ -130,7 +130,7 @@ ParameterSpace<parametric_dimensionality>::FindFirstNonZeroBasisFunction(
 template<int parametric_dimensionality>
 typename ParameterSpace<parametric_dimensionality>::KnotSpans_
 ParameterSpace<parametric_dimensionality>::FindKnotSpans(
-    ParametricCoordinate_ const& parametric_coordinate,
+    const Type_* parametric_coordinate,
     Tolerance const& tolerance) const {
   KnotSpans_ out;
   for (int i{}; i < parametric_dimensionality; ++i) {
@@ -185,7 +185,7 @@ ParameterSpace<parametric_dimensionality>::DetermineBezierExtractionKnots(
 template<int parametric_dimensionality>
 typename ParameterSpace<parametric_dimensionality>::BasisValuesPerDimension_
 ParameterSpace<parametric_dimensionality>::EvaluateBasisValuesPerDimension(
-    ParametricCoordinate_ const& parametric_coordinate,
+    const Type_* parametric_coordinate,
     Tolerance const& tolerance) const {
 
   // prepare output
@@ -204,15 +204,15 @@ ParameterSpace<parametric_dimensionality>::EvaluateBasisValuesPerDimension(
 
     // this dim's output
     auto& this_dim_output = output[i];
-    this_dim_output.reserve(this_dim_n_basis);
-    this_dim_output.push_back(1.);
+    this_dim_output.Reallocate(this_dim_n_basis);
+    this_dim_output[0] = 1.;
 
     TemporaryArray<double> left(this_dim_n_basis), right(this_dim_n_basis);
 
     double saved, temp;
 
     for (int k{1}; k < this_dim_n_basis; ++k) {
-      this_dim_output.push_back(1.);
+      this_dim_output[k] = 1.;
 
       left[k] = this_dim_parametric_coordinate
                 - this_knots[this_zero_degree_support + 1 - k];
@@ -235,18 +235,20 @@ ParameterSpace<parametric_dimensionality>::EvaluateBasisValuesPerDimension(
 template<int parametric_dimensionality>
 typename ParameterSpace<parametric_dimensionality>::BasisValues_
 ParameterSpace<parametric_dimensionality>::EvaluateBasisValues(
-    ParametricCoordinate_ const& parametric_coordinate,
+    const Type_* parametric_coordinate,
     Tolerance const& tolerance) const {
   return RecursiveCombine(
       EvaluateBasisValuesPerDimension(parametric_coordinate, tolerance));
 }
 
+
+
 template<int parametric_dimensionality>
 typename ParameterSpace<parametric_dimensionality>::BasisValuesPerDimension_
 ParameterSpace<parametric_dimensionality>::
     EvaluateBasisDerivativeValuesPerDimension(
-        ParametricCoordinate_ const& parametric_coordinate,
-        Derivative_ const& derivative,
+        const Type_* parametric_coordinate,
+        const Derivative_* derivative,
         Tolerance const& tolerance) const {
 
   // prepare output
@@ -255,16 +257,17 @@ ParameterSpace<parametric_dimensionality>::
   for (int i{}; i < parametric_dimensionality; ++i) {
 
     // get this dim's info
-    const auto& this_dim_degree = degrees_[i].Get();
+    const auto& this_dim_degree = degrees_[i];
     const auto& this_dim_derivative = derivative[i];
     const auto this_dim_n_basis = this_dim_degree + 1;
     // this dim's output
     auto& this_dim_output = output[i];
+    this_dim_output.Reallocate(this_dim_n_basis);
 
     // special case for early exit - derivetive query is bigger than degree
     // all zeros.
-    if (this_dim_derivative.Get() > this_dim_degree) {
-      this_dim_output.assign(this_dim_n_basis, 0.);
+    if (this_dim_derivative > this_dim_degree) {
+      this_dim_output.Fill(0.);
       continue;
     }
 
@@ -276,17 +279,16 @@ ParameterSpace<parametric_dimensionality>::
             .Get();
 
     // temporary ones that we need for second special case
-    TemporaryArray<double> left(this_dim_n_basis), right(this_dim_n_basis);
+    TemporaryArray_<double> left(this_dim_n_basis), right(this_dim_n_basis);
     double saved, temp, d;
 
     // special case 2 - derivative 0 query is evaluation query
-    if (this_dim_derivative.Get() == 0) {
-      // just raw copy of evaluation
-      this_dim_output.reserve(this_dim_n_basis);
-      this_dim_output.push_back(1.);
+    if (this_dim_derivative == 0) {
+      // just copy of evaluation
+      this_dim_output[0] = 1.;
 
       for (int k{1}; k < this_dim_n_basis; ++k) {
-        this_dim_output.push_back(1.);
+        this_dim_output[k] = 1.;
 
         left[k] = this_dim_parametric_coordinate
                   - this_knots[this_zero_degree_support + 1 - k];
@@ -304,15 +306,12 @@ ParameterSpace<parametric_dimensionality>::
       continue;
     }
 
-    // here, proper derivative query.
-    this_dim_output.resize(this_dim_n_basis);
-
     // more temporary variables
     TemporaryArray2D<double> a(2, this_dim_n_basis),
         ndu(this_dim_n_basis, this_dim_n_basis);
     int j1, j2;
 
-    ndu[0][0] = 1.;
+    ndu(0, 0) = 1.;
     for (int j{1}; j < this_dim_n_basis; ++j) {
       left[j] = this_dim_parametric_coordinate
                 - this_knots[this_zero_degree_support + 1 - j];
@@ -321,31 +320,31 @@ ParameterSpace<parametric_dimensionality>::
 
       saved = 0.0;
       for (int r{}; r < j; ++r) {
-        ndu[j][r] = right[r + 1] + left[j - r];
-        temp = ndu[r][j - 1] / ndu[j][r];
-        ndu[r][j] = saved + right[r + 1] * temp;
+        ndu(j, r) = right[r + 1] + left[j - r];
+        temp = ndu(r, j - 1) / ndu(j, r);
+        ndu(r, j) = saved + right[r + 1] * temp;
         saved = left[j - r] * temp;
       }
-      ndu[j][j] = saved;
+      ndu(j, j) = saved;
     }
 
-    if (this_dim_derivative.Get() == 0) {
+    if (this_dim_derivative == 0) {
       for (int j{}; j < this_dim_n_basis; ++j) {
-        this_dim_output[j] = ndu[j][this_dim_degree];
+        this_dim_output[j] = ndu(j, this_dim_degree);
       }
       continue;
     }
 
     for (int r{}; r < this_dim_n_basis; ++r) {
       int s1{}, s2{1}, j;
-      a[0][0] = 1.0;
-      for (int k{1}; k < this_dim_derivative.Get() + 1; ++k) {
+      a(0, 0) = 1.0;
+      for (int k{1}; k < this_dim_derivative + 1; ++k) {
         d = 0.0;
         const int rk = r - k;
         const int pk = this_dim_degree - k;
         if (r >= k) {
-          a[s2][0] = a[s1][0] / ndu[pk + 1][rk];
-          d = a[s2][0] * ndu[rk][pk];
+          a(s2, 0) = a(s1, 0) / ndu(pk + 1, rk);
+          d = a(s2, 0) * ndu(rk, pk);
         }
 
         if (rk >= -1) {
@@ -361,13 +360,13 @@ ParameterSpace<parametric_dimensionality>::
         }
 
         for (j = j1; j < j2 + 1; ++j) {
-          a[s2][j] = (a[s1][j] - a[s1][j - 1]) / ndu[pk + 1][rk + j];
-          d += a[s2][j] * ndu[rk + j][pk];
+          a(s2, j) = (a(s1, j) - a(s1, j - 1)) / ndu(pk + 1, rk + j);
+          d += a(s2, j) * ndu(rk + j, pk);
         }
 
         if (r <= pk) {
-          a[s2][k] = -a[s1][k - 1] / ndu[pk + 1][r];
-          d += a[s2][j] * ndu[rk + j][pk];
+          a(s2, k) = -a(s1, k - 1) / ndu(pk + 1, r);
+          d += a(s2, j) * ndu(rk + j, pk);
         }
         // here, we could also gather lower derivative queries
         // for now, just rewrite at the same place
@@ -380,7 +379,7 @@ ParameterSpace<parametric_dimensionality>::
     }
 
     temp = this_dim_degree;
-    for (int k{1}; k < this_dim_derivative.Get(); ++k) {
+    for (int k{1}; k < this_dim_derivative; ++k) {
       temp *= (this_dim_degree - k);
     }
     for (int j{}; j < this_dim_n_basis; ++j) {
@@ -394,14 +393,15 @@ ParameterSpace<parametric_dimensionality>::
 template<int parametric_dimensionality>
 typename ParameterSpace<parametric_dimensionality>::BasisValues_
 ParameterSpace<parametric_dimensionality>::EvaluateBasisDerivativeValues(
-    ParametricCoordinate_ const& parametric_coordinate,
-    Derivative_ const& derivative,
+    const Type_* parametric_coordinate,
+    const Derivative* derivative,
     Tolerance const& tolerance) const {
   return RecursiveCombine(
       EvaluateBasisDerivativeValuesPerDimension(parametric_coordinate,
                                                 derivative,
                                                 tolerance));
 }
+
 
 template<int parametric_dimensionality>
 typename ParameterSpace<parametric_dimensionality>::InsertionInformation_
@@ -533,37 +533,6 @@ ParameterSpace<parametric_dimensionality>::ReduceDegree(
   return DetermineElevationInformation(dimension, reduction);
 }
 
-template<int parametric_dimensionality>
-typename ParameterSpace<parametric_dimensionality>::ParametricCoordinates_
-ParameterSpace<parametric_dimensionality>::Sample(
-    NumberOfParametricCoordinates_ const& number_of_parametric_coordinates)
-    const {
-  using Knot = Knot_;
-
-  Index_ index = Index_::First(number_of_parametric_coordinates);
-  ParametricCoordinates_ parametric_coordinates{};
-  parametric_coordinates.reserve(index.GetTotalNumberOfIndices());
-  for (; index != Index_::Behind(number_of_parametric_coordinates); ++index) {
-    ParametricCoordinate_ parametric_coordinate;
-    Dimension::ForEach(
-        0,
-        parametric_dimensionality,
-        [&](Dimension const& dimension) {
-          Dimension::Type_ const& current_dimension = dimension.Get();
-          KnotVector const& knot_vector = *knot_vectors_[current_dimension];
-          KnotVector::Knot_ const& front = knot_vector.GetFront();
-          parametric_coordinate[current_dimension] =
-              (front
-               + (static_cast<Knot>(index[dimension].Get())
-                  * (knot_vector.GetBack() - front)
-                  / static_cast<Knot>(
-                      number_of_parametric_coordinates[current_dimension].Get()
-                      - 1)));
-        });
-    parametric_coordinates.emplace_back(parametric_coordinate);
-  }
-  return parametric_coordinates;
-}
 
 #ifndef NDEBUG
 template<int parametric_dimensionality>

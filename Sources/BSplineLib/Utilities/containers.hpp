@@ -5,7 +5,39 @@
 
 namespace bsplinelib::utilities::containers {
 
-/// @brief fully dynamic array
+/// @brief lightweight self deleting array. Meant to be used for simple tasks,
+/// where you want to avoid value initialization of every element, unlike
+/// std::vector does.
+/// @tparam T
+template<typename T>
+struct TemporaryArray {
+  T* data_;
+  TemporaryArray(const int n) : data_(new T[n]) {}
+  ~TemporaryArray() { delete[] data_; }
+  constexpr T& operator[](const int& i) { return data_[i]; }
+  constexpr const T& operator[](const int& i) const { return data_[i]; }
+};
+
+/// @brief lightweight self deleting 2D array. Meant to be used for simple
+/// tasks, where you want to avoid value initialization of every element, unlike
+/// std::vector.
+/// @tparam T
+template<typename T>
+struct TemporaryArray2D {
+  T* data_;
+  int dim_;
+  TemporaryArray2D(const int n, const int d) : data_(new T[n * d]), dim_(d) {}
+  ~TemporaryArray2D() { delete[] data_; }
+  constexpr T& operator[](const int& i, const int& j) {
+    return data_[i * dim_ + j];
+  }
+  constexpr const T& operator[](const int& i, const int& j) const {
+    return data_[i * dim_ + j];
+  }
+};
+
+/// @brief Fully dynamic array that can view another data. Equipped with basic
+/// math operations.
 /// @tparam DataType
 /// @tparam dim
 template<typename DataType, int dim = 1, typename IndexType = int>
@@ -351,6 +383,19 @@ public:
 
     for (IndexType i{}; i < size_; ++i) {
       data_[i] += a[i];
+    }
+    return *this;
+  }
+
+  /// @brief this[i] += a * b[i]
+  /// @param a 
+  /// @param b 
+  /// @return 
+  constexpr Array& Add(const DataType_& a, const DataType* b) {
+    assert(data_);
+
+    for (IndexType i{}; i < size_; ++i) {
+      data_[i] += a * b[i];
     }
     return *this;
   }

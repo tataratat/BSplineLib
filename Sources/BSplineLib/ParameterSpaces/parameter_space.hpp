@@ -39,161 +39,28 @@ namespace bsplinelib::parameter_spaces {
 template<int parametric_dimensionality>
 class ParameterSpace;
 
-/// recursive combime adapted from bezman
-template<std::size_t depth, typename ValueType, std::size_t array_dim>
-constexpr void
-RecursiveCombine_(const Array<Vector<ValueType>, array_dim>& factors,
-                  Vector<ValueType>& result,
-                  const ValueType& c_value) {
-  static_assert(depth < array_dim,
-                "Implementation error, recursion loop to deep!");
-
-  for (std::size_t i{}; i < factors[depth].size(); ++i) {
-    if constexpr (depth == 0) {
-      result.push_back(c_value * factors[depth][i]);
-    } else {
-      RecursiveCombine_<static_cast<std::size_t>(depth - 1)>(
-          factors,
-          result,
-          c_value * factors[depth][i]);
-    }
-  }
-}
-
-/// recursive combime adapted from bezman
-template<typename ValueType, std::size_t array_dim>
-constexpr Vector<ValueType>
-RecursiveCombine(const Array<Vector<ValueType>, array_dim>& factors) {
-  // Precalculate required entries
-  int n_entries{1};
-  std::for_each(factors.begin(),
-                factors.end(),
-                [&](const std::vector<double>& ii) { n_entries *= ii.size(); });
-
-  // Init return type and reserve memory
-  Vector<ValueType> result{};
-  result.reserve(n_entries);
-
-  // Start computation
-  RecursiveCombine_<array_dim - 1>(factors, result, static_cast<ValueType>(1));
-  return result;
-}
-
-/// recursive combime taken from bezman
-template<std::size_t depth,
-         typename BasisValueType,
-         std::size_t array_dim,
-         typename ValueType,
-         typename BSplineLibIndex,
-         typename CoeffType,
-         typename ReturnType>
-constexpr void
-RecursiveCombine_(const Array<Vector<BasisValueType>, array_dim>& factors,
-                  const BSplineLibIndex& index,
-                  BSplineLibIndex& index_offset,
-                  const CoeffType& coeffs,
-                  const ValueType& c_value,
-                  ReturnType& result) {
-  static_assert(depth < array_dim,
-                "Implementation error, recursion loop to deep!");
-
-  for (const auto& factor : factors[depth]) {
-    if constexpr (depth == 0) {
-      // get basis
-      const auto fac = c_value * factor;
-      // get coeff
-      const auto& coeff =
-          coeffs[(index + index_offset.GetIndex()).GetIndex1d().Get()];
-      // contribute to each dim
-      int j{};
-      for (auto& r : result) {
-        r += typename ReturnType::value_type{static_cast<ValueType>(coeff[j])
-                                             * fac};
-        ++j;
-      }
-      ++index_offset;
-    } else {
-      RecursiveCombine_<static_cast<std::size_t>(depth - 1)>(factors,
-                                                             index,
-                                                             index_offset,
-                                                             coeffs,
-                                                             c_value * factor,
-                                                             result);
-    }
-  }
-}
-
-/// recursive combime adapted from bezman
-template<typename ValueType,
-         std::size_t array_dim,
-         typename BSplineLibIndex,
-         typename CoeffType,
-         typename ReturnType>
-constexpr void
-RecursiveCombine(const Array<Vector<ValueType>, array_dim>& factors,
-                 const BSplineLibIndex& index,
-                 BSplineLibIndex& index_offset,
-                 const CoeffType& coeffs,
-                 ReturnType& result) {
-
-  // Start computation
-  RecursiveCombine_<array_dim - 1>(factors,
-                                   index,
-                                   index_offset,
-                                   coeffs,
-                                   static_cast<ValueType>(1),
-                                   result);
-}
-
-template<typename T>
-struct TemporaryArray {
-  T* data_;
-  TemporaryArray(const int n) : data_(new T[n]) {}
-  ~TemporaryArray() { delete[] data_; }
-  constexpr T& operator[](const int& i) { return data_[i]; }
-  constexpr const T& operator[](const int& i) const { return data_[i]; }
-};
-template<typename T>
-struct TemporaryArray2D {
-  T* data_;
-  int dim_;
-  TemporaryArray2D(const int n, const int d) : data_(new T[n * d]), dim_(d) {}
-  ~TemporaryArray2D() { delete[] data_; }
-  constexpr T* operator[](const int& i) { return &data_[i * dim_]; }
-  constexpr const T* operator[](const int& i) const { return &data_[i * dim_]; }
-};
-
 // ParameterSpaces provide the B-spline basis functions corresponding to given
 // knot vectors and degrees.  Only clamped knot vectors of degree p — i.e., both
 // the first knot a and last knot b have multiplicity p+1 (each of them is
 // repeated p times) and interior knots have multiplicities that are not greater
 // than p — are allowed: U = {u_0 = a, ..., u_p = a, u_{p+1}, ..., u_{m-(p+1)},
 // b = u_{m-p}, ..., b = u_m}.
-//
-// Example (see NURBS book Exa. 2.1):
-//   using ParameterSpace2d = ParameterSpace<2>;
-//   ParameterSpace2d::Knot_ const k0_0{0.0}, k1_0{1.0};
-//   ParameterSpace2d::KnotVectors_::value_type const &kKnotVector =
-//   std::make_shared<KnotVector>({k0_0, k0_0, k0_0, k1_0, k1_0, k1_0});
-//   ParameterSpace2d parameter_space{{kKnotVector, kKnotVector}, {Degree{2},
-//   Degree{2}}}}; constexpr ParametricCoordinate const k0_5{0.5};
-//   ParameterSpace2d::ParametricCoordinate_ const kParametricCoordinate{k0_5,
-//   k0_5};  // Set u = {0.5, 0.5}.
-//   // Find the first basis function whose support contains u = {0.5, 0.5}.
-//   ParameterSpace2d::Index_ const &non_zero =
-//   parameter_space.FindFirstNonZeroBasisFunction(kParametricCoordinate);
-//   // Evaluate N_{0,0}^{2,2}, i.e., the first basis function that is non-zero
-//   for u = {0.5, 0.5}. ParameterSpace2d::Type_ const &evaluated =
-//   parameter_space_.EvaluateBasisFunction(non_zero, kParametricCoordinate);
-//   parameter_space.RemoveKnot(Dimension{}, ParametricCoordinate{1.0});  // Try
-//   to remove u = {1.0} from U_0. parameter_space.ElevateDegree(Dimension{1});
-//   // Elevate the degree p for the second parametric dimension by one.
 template<int parametric_dimensionality>
 class ParameterSpace {
 public:
+  template<typename T>
+  using TemporaryArray_ = bsplinelib::utilities::containers::TemporaryArray<T>;
+  template<typename T>
+  using TemporaryArray2D_ =
+      bsplinelib::utilities::containers::TemporaryArray2D<T>;
+  template<typename T>
+  using Array_ = bsplinelib::utilities::containers::Array<T>;
+  template<typename T>
+  using Vector_ =
+      bsplinelib::utilities::containers::DefaultInitializationVector<T>;
+
   using BinomialRatios_ = Vector<BinomialRatio>;
   using Degrees_ = Array<Degree, parametric_dimensionality>;
-  using Derivative_ = Array<Derivative, parametric_dimensionality>;
   using ElevationCoefficients_ = Vector<BinomialRatios_>;
   using ElevationInformation_ = Tuple<Index, ElevationCoefficients_>;
   using Index_ = utilities::Index<parametric_dimensionality>;
@@ -203,9 +70,6 @@ public:
   using KnotVectors_ = KnotVectors<parametric_dimensionality>;
   using NumberOfBasisFunctions_ = IndexLength_;
   using NumberOfParametricCoordinates_ = IndexLength_;
-  using ParametricCoordinate_ =
-      Array<ParametricCoordinate, parametric_dimensionality>;
-  using ParametricCoordinates_ = Vector<ParametricCoordinate_>;
   using Type_ = Type;
   using InsertionCoefficients_ = Vector<KnotRatios_>;
   using InsertionInformation_ = Tuple<Index, InsertionCoefficients_>;
@@ -215,7 +79,7 @@ public:
   using KnotSpans_ = Array<KnotSpan, parametric_dimensionality>;
 
   // for evaluated basis values
-  using BasisValues_ = Vector<Type_>;
+  using BasisValues_ = Array_<Type_>;
   using BasisValueType_ = typename BasisValues_::value_type;
   using BasisValuesPerDimension_ =
       Array<BasisValues_, parametric_dimensionality>;
@@ -242,11 +106,11 @@ public:
   RemoveOneParametricDimension(const int parametric_dimension) const;
 
   virtual Index_ FindFirstNonZeroBasisFunction(
-      ParametricCoordinate_ const& parametric_coordinate,
+      const Type_* parametric_coordinate,
       Tolerance const& tolerance = kEpsilon) const;
 
   virtual KnotSpans_
-  FindKnotSpans(ParametricCoordinate_ const& parametric_coordinate,
+  FindKnotSpans(const Type_* parametric_coordinate,
                 Tolerance const& tolerance = kEpsilon) const;
   virtual BezierInformation_
   DetermineBezierExtractionKnots(Dimension const& dimension,
@@ -257,11 +121,11 @@ public:
   /// @param tolerance
   /// @return
   virtual BasisValuesPerDimension_ EvaluateBasisValuesPerDimension(
-      ParametricCoordinate_ const& parametric_coordinate,
+      const Type_* parametric_coordinate,
       Tolerance const& tolerance = kEpsilon) const;
 
   virtual BasisValues_
-  EvaluateBasisValues(ParametricCoordinate_ const& parametric_coordinate,
+  EvaluateBasisValues(const Type_* parametric_coordinate,
                       Tolerance const& tolerance = kEpsilon) const;
 
   /// @brief Implements The NURBS Book A2.3
@@ -270,13 +134,12 @@ public:
   /// @param tolerance
   /// @return
   virtual BasisValuesPerDimension_ EvaluateBasisDerivativeValuesPerDimension(
-      ParametricCoordinate_ const& parametric_coordinate,
-      Derivative_ const& derivative,
+      const Type_* parametric_coordinate,
+      const Derivative* derivative,
       Tolerance const& tolerance = kEpsilon) const;
-
   virtual BasisValues_ EvaluateBasisDerivativeValues(
-      ParametricCoordinate_ const& parametric_coordinate,
-      Derivative_ const& derivative,
+      const Type_* parametric_coordinate,
+      const Derivative* derivative,
       Tolerance const& tolerance = kEpsilon) const;
 
   virtual InsertionInformation_
@@ -304,10 +167,6 @@ public:
   ReduceDegree(Dimension const& dimension,
                Multiplicity const& multiplicity = kMultiplicity,
                Tolerance const& tolerance = kEpsilon);
-
-  virtual ParametricCoordinates_
-  Sample(NumberOfParametricCoordinates_ const& number_of_parametric_coordinates)
-      const;
 
 #ifndef NDEBUG
   virtual void ThrowIfParametricCoordinateIsOutsideScope(
@@ -353,6 +212,111 @@ private:
       Tolerance const& tolerance) const;
 #endif
 };
+
+/// recursive combime adapted from bezman
+template<std::size_t depth, typename ValueType, std::size_t array_dim>
+constexpr void RecursiveCombine_(
+    const Array<typename ParameterSpace::Array_<ValueType>, array_dim>& factors,
+    typename ParameterSpace::Array_<ValueType>& result,
+    const ValueType& c_value) {
+  static_assert(depth < array_dim,
+                "Implementation error, recursion loop to deep!");
+
+  for (std::size_t i{}; i < factors[depth].size(); ++i) {
+    if constexpr (depth == 0) {
+      result.push_back(c_value * factors[depth][i]);
+    } else {
+      RecursiveCombine_<static_cast<std::size_t>(depth - 1)>(
+          factors,
+          result,
+          c_value * factors[depth][i]);
+    }
+  }
+}
+
+/// recursive combime adapted from bezman
+template<typename ValueType, std::size_t array_dim>
+constexpr typename ParameterSpace::Array_<ValueType>
+RecursiveCombine(const Array<typename ParameterSpace::Array_<ValueType>,
+                             array_dim>& factors) {
+  // Precalculate required entries
+  int n_entries{1};
+  std::for_each(factors.begin(),
+                factors.end(),
+                [&](const std::typename ParameterSpace::Array_<double>& ii) {
+                  n_entries *= ii.size();
+                });
+
+  // Init return type and reserve memory
+  typename ParameterSpace::Array_<ValueType> result{};
+  result.reserve(n_entries);
+
+  // Start computation
+  RecursiveCombine_<array_dim - 1>(factors, result, static_cast<ValueType>(1));
+  return result;
+}
+
+/// recursive combime taken from bezman
+template<std::size_t depth,
+         typename BasisValueType,
+         std::size_t array_dim,
+         typename ValueType,
+         typename BSplineLibIndex,
+         typename CoeffType,
+         typename ReturnType>
+constexpr void
+RecursiveCombine_(const Array<typename ParameterSpace::Array_<BasisValueType>,
+                              array_dim>& factors,
+                  const BSplineLibIndex& index,
+                  BSplineLibIndex& index_offset,
+                  const CoeffType& coeffs,
+                  const ValueType& c_value,
+                  ReturnType& result) {
+  static_assert(depth < array_dim,
+                "Implementation error, recursion loop to deep!");
+
+  for (const auto& factor : factors[depth]) {
+    if constexpr (depth == 0) {
+      // get basis
+      const auto fac = c_value * factor;
+      // get coeff
+      const auto* coeff =
+          &coeffs((index + index_offset.GetIndex()).GetIndex1d().Get(), 0);
+      // contribute to each dim
+      result.Add(fac, coeff);
+      ++index_offset;
+    } else {
+      RecursiveCombine_<static_cast<std::size_t>(depth - 1)>(factors,
+                                                             index,
+                                                             index_offset,
+                                                             coeffs,
+                                                             c_value * factor,
+                                                             result);
+    }
+  }
+}
+
+/// recursive combime adapted from bezman
+template<typename ValueType,
+         std::size_t array_dim,
+         typename BSplineLibIndex,
+         typename CoeffType,
+         typename ReturnType>
+constexpr void RecursiveCombine(
+    const Array<typename ParameterSpace::Array_<ValueType>, array_dim>& factors,
+    const BSplineLibIndex& index,
+    BSplineLibIndex& index_offset,
+    const CoeffType& coeffs,
+    ReturnType& result) {
+
+  // Start computation
+  RecursiveCombine_<array_dim - 1>(factors,
+                                   index,
+                                   index_offset,
+                                   coeffs,
+                                   static_cast<ValueType>(1),
+                                   result);
+}
 
 #include "BSplineLib/ParameterSpaces/parameter_space.inl"
 

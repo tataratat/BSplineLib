@@ -234,11 +234,14 @@ using Length = utilities::NamedType<struct LengthName, int>;
 using Precision = utilities::NamedType<struct PrecisionName, int>;
 
 // parameter spaces
-using Degree = utilities::NamedType<struct DegreeName, int>;
-using Derivative = utilities::NamedType<struct DerivativeName, int>;
-using KnotSpan = utilities::NamedType<struct KnotSpanName, int>;
-using Multiplicity = utilities::NamedType<struct MultiplicityName, int>;
-using ParametricCoordinate = double;
+// transition phase of no-nametype;
+using RealType__ = double;
+using IntType__ = int;
+using Degree = IntType__;
+using Derivative = IntType__;
+using KnotSpan = IntType__;
+using Multiplicity = IntType__;
+using ParametricCoordinate = RealType__;
 //    utilities::NamedType<struct ParametricCoordinateName, double>;
 
 namespace parameter_spaces {

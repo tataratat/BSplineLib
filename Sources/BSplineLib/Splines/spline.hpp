@@ -33,7 +33,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace bsplinelib::splines {
 
-template<int parametric_dimensionality, int dimensionality>
+template<int parametric_dimensionality>
 class Spline;
 
 // Splines are (non-)rational mappings from parameter spaces of arbitrary
@@ -43,10 +43,10 @@ class Spline;
 //
 // Example (see, e.g., NURBS book Exe. 3.8 or Exe. 4.4):
 //   spline.RefineKnots(Dimension{1}, {Spline<2, 3>::Knot_{0.5}});
-template<int parametric_dimensionality, int dimensionality>
+template<int parametric_dimensionality>
 class Spline : public SplineItem {
 protected:
-  using VectorSpace_ = vector_spaces::VectorSpace<dimensionality>;
+  using VectorSpace_ = vector_spaces::VectorSpace;
 
 public:
   using Base_ = SplineItem;
@@ -100,9 +100,6 @@ public:
 
   virtual Coordinate ComputeUpperBoundForMaximumDistanceFromOrigin(
       Tolerance const& tolerance = kEpsilon) const = 0;
-  virtual Coordinates_
-  Sample(NumberOfParametricCoordinates_ const& number_of_parametric_coordinates,
-         Tolerance const& tolerance = kEpsilon) const;
 
 protected:
   using Index_ = typename ParameterSpace_::Index_;

@@ -25,7 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 namespace bsplinelib::splines {
 
 // SplineItems allow to store lists of splines without losing the information on
-// their parametric dimensionality, dimensionality or whether they are rational
+// their parametric dimensionality or whether they are rational
 // or not.
 //
 // Example:
@@ -39,14 +39,12 @@ public:
 
   virtual ~SplineItem() = default;
 
-  int dimensionality_, parametric_dimensionality_;
+  int parametric_dimensionality_;
   bool is_rational_;
 
 protected:
   SplineItem() = default;
-  SplineItem(int parametric_dimensionality,
-             int dimensionality,
-             bool is_rational);
+  SplineItem(int parametric_dimensionality, bool is_rational);
   SplineItem(SplineItem const& other) = default;
   SplineItem(SplineItem&& other) noexcept = default;
   SplineItem& operator=(SplineItem const& rhs) = default;

@@ -34,7 +34,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace bsplinelib::splines {
 
-template<int parametric_dimensionality, int dimensionality>
+template<int parametric_dimensionality>
 class BSpline;
 
 // B-splines are non-rational splines.  Currently only single-patch B-splines
@@ -48,17 +48,21 @@ class BSpline;
 //   Surface::Knot_{0.5}); bool const &successful =
 //   surface.ReduceDegree(Dimension{1}, kEpsilon);  // True if spline's degree
 //   p_0 be reduced.
-template<int parametric_dimensionality, int dimensionality>
-class BSpline : public Spline<parametric_dimensionality, dimensionality> {
+template<int parametric_dimensionality>
+class BSpline : public Spline<parametric_dimensionality> {
 public:
-  using Base_ = Spline<parametric_dimensionality, dimensionality>;
+  using Base_ = Spline<parametric_dimensionality>;
   using Coordinate_ = typename Base_::Coordinate_;
   using Derivative_ = typename Base_::Derivative_;
   using Knot_ = typename Base_::Knot_;
   using ParameterSpace_ = typename Base_::ParameterSpace_;
   using ParametricCoordinate_ = typename Base_::ParametricCoordinate_;
   using VectorSpace_ = typename Base_::VectorSpace_;
+
+  // TODO this needs to be more generalized
   using DataType_ = typename VectorSpace_::DataType_;
+  using IndexType_ = typename Derivative_::value_type;
+
 
   template<typename T>
   using Array_ = VectorSpace_::Array_<T>;
@@ -72,12 +76,16 @@ public:
   BSpline& operator=(BSpline&& rhs) noexcept = default;
   ~BSpline() override = default;
 
-  // Default evaluation uses lookup tricks
+  // Evaluation
+  void Evaluate(const DataType_* parametric_coordinate, DataType_* evaluated) const;
+  void EvaluateDerivative(const DataType_* parametric_coordinate, const IndexType_* derivative, DataType_* evaluated) const;
+
+  // For backward compatibility
+  Coordinate_ operator()(ParametricCoordinate_ const& parametric_coordinate) const override;
   Coordinate_ operator()(ParametricCoordinate_ const& parametric_coordinate,
-                         Tolerance const& tolerance = kEpsilon) const override;
-  Coordinate_ operator()(ParametricCoordinate_ const& parametric_coordinate,
-                         Derivative_ const& derivative,
-                         Tolerance const& tolerance = kEpsilon) const override;
+                         Derivative_ const& derivative) const override;  
+
+
 
   void InsertKnot(Dimension const& dimension,
                   Knot_ knot,

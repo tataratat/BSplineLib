@@ -32,12 +32,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include "BSplineLib/Utilities/math_operations.hpp"
 #include "BSplineLib/Utilities/named_type.hpp"
 #include "BSplineLib/Utilities/numeric_operations.hpp"
-#include "BSplineLib/Utilities/std_container_operations.hpp"
+#include "BSplineLib/Utilities/containers.hpp"
 #include "BSplineLib/VectorSpaces/weighted_vector_space.hpp"
 
 namespace bsplinelib::splines {
 
-template<int parametric_dimensionality, int dimensionality>
+template<int parametric_dimensionality>
 class Nurbs;
 
 // NURBSs are rational B-splines.  Currently only single-patch NURBSs are
@@ -49,17 +49,17 @@ class Nurbs;
 //   Evaluating S'(0.0, 0.0) (Eq. (4.9)). curve.InsertKnot(Dimension{1},
 //   Curve::Knot_{0.5});  // Insert u = 0.5 into U_1.
 //   curve.ElevateDegree(Dimension{});  // Raise the spline's degree p_0 by one.
-template<int parametric_dimensionality, int dimensionality>
-class Nurbs : public Spline<parametric_dimensionality, dimensionality> {
+template<int parametric_dimensionality>
+class Nurbs : public Spline<parametric_dimensionality> {
 public:
-  using Base_ = Spline<parametric_dimensionality, dimensionality>;
+  using Base_ = Spline<parametric_dimensionality>;
   using Coordinate_ = typename Base_::Coordinate_;
+  using DataType_ = typename Coordinate_::value_type;
   using Derivative_ = typename Base_::Derivative_;
   using Knot_ = typename Base_::Knot_;
   using ParameterSpace_ = typename Base_::ParameterSpace_;
   using ParametricCoordinate_ = typename Base_::ParametricCoordinate_;
-  using WeightedVectorSpace_ =
-      vector_spaces::WeightedVectorSpace<dimensionality>;
+  using WeightedVectorSpace_ = vector_spaces::WeightedVectorSpace;
 
   Nurbs();
   Nurbs(SharedPointer<ParameterSpace_> parameter_space,
@@ -70,11 +70,14 @@ public:
   Nurbs& operator=(Nurbs&& rhs) noexcept = default;
   ~Nurbs() override = default;
 
+  // Evaluation
+  void Evaluate(const DataType_* parametric_coordinate, DataType_* evaluated) const;
+  void EvaluateDerivative(const DataType_* parametric_coordinate, const IndexType_* derivative, DataType_* evaluated) const;
+
+  // for backward compatibility
+  Coordinate_ operator()(ParametricCoordinate_ const& parametric_coordinate) const final;
   Coordinate_ operator()(ParametricCoordinate_ const& parametric_coordinate,
-                         Tolerance const& tolerance = kEpsilon) const final;
-  Coordinate_ operator()(ParametricCoordinate_ const& parametric_coordinate,
-                         Derivative_ const& derivative,
-                         Tolerance const& tolerance = kEpsilon) const final;
+                         Derivative_ const& derivative) const final;
 
   void InsertKnot(Dimension const& dimension,
                   Knot_ knot,
@@ -97,11 +100,16 @@ public:
       Tolerance const& tolerance = kEpsilon) const final;
 
 protected:
-  using HomogeneousBSpline_ =
-      BSpline<parametric_dimensionality, dimensionality + 1>;
+  using HomogeneousBSpline_ = BSpline<parametric_dimensionality + 1>;
 
   SharedPointer<HomogeneousBSpline_> homogeneous_b_spline_;
   SharedPointer<WeightedVectorSpace_> weighted_vector_space_;
+
+  template<typename T>
+  using TemporaryArray_ = bsplinelib::utilities::containers::TemporaryArray<T>;
+
+  template<typename T>
+  using TemporaryArray2D_ = bsplinelib::utilities::containers::TemporaryArray2D<T>;
 };
 
 #include "BSplineLib/Splines/nurbs.inl"
