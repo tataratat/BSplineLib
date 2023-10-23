@@ -37,7 +37,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace bsplinelib::splines {
 
-template<int parametric_dimensionality, int dimensionality>
+template<int parametric_dimensionality>
 class Nurbs;
 
 // NURBSs are rational B-splines.  Currently only single-patch NURBSs are
@@ -49,17 +49,16 @@ class Nurbs;
 //   Evaluating S'(0.0, 0.0) (Eq. (4.9)). curve.InsertKnot(Dimension{1},
 //   Curve::Knot_{0.5});  // Insert u = 0.5 into U_1.
 //   curve.ElevateDegree(Dimension{});  // Raise the spline's degree p_0 by one.
-template<int parametric_dimensionality, int dimensionality>
-class Nurbs : public Spline<parametric_dimensionality, dimensionality> {
+template<int parametric_dimensionality>
+class Nurbs : public Spline<parametric_dimensionality> {
 public:
-  using Base_ = Spline<parametric_dimensionality, dimensionality>;
+  using Base_ = Spline<parametric_dimensionality>;
   using Coordinate_ = typename Base_::Coordinate_;
   using Derivative_ = typename Base_::Derivative_;
   using Knot_ = typename Base_::Knot_;
   using ParameterSpace_ = typename Base_::ParameterSpace_;
   using ParametricCoordinate_ = typename Base_::ParametricCoordinate_;
-  using WeightedVectorSpace_ =
-      vector_spaces::WeightedVectorSpace<dimensionality>;
+  using WeightedVectorSpace_ = vector_spaces::WeightedVectorSpace;
   using OutputInformation_ =
       Tuple<typename ParameterSpace_::OutputInformation_,
             typename WeightedVectorSpace_::OutputInformation_>;
@@ -72,6 +71,11 @@ public:
   Nurbs& operator=(Nurbs const& rhs);
   Nurbs& operator=(Nurbs&& rhs) noexcept = default;
   ~Nurbs() override = default;
+
+  /// @brief nurbs keeps weighted vector space which will return dim + 1. For
+  /// splines, we reverse that and return true dim.
+  /// @return
+  virtual int Dim() const { return weighted_vector_space_->Dim() - 1; };
 
   Coordinate_ operator()(ParametricCoordinate_ const& parametric_coordinate,
                          Tolerance const& tolerance = kEpsilon) const final;
@@ -103,8 +107,7 @@ public:
   WriteWeighted(Precision const& precision = kPrecision) const;
 
 protected:
-  using HomogeneousBSpline_ =
-      BSpline<parametric_dimensionality, dimensionality + 1>;
+  using HomogeneousBSpline_ = BSpline<parametric_dimensionality>;
 
   SharedPointer<HomogeneousBSpline_> homogeneous_b_spline_;
   SharedPointer<WeightedVectorSpace_> weighted_vector_space_;

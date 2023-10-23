@@ -27,26 +27,22 @@ namespace bsplinelib::splines {
 // SplineItems allow to store lists of splines without losing the information on
 // their parametric dimensionality, dimensionality or whether they are rational
 // or not.
-//
-// Example:
-//   using std::make_shared;
-//   Vector<SplineItem> const splines{make_shared<BSpline<2, 3>>(),
-//   make_shared<Nurbs<3, 4>>()}; int const &two =
-//   splines[0]->parametric_dimensionality_;
 class SplineItem {
 public:
   using Type_ = Type;
 
   virtual ~SplineItem() = default;
 
-  int dimensionality_, parametric_dimensionality_;
+  int parametric_dimensionality_;
   bool is_rational_;
+
+  /// @brief dim is determined dynamically
+  /// @return
+  virtual int Dim() const = 0;
 
 protected:
   SplineItem() = default;
-  SplineItem(int parametric_dimensionality,
-             int dimensionality,
-             bool is_rational);
+  SplineItem(int parametric_dimensionality, bool is_rational);
   SplineItem(SplineItem const& other) = default;
   SplineItem(SplineItem&& other) noexcept = default;
   SplineItem& operator=(SplineItem const& rhs) = default;

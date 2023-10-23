@@ -17,8 +17,8 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-template<int parametric_dimensionality, int dimensionality>
-void Spline<parametric_dimensionality, dimensionality>::RefineKnots(
+template<int parametric_dimensionality>
+void Spline<parametric_dimensionality>::RefineKnots(
     Dimension const& dimension,
     Knots_ knots,
     Multiplicity const& multiplicity,
@@ -28,8 +28,8 @@ void Spline<parametric_dimensionality, dimensionality>::RefineKnots(
   });
 }
 
-template<int parametric_dimensionality, int dimensionality>
-Multiplicity Spline<parametric_dimensionality, dimensionality>::CoarsenKnots(
+template<int parametric_dimensionality>
+Multiplicity Spline<parametric_dimensionality>::CoarsenKnots(
     Dimension const& dimension,
     Knots_ const& knots,
     Tolerance const& tolerance_removal,
@@ -47,34 +47,30 @@ Multiplicity Spline<parametric_dimensionality, dimensionality>::CoarsenKnots(
   return successful_removals;
 }
 
-template<int parametric_dimensionality, int dimensionality>
-Spline<parametric_dimensionality, dimensionality>::Spline(bool is_rational)
-    : SplineItem(parametric_dimensionality,
-                 dimensionality,
-                 std::move(is_rational)) {}
+template<int parametric_dimensionality>
+Spline<parametric_dimensionality>::Spline(bool is_rational)
+    : SplineItem(parametric_dimensionality, std::move(is_rational)) {}
 
-template<int parametric_dimensionality, int dimensionality>
-Spline<parametric_dimensionality, dimensionality>::Spline(
+template<int parametric_dimensionality>
+Spline<parametric_dimensionality>::Spline(
     SharedPointer<ParameterSpace_> parameter_space,
     bool is_rational)
     : Spline(std::move(is_rational)) {
   static_assert(parametric_dimensionality > 0,
                 "The parametric dimensionality must be positive");
-  static_assert(dimensionality > 0, "The dimensionality must be positive");
 
   parameter_space_ = std::move(parameter_space);
 }
 
-template<int parametric_dimensionality, int dimensionality>
-Spline<parametric_dimensionality, dimensionality>::Spline(Spline const& other)
+template<int parametric_dimensionality>
+Spline<parametric_dimensionality>::Spline(Spline const& other)
     : Base_(),
       parameter_space_(
           std::make_shared<ParameterSpace_>(*other.parameter_space_)) {}
 
-template<int parametric_dimensionality, int dimensionality>
-Spline<parametric_dimensionality, dimensionality>&
-Spline<parametric_dimensionality, dimensionality>::operator=(
-    Spline const& rhs) {
+template<int parametric_dimensionality>
+Spline<parametric_dimensionality>&
+Spline<parametric_dimensionality>::operator=(Spline const& rhs) {
   Base_::operator=(rhs);
   parameter_space_ = std::make_shared<ParameterSpace_>(*rhs.parameter_space_);
   return *this;

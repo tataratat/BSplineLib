@@ -32,11 +32,11 @@ namespace bsplinelib::input_output::iges {
 
 namespace {
 
-template<int parametric_dimensionality, int dimensionality>
-using BSpline = BSpline<parametric_dimensionality, dimensionality>;
+template<int parametric_dimensionality>
+using BSpline = BSpline<parametric_dimensionality>;
 using utilities::string_operations::Numbers;
-template<int parametric_dimensionality, int dimensionality>
-using Nurbs = Nurbs<parametric_dimensionality, dimensionality>;
+template<int parametric_dimensionality>
+using Nurbs = Nurbs<parametric_dimensionality>;
 using SplineDataDouble = Numbers<double>;
 using SplineDataInt = Numbers<int>;
 using std::for_each, std::to_string, utilities::string_operations::Append,
@@ -59,16 +59,13 @@ Coordinate WriteSpline(SplineEntry const& spline,
                        String& parameter_data_section_contribution,
                        Precision const& precision,
                        Tolerance const& tolerance);
-template<int parametric_dimensionality, int dimensionality>
+template<int parametric_dimensionality>
 Coordinate WriteSpline(SplineEntry const& spline,
                        String const& delimiter,
                        String& parameter_data_section_contribution,
                        Precision const& precision,
                        Tolerance const& tolerance);
-template<int parametric_dimensionality,
-         int dimensionality,
-         bool is_rational,
-         typename SplineType>
+template<int parametric_dimensionality, bool is_rational, typename SplineType>
 void WriteSpline(SplineType const& spline,
                  String const& delimiter,
                  String& parameter_data_section_contribution,
@@ -407,7 +404,7 @@ Coordinate WriteSpline(SplineEntry const& spline,
                        String& parameter_data_section_contribution,
                        Precision const& precision,
                        Tolerance const& tolerance) {
-  int const& dimensionality = spline->dimensionality_;
+  int const& dimensionality = spline->Dim();
   switch (dimensionality) {
   case 1:
     return WriteSpline<parametric_dimensionality, 1>(
@@ -445,7 +442,7 @@ Coordinate WriteSpline(SplineEntry const& spline,
   }
 }
 
-template<int parametric_dimensionality, int dimensionality>
+template<int parametric_dimensionality>
 Coordinate WriteSpline(SplineEntry const& spline,
                        String const& delimiter,
                        String& parameter_data_section_contribution,
@@ -454,21 +451,21 @@ Coordinate WriteSpline(SplineEntry const& spline,
   using std::static_pointer_cast;
 
   if (spline->is_rational_) {
-    using Nurbs = Nurbs<parametric_dimensionality, dimensionality>;
+    using Nurbs = Nurbs<parametric_dimensionality>;
 
     SharedPointer<Nurbs> const& nurbs = static_pointer_cast<Nurbs>(spline);
-    WriteSpline<parametric_dimensionality, dimensionality, true>(
+    WriteSpline<parametric_dimensionality, true>(
         *nurbs,
         delimiter,
         parameter_data_section_contribution,
         precision);
     return nurbs->ComputeUpperBoundForMaximumDistanceFromOrigin(tolerance);
   } else {
-    using BSpline = BSpline<parametric_dimensionality, dimensionality>;
+    using BSpline = BSpline<parametric_dimensionality>;
 
     SharedPointer<BSpline> const& b_spline =
         static_pointer_cast<BSpline>(spline);
-    WriteSpline<parametric_dimensionality, dimensionality, false>(
+    WriteSpline<parametric_dimensionality, false>(
         *b_spline,
         delimiter,
         parameter_data_section_contribution,
@@ -477,10 +474,7 @@ Coordinate WriteSpline(SplineEntry const& spline,
   }
 }
 
-template<int parametric_dimensionality,
-         int dimensionality,
-         bool is_rational,
-         typename SplineType>
+template<int parametric_dimensionality, bool is_rational, typename SplineType>
 void WriteSpline(SplineType const& spline,
                  String const& delimiter,
                  String& parameter_data_section_contribution,

@@ -60,6 +60,7 @@ public:
   using Coordinate_ = Data_<DataType_>;
   using ConstCoordinate_ = Data_<const DataType_>;
   using Coordinates_ = Data2D_<DataType_>;
+  using OutputInformation_ = Tuple<Vector<StringVector>>;
 
   VectorSpace() = default;
 
@@ -151,6 +152,12 @@ public:
   /// @param tolerance
   /// @return
   virtual DataType_ DetermineMaximumDistanceFromOrigin() const;
+
+  /// @brief IO operation helper
+  /// @param precision
+  /// @return
+  virtual OutputInformation_
+  Write(Precision const& precision = kPrecision) const;
 
 protected:
   /// 2D, contiguous array. For Insert and Erase, you need to own the data

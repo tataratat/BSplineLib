@@ -18,32 +18,22 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 WeightedVectorSpace::WeightedVectorSpace(Coordinates_ const& coordinates,
-                                         Weights_ const& weights)
-    : {
+                                         Weights_ const& weights) {
   HomogenizeCoordinates(coordinates, weights);
 }
 
-void WeightedVectorSpace::Project(
-    HomogeneousCoordinate_ const& homogeneous_coordinate,
-    Coordinate_& projected) {
-
-  assert(homogeneous_coordinate.size() == projected.size() + 1);
-
-  Project(homogeneous_coordinate, projected.data());
-}
-
-void WeightedVectorSpace::Project(
-    HomogeneousCoordinate_ const& homogeneous_coordinate,
-    DataType_* projected) {
+typename WeightedVectorSpace::Coordinate_ WeightedVectorSpace::Project(
+    HomogeneousCoordinate_ const& homogeneous_coordinate) {
 
   const int dim = homogeneous_coordinate.size() - 1;
+  Coordinate_ projected(dim);
 
   const DataType_ w_inv =
       static_cast<DataType_>(1.0) / homogeneous_coordinate[dim];
 
-  for (int i{}; i < dim; ++i) {
-    projected[i] = homogeneous_coordinate[i] * w_inv;
-  }
+  projected.Multiply(w_inv);
+
+  return projected;
 }
 
 typename WeightedVectorSpace::MaximumDistanceFromOriginAndMinimumWeight_
@@ -70,8 +60,9 @@ WeightedVectorSpace::DetermineMaximumDistanceFromOriginAndMinimumWeight()
   return {maximum_distance, minimum_weight};
 }
 
-void WeightedVectorSpace::HomogenizeCoordinates(Coordinates_ const& coordinates,
-                                                Weights_ const& weights) const {
+constexpr void
+WeightedVectorSpace::HomogenizeCoordinates(Coordinates_ const& coordinates,
+                                           Weights_ const& weights) {
   using std::to_string;
 
   const int number_of_coordinates = coordinates.Shape()[0];
@@ -102,4 +93,42 @@ void WeightedVectorSpace::HomogenizeCoordinates(Coordinates_ const& coordinates,
     // assign weight
     *h_coord++ = *weight++;
   }
+}
+
+typename WeightedVectorSpace::OutputInformation_
+WeightedVectorSpace::WriteProjected(Precision const& precision) const {
+  using std::tuple_element_t;
+  using ProjectedCoordinatesOutput = tuple_element_t<0, OutputInformation_>;
+  using utilities::string_operations::Write;
+
+  HomogeneousCoordinates_ const& homogeneous_coordinates = Base_::coordinates_;
+  const int n = homogeneous_coordinates.Shape()[0];
+  const int d = homogeneous_coordinates.Shape()[1] - 1;
+
+  ProjectedCoordinatesOutput coordinates(n);
+
+  tuple_element_t<1, OutputInformation_> weights(n);
+  for (int i{}; i < n; ++i) {
+    // get beggining of the homogeneous coordinate
+    const double* h_coord = &homogeneous_coordinates(i, 0);
+
+    // get weight
+    const double& w = h_coord[d];
+    const double w_inv = 1. / w;
+
+    // save weight
+    weights[i] = Write(w, precision);
+
+    // prepare projected coordinate - this is a string vector
+    typename ProjectedCoordinatesOutput::value_type& projected_str =
+        coordinates[i];
+    projected_str.resize(d);
+
+    // project coord and save
+    for (auto& ps : projected_str) {
+      ps = Write(*h_coord++ * w_inv, precision);
+    }
+  }
+
+  return OutputInformation_{coordinates, weights};
 }

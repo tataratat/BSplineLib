@@ -34,7 +34,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace bsplinelib::splines {
 
-template<int parametric_dimensionality, int dimensionality>
+template<int parametric_dimensionality>
 class BSpline;
 
 // B-splines are non-rational splines.  Currently only single-patch B-splines
@@ -48,10 +48,10 @@ class BSpline;
 //   Surface::Knot_{0.5}); bool const &successful =
 //   surface.ReduceDegree(Dimension{1}, kEpsilon);  // True if spline's degree
 //   p_0 be reduced.
-template<int parametric_dimensionality, int dimensionality>
-class BSpline : public Spline<parametric_dimensionality, dimensionality> {
+template<int parametric_dimensionality>
+class BSpline : public Spline<parametric_dimensionality> {
 public:
-  using Base_ = Spline<parametric_dimensionality, dimensionality>;
+  using Base_ = Spline<parametric_dimensionality>;
   using Coordinate_ = typename Base_::Coordinate_;
   using Derivative_ = typename Base_::Derivative_;
   using Knot_ = typename Base_::Knot_;
@@ -69,6 +69,8 @@ public:
   BSpline& operator=(BSpline const& rhs);
   BSpline& operator=(BSpline&& rhs) noexcept = default;
   ~BSpline() override = default;
+
+  virtual int Dim() const { return vector_space_->Dim(); };
 
   // Default evaluation uses lookup tricks
   Coordinate_ operator()(ParametricCoordinate_ const& parametric_coordinate,

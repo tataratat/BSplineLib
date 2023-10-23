@@ -17,16 +17,16 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-template<int parametric_dimensionality, int dimensionality, bool is_rational>
+template<int parametric_dimensionality, bool is_rational>
 auto CastToSpline(SplineEntry const& spline_entry) {
   using std::dynamic_pointer_cast;
 
   if constexpr (is_rational) {
-    return dynamic_pointer_cast<
-        Nurbs<parametric_dimensionality, dimensionality>>(spline_entry);
+    return dynamic_pointer_cast
+           < Nurbs<parametric_dimensionality>(spline_entry);
   } else {
-    return dynamic_pointer_cast<
-        BSpline<parametric_dimensionality, dimensionality>>(spline_entry);
+    return dynamic_pointer_cast
+           < BSpline<parametric_dimensionality>(spline_entry);
   }
 }
 

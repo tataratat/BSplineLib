@@ -34,12 +34,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace bsplinelib::vector_spaces {
 
-template<int dimensionality>
-class WeightedVectorSpace;
-
-// WeightedVectorSpaces store coordinates and weights together using
-// homogeneous, i.e., weighted coordinates.
-//
 // WeightedVectorSpaces store coordinates and weights together using
 // homogeneous, i.e., weighted coordinates.
 //
@@ -50,9 +44,11 @@ public:
   using Coordinate_ = typename Base_::Coordinate_;
   using ConstCoordinate_ = typename Base_::ConstCoordinate_;
   using Coordinates_ = typename Base_::Coordinates_;
+  using HomogeneousCoordinates_ = Coordinates_; // for backward compatibility
   using HomogeneousCoordinate_ = typename Base_::Coordinate_;
   using MaximumDistanceFromOriginAndMinimumWeight_ = Tuple<Coordinate, Weight>;
   using Weights_ = Base_::Data_<Weight>;
+  using OutputInformation_ = Tuple<Vector<StringVector>, StringVector>;
 
   // Make Base Constructor public
   using Base_::Base_;
@@ -65,13 +61,18 @@ public:
   WeightedVectorSpace& operator=(WeightedVectorSpace&& rhs) noexcept = default;
   ~WeightedVectorSpace() override = default;
 
+  static Coordinate_
+  Project(HomogeneousCoordinate_ const& homogeneous_coordinate);
+
   virtual MaximumDistanceFromOriginAndMinimumWeight_
-  DetermineMaximumDistanceFromOriginAndMinimumWeight(
-      Tolerance const& tolerance = kEpsilon) const;
+  DetermineMaximumDistanceFromOriginAndMinimumWeight() const;
+
+  virtual OutputInformation_
+  WriteProjected(Precision const& precision = kPrecision) const;
 
 private:
   constexpr void HomogenizeCoordinates(Coordinates_ const& coordinates,
-                                       Weights_ const& weights) const;
+                                       Weights_ const& weights);
 };
 
 #include "BSplineLib/VectorSpaces/weighted_vector_space.inl"

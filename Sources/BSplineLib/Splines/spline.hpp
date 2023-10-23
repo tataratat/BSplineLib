@@ -33,9 +33,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace bsplinelib::splines {
 
-template<int parametric_dimensionality, int dimensionality>
-class Spline;
-
 // Splines are (non-)rational mappings from parameter spaces of arbitrary
 // parametric_dimensionality to vector spaces of arbitrary dimensionality.  They
 // can be used, e.g., to seamlessly integrate geometry representation,
@@ -43,10 +40,10 @@ class Spline;
 //
 // Example (see, e.g., NURBS book Exe. 3.8 or Exe. 4.4):
 //   spline.RefineKnots(Dimension{1}, {Spline<2, 3>::Knot_{0.5}});
-template<int parametric_dimensionality, int dimensionality>
+template<int parametric_dimensionality>
 class Spline : public SplineItem {
 protected:
-  using VectorSpace_ = vector_spaces::VectorSpace<dimensionality>;
+  using VectorSpace_ = vector_spaces::VectorSpace;
 
 public:
   using Base_ = SplineItem;

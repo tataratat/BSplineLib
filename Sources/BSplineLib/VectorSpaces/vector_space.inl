@@ -78,3 +78,23 @@ VectorSpace::DetermineMaximumDistanceFromOrigin() const {
 
   return maximum_distance;
 }
+
+typename VectorSpace::OutputInformation_
+VectorSpace::Write(Precision const& precision) const {
+  // until we move iges to python, we create a type matching copy here.
+  const int n = coordinates_.Shape()[0];
+  const int d = coordinates_.Shape()[1];
+
+  const DataType_* coord_ptr = coordinates_.begin();
+  Vector<Vector<DataType_>> nested_coordinates(n);
+  for (auto& nc : nested_coordinates) {
+    nc.resize(d);
+    for (auto& c : nc) {
+      c = *coord_ptr++;
+    }
+  }
+
+  return OutputInformation_{utilities::string_operations::Write<
+      std::tuple_element_t<0, OutputInformation_>>(nested_coordinates,
+                                                   precision)};
+}
