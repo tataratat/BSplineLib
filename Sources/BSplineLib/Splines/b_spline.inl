@@ -133,8 +133,8 @@ void BSpline<parametric_dimensionality, dimensionality>::InsertKnot(
     Knot_ knot,
     Multiplicity const& multiplicity,
     Tolerance const& tolerance) const {
-  using utilities::std_container_operations::Add,
-      utilities::std_container_operations::Multiply;
+  using utilities::containers::Add,
+      utilities::containers::Multiply;
 
   ParameterSpace_& parameter_space = *Base_::parameter_space_;
   Dimension::Type_ const& dimension_value = dimension.Get();
@@ -209,9 +209,9 @@ Multiplicity BSpline<parametric_dimensionality, dimensionality>::RemoveKnot(
     Tolerance const& tolerance_removal,
     Multiplicity const& multiplicity,
     Tolerance const& tolerance) const {
-  using utilities::std_container_operations::Divide,
-      utilities::std_container_operations::Multiply,
-      utilities::std_container_operations::Subtract;
+  using utilities::containers::Divide,
+      utilities::containers::Multiply,
+      utilities::containers::Subtract;
 
   Dimension::Type_ const& dimension_value = dimension.Get();
 #ifndef NDEBUG
@@ -274,7 +274,7 @@ Multiplicity BSpline<parametric_dimensionality, dimensionality>::RemoveKnot(
       lower_coordinate_index = coordinate_index;
       coordinate_index = coordinate.Increment(dimension).GetIndex1d();
       if ( // IsLessOrEqual(
-          utilities::std_container_operations::EuclidianDistance(
+          utilities::containers::EuclidianDistance(
               Divide(Subtract(vector_space[coordinate_index],
                               Multiply(vector_space[lower_coordinate_index],
                                        k1_0 - current_coefficient)),
@@ -305,9 +305,9 @@ void BSpline<parametric_dimensionality, dimensionality>::ElevateDegree(
     Dimension const& dimension,
     Multiplicity const& multiplicity,
     Tolerance const& tolerance) const {
-  using utilities::std_container_operations::AddAndAssignToFirst,
-      utilities::std_container_operations::GetBack,
-      utilities::std_container_operations::Multiply;
+  using utilities::containers::AddAndAssignToFirst,
+      utilities::containers::GetBack,
+      utilities::containers::Multiply;
 
   Dimension::Type_ const& dimension_value = dimension.Get();
 #ifndef NDEBUG
@@ -412,9 +412,9 @@ bool BSpline<parametric_dimensionality, dimensionality>::ReduceDegree(
     Tolerance const& tolerance_reduction,
     Multiplicity const& multiplicity,
     Tolerance const& tolerance) const {
-  using std::for_each, utilities::std_container_operations::GetBack,
-      utilities::std_container_operations::Multiply,
-      utilities::std_container_operations::SubtractAndAssignToFirst;
+  using std::for_each, utilities::containers::GetBack,
+      utilities::containers::Multiply,
+      utilities::containers::SubtractAndAssignToFirst;
 
   Dimension::Type_ const& dimension_value = dimension.Get();
 #ifndef NDEBUG
@@ -473,7 +473,7 @@ bool BSpline<parametric_dimensionality, dimensionality>::ReduceDegree(
                            coefficient));
             });
         vector_space.Replace(replacement_position,
-                             utilities::std_container_operations::Divide(
+                             utilities::containers::Divide(
                                  coordinate,
                                  GetBack(current_coefficients)));
       }
@@ -510,8 +510,8 @@ bool BSpline<parametric_dimensionality, dimensionality>::ReduceDegree(
                            coefficient));
             });
         if ( // IsLessOrEqual(
-            utilities::std_container_operations::EuclidianDistance(
-                utilities::std_container_operations::DivideAndAssignToFirst(
+            utilities::containers::EuclidianDistance(
+                utilities::containers::DivideAndAssignToFirst(
                     coordinate,
                     GetBack(current_coefficients)),
                 vector_space[Index_{number_of_coordinates,

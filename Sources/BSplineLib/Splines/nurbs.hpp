@@ -32,7 +32,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include "BSplineLib/Utilities/math_operations.hpp"
 #include "BSplineLib/Utilities/named_type.hpp"
 #include "BSplineLib/Utilities/numeric_operations.hpp"
-#include "BSplineLib/Utilities/std_container_operations.hpp"
+#include "BSplineLib/Utilities/containers.hpp"
 #include "BSplineLib/VectorSpaces/weighted_vector_space.hpp"
 
 namespace bsplinelib::splines {

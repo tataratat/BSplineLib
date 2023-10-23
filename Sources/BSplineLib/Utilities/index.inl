@@ -35,7 +35,7 @@ Index<size>::Index(Length_ length, Value_ value, bool invalid) {
 
 template<int size>
 Index<size>& Index<size>::operator+=(Value_ const& value) {
-  std_container_operations::AddAndAssignToFirst(value_, value);
+  containers::AddAndAssignToFirst(value_, value);
 #ifndef NDEBUG
   Message const kName{"bsplinelib::utilities::Index::operator+="};
 
@@ -52,7 +52,7 @@ Index<size>& Index<size>::operator+=(Value_ const& value) {
 
 template<int size>
 Index<size>& Index<size>::operator-=(Value_ const& value) {
-  std_container_operations::SubtractAndAssignToFirst(value_, value);
+  containers::SubtractAndAssignToFirst(value_, value);
 #ifndef NDEBUG
   Message const kName{"bsplinelib::utilities::Index::operator-="};
 

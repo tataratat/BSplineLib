@@ -24,7 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include "BSplineLib/Splines/nurbs.hpp"
 #include "BSplineLib/Splines/spline_item.hpp"
 #include "BSplineLib/Utilities/error_handling.hpp"
-#include "BSplineLib/Utilities/std_container_operations.hpp"
+#include "BSplineLib/Utilities/containers.hpp"
 #include "BSplineLib/Utilities/string_operations.hpp"
 
 // Input and output operations such as 1.) determining the file format and

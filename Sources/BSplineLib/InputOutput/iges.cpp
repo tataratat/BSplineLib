@@ -24,7 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include <utility>
 
 #include "BSplineLib/Utilities/error_handling.hpp"
-#include "BSplineLib/Utilities/std_container_operations.hpp"
+#include "BSplineLib/Utilities/containers.hpp"
 #include "BSplineLib/Utilities/string_operations.hpp"
 #include "BSplineLib/Utilities/system_operations.hpp"
 
@@ -83,7 +83,7 @@ String MakeBlock(String const& raw_string,
 
 Splines Read(String const& file_name) {
   using SplineSection = std::pair<Index, int>;
-  using utilities::std_container_operations::GetValue,
+  using utilities::containers::GetValue,
       utilities::string_operations::ConvertToNumbers,
       utilities::string_operations::TrimCharacter;
 
@@ -545,7 +545,7 @@ void WriteSpline(SplineType const& spline,
         Append(parameter_data_section_contribution, delimiter, knot_vector[0]);
         Append(parameter_data_section_contribution,
                delimiter,
-               utilities::std_container_operations::GetBack(knot_vector));
+               utilities::containers::GetBack(knot_vector));
       });
 }
 

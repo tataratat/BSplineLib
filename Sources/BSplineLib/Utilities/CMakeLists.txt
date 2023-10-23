@@ -28,8 +28,8 @@ set(HEADERS
     named_type.hpp
     numeric_operations.inl
     numeric_operations.hpp
-    std_container_operations.inl
-    std_container_operations.hpp
+    containers.inl
+    containers.hpp
     string_operations.inl
     string_operations.hpp
     system_operations.hpp

@@ -94,7 +94,7 @@ Nurbs<parametric_dimensionality, dimensionality>::operator()(
   using IndexValue = typename Index::Value_;
   using ScalarIndexValue = typename IndexValue::value_type;
   using ScalarIndexValueType = typename ScalarIndexValue::Type_;
-  using utilities::std_container_operations::TransformNamedTypes;
+  using utilities::containers::TransformNamedTypes;
 
 #ifndef NDEBUG
   try {
@@ -197,7 +197,7 @@ Nurbs<parametric_dimensionality, dimensionality>::operator()(
               != are_required_derivatives_currently_required_end) {
             do {
               IndexLength lower_derivative_length{
-                  utilities::std_container_operations::TransformNamedTypes<
+                  utilities::containers::TransformNamedTypes<
                       IndexLength>(current_derivative_value)};
               ScalarIndexValueType permutation_element{};
               Dimension::ForEach(
@@ -219,8 +219,8 @@ Nurbs<parametric_dimensionality, dimensionality>::operator()(
                    ++lower_derivative) {
                 Index const current_lower_derivative{
                     derivative_length,
-                    utilities::std_container_operations::Add(
-                        utilities::std_container_operations::Subtract(
+                    utilities::containers::Add(
+                        utilities::containers::Subtract(
                             current_derivative_value,
                             TransformNamedTypes<IndexValue>(
                                 lower_derivative_length)),
@@ -238,9 +238,9 @@ Nurbs<parametric_dimensionality, dimensionality>::operator()(
                           [current_complementary_derivative[current_dimension]
                                .Get()];
                     });
-                utilities::std_container_operations::SubtractAndAssignToFirst(
+                utilities::containers::SubtractAndAssignToFirst(
                     homogeneous_derivative,
-                    utilities::std_container_operations::Multiply(
+                    utilities::containers::Multiply(
                         rational_derivatives
                             [current_lower_derivative.GetIndex1d().Get()],
                         product_of_binomial_coefficients
@@ -255,7 +255,7 @@ Nurbs<parametric_dimensionality, dimensionality>::operator()(
                 false;
           }
         });
-    rational_derivatives.push_back(utilities::std_container_operations::Divide(
+    rational_derivatives.push_back(utilities::containers::Divide(
         homogeneous_derivative,
         homogeneous_b_spline_derivatives[0][dimensionality]));
   }
