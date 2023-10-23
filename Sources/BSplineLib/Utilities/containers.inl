@@ -208,8 +208,7 @@ constexpr ContainerType Subtract(ContainerType const& lhs,
     SubtractAndAssignToFirst(difference, rhs...);
 #ifndef NDEBUG
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "bsplinelib::utilities::containers::Subtract");
+    Throw(exception, "bsplinelib::utilities::containers::Subtract");
   }
 #endif
   return difference;

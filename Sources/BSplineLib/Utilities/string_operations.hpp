@@ -30,10 +30,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include <string>
 #include <type_traits>
 
+#include "BSplineLib/Utilities/containers.hpp"
 #include "BSplineLib/Utilities/error_handling.hpp"
 #include "BSplineLib/Utilities/named_type.hpp"
 #include "BSplineLib/Utilities/numeric_operations.hpp"
-#include "BSplineLib/Utilities/containers.hpp"
 
 // String operations such as 1.) analyzing whether strings start or end with
 // some string pattern, 2.) manipulating strings (appending and trimming), 3.)

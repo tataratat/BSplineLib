@@ -133,8 +133,7 @@ void BSpline<parametric_dimensionality, dimensionality>::InsertKnot(
     Knot_ knot,
     Multiplicity const& multiplicity,
     Tolerance const& tolerance) const {
-  using utilities::containers::Add,
-      utilities::containers::Multiply;
+  using utilities::containers::Add, utilities::containers::Multiply;
 
   ParameterSpace_& parameter_space = *Base_::parameter_space_;
   Dimension::Type_ const& dimension_value = dimension.Get();
@@ -209,8 +208,7 @@ Multiplicity BSpline<parametric_dimensionality, dimensionality>::RemoveKnot(
     Tolerance const& tolerance_removal,
     Multiplicity const& multiplicity,
     Tolerance const& tolerance) const {
-  using utilities::containers::Divide,
-      utilities::containers::Multiply,
+  using utilities::containers::Divide, utilities::containers::Multiply,
       utilities::containers::Subtract;
 
   Dimension::Type_ const& dimension_value = dimension.Get();
@@ -306,8 +304,7 @@ void BSpline<parametric_dimensionality, dimensionality>::ElevateDegree(
     Multiplicity const& multiplicity,
     Tolerance const& tolerance) const {
   using utilities::containers::AddAndAssignToFirst,
-      utilities::containers::GetBack,
-      utilities::containers::Multiply;
+      utilities::containers::GetBack, utilities::containers::Multiply;
 
   Dimension::Type_ const& dimension_value = dimension.Get();
 #ifndef NDEBUG
@@ -472,10 +469,10 @@ bool BSpline<parametric_dimensionality, dimensionality>::ReduceDegree(
                                             .GetIndex1d()],
                            coefficient));
             });
-        vector_space.Replace(replacement_position,
-                             utilities::containers::Divide(
-                                 coordinate,
-                                 GetBack(current_coefficients)));
+        vector_space.Replace(
+            replacement_position,
+            utilities::containers::Divide(coordinate,
+                                          GetBack(current_coefficients)));
       }
       ++coordinate_index;
     }

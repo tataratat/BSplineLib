@@ -197,8 +197,8 @@ Nurbs<parametric_dimensionality, dimensionality>::operator()(
               != are_required_derivatives_currently_required_end) {
             do {
               IndexLength lower_derivative_length{
-                  utilities::containers::TransformNamedTypes<
-                      IndexLength>(current_derivative_value)};
+                  utilities::containers::TransformNamedTypes<IndexLength>(
+                      current_derivative_value)};
               ScalarIndexValueType permutation_element{};
               Dimension::ForEach(
                   0,

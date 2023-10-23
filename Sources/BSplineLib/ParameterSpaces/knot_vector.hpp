@@ -20,8 +20,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #ifndef SOURCES_PARAMETERSPACES_KNOT_VECTOR_HPP_
 #define SOURCES_PARAMETERSPACES_KNOT_VECTOR_HPP_
 
-#include "BSplineLib/Utilities/named_type.hpp"
 #include "BSplineLib/Utilities/containers.hpp"
+#include "BSplineLib/Utilities/named_type.hpp"
 #include "BSplineLib/Utilities/string_operations.hpp"
 
 namespace bsplinelib::parameter_spaces {

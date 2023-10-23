@@ -23,8 +23,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include <limits>
 #include <utility>
 
-#include "BSplineLib/Utilities/error_handling.hpp"
 #include "BSplineLib/Utilities/containers.hpp"
+#include "BSplineLib/Utilities/error_handling.hpp"
 #include "BSplineLib/Utilities/string_operations.hpp"
 #include "BSplineLib/Utilities/system_operations.hpp"
 

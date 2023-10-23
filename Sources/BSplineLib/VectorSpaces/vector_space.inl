@@ -94,9 +94,9 @@ Coordinate VectorSpace<dimensionality>::DetermineMaximumDistanceFromOrigin(
   std::for_each(coordinates_.begin(),
                 coordinates_.end(),
                 [&](Coordinate_ const& coordinate) {
-                  maximum_distance = std::max(
-                      utilities::containers::TwoNorm(coordinate),
-                      maximum_distance);
+                  maximum_distance =
+                      std::max(utilities::containers::TwoNorm(coordinate),
+                               maximum_distance);
                 });
   return maximum_distance;
 }

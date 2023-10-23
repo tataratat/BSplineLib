@@ -59,9 +59,9 @@ WeightedVectorSpace<dimensionality>::
   Weight minimum_weight{std::numeric_limits<Weight>::max()};
   for (HomogeneousCoordinate_ const& homogeneous_coordinate :
        Base_::coordinates_) {
-    maximum_distance = std::max(utilities::containers::TwoNorm(
-                                    Project(homogeneous_coordinate)),
-                                maximum_distance);
+    maximum_distance = std::max(
+        utilities::containers::TwoNorm(Project(homogeneous_coordinate)),
+        maximum_distance);
     minimum_weight =
         std::min(homogeneous_coordinate[dimensionality], minimum_weight);
   }
