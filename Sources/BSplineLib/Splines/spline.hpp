@@ -100,9 +100,6 @@ public:
 
   virtual Coordinate ComputeUpperBoundForMaximumDistanceFromOrigin(
       Tolerance const& tolerance = kEpsilon) const = 0;
-  virtual Coordinates_
-  Sample(NumberOfParametricCoordinates_ const& number_of_parametric_coordinates,
-         Tolerance const& tolerance = kEpsilon) const;
 
 protected:
   using Index_ = typename ParameterSpace_::Index_;

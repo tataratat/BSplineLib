@@ -48,28 +48,6 @@ Multiplicity Spline<parametric_dimensionality, dimensionality>::CoarsenKnots(
 }
 
 template<int parametric_dimensionality, int dimensionality>
-typename Spline<parametric_dimensionality, dimensionality>::Coordinates_
-Spline<parametric_dimensionality, dimensionality>::Sample(
-    NumberOfParametricCoordinates_ const& number_of_parametric_coordinates,
-    Tolerance const& tolerance) const {
-  using ParametricCoordinates =
-      typename ParameterSpace_::ParametricCoordinates_;
-
-  ParametricCoordinates const& parametric_coordinates =
-      parameter_space_->Sample(number_of_parametric_coordinates);
-  Coordinates_ coordinates{};
-  coordinates.reserve(parametric_coordinates.size());
-  std::for_each(
-      parametric_coordinates.begin(),
-      parametric_coordinates.end(),
-      [&](typename ParametricCoordinates::value_type const&
-              parametric_coordinate) {
-        coordinates.emplace_back(operator()(parametric_coordinate, tolerance));
-      });
-  return coordinates;
-}
-
-template<int parametric_dimensionality, int dimensionality>
 Spline<parametric_dimensionality, dimensionality>::Spline(bool is_rational)
     : SplineItem(parametric_dimensionality,
                  dimensionality,

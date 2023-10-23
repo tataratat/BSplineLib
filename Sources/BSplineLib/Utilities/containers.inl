@@ -201,7 +201,7 @@ SubtractAndAssignToFirst(ContainerType& lhs,
 template<typename ContainerType, typename... ContainerTypes>
 constexpr ContainerType Subtract(ContainerType const& lhs,
                                  ContainerTypes const&... rhs) {
-  ContainerType difference{lhs};
+  ContainerType difference(lhs);
 #ifndef NDEBUG
   try {
 #endif
@@ -233,8 +233,14 @@ constexpr ContainerType Multiply(ContainerType const& container,
               std::back_inserter(multiplied),
               bind(multiplies{}, _1, factor));
   } else {
-    static_assert(error_handling::is_false<ContainerType>,
-                  "Only std::array and std::vector are supported.");
+    // static_assert(error_handling::is_false<ContainerType>,
+    //               "Only std::array and std::vector are supported.");
+
+    multiplied.Reallocate(container.size());
+    transform(container.begin(),
+              container.end(),
+              multiplied.begin(),
+              bind(multiplies{}, _1, factor));
   }
   return multiplied;
 }

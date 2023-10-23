@@ -287,7 +287,18 @@ public:
     return data_;
   }
 
+  constexpr const DataType* begin() const {
+    assert(data_);
+    return data_;
+  }
+
   constexpr DataType* end() {
+    assert(data_);
+    assert(size_ > 0);
+    return data_ + size_;
+  }
+
+  constexpr const DataType* end() const {
     assert(data_);
     assert(size_ > 0);
     return data_ + size_;
@@ -726,7 +737,7 @@ public:
   /// @brief L2 norm
   /// @return
   constexpr DataType NormL2() {
-    DataType norm{};
+    std::remove_const_t<DataType> norm{};
     for (IndexType i{}; i < size_; ++i) {
       const DataType& data_i = data_[i];
       norm += data_i * data_i;
