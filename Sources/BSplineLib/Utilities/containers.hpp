@@ -459,7 +459,7 @@ public:
   }
 
   /// @brief
-  ~Data() { DestroyData(); }
+  constexpr ~Data() { DestroyData(); }
 
   /// @brief Returns const shape object
   /// @return

@@ -207,7 +207,7 @@ ParameterSpace<parametric_dimensionality>::EvaluateBasisValuesPerDimension(
     this_dim_output.Reallocate(this_dim_n_basis);
     this_dim_output[0] = 1.;
 
-    TemporaryArray<double> left(this_dim_n_basis), right(this_dim_n_basis);
+    TemporaryData_<double> left(this_dim_n_basis), right(this_dim_n_basis);
 
     double saved, temp;
 
@@ -277,7 +277,7 @@ ParameterSpace<parametric_dimensionality>::
             .Get();
 
     // temporary ones that we need for second special case
-    TemporaryArray<double> left(this_dim_n_basis), right(this_dim_n_basis);
+    TemporaryData_<double> left(this_dim_n_basis), right(this_dim_n_basis);
     double saved, temp, d;
 
     // special case 2 - derivative 0 query is evaluation query
@@ -306,7 +306,7 @@ ParameterSpace<parametric_dimensionality>::
 
     // here, proper derivative query.
     // more temporary variables
-    TemporaryArray2D<double> a(2, this_dim_n_basis),
+    TemporaryData2D_<double> a(2, this_dim_n_basis),
         ndu(this_dim_n_basis, this_dim_n_basis);
     int j1, j2;
 

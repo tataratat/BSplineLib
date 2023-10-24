@@ -65,7 +65,9 @@ public:
   /// @brief nurbs keeps weighted vector space which will return dim + 1. For
   /// splines, we reverse that and return true dim.
   /// @return
-  virtual int Dim() const { return weighted_vector_space_->Dim() - 1; };
+  virtual int Dim() const override {
+    return weighted_vector_space_->Dim() - 1;
+  };
 
   Coordinate_ operator()(ParametricCoordinate_ const& parametric_coordinate,
                          Tolerance const& tolerance = kEpsilon) const final;
@@ -90,11 +92,8 @@ public:
                     Multiplicity const& multiplicity = kMultiplicity,
                     Tolerance const& tolerance = kEpsilon) const final;
 
-  Coordinate ComputeUpperBoundForMaximumDistanceFromOrigin(
-      Tolerance const& tolerance = kEpsilon) const final;
+  Coordinate ComputeUpperBoundForMaximumDistanceFromOrigin() const final;
   OutputInformation_ Write(Precision const& precision = kPrecision) const;
-  OutputInformation_
-  WriteWeighted(Precision const& precision = kPrecision) const;
 
 protected:
   using HomogeneousBSpline_ = BSpline<parametric_dimensionality>;

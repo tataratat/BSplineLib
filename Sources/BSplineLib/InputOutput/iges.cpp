@@ -53,12 +53,7 @@ SplineEntry CreateSpline(SplineDataInt const& spline_data_int,
 int WriteSection(OutputStream& file,
                  String const& section_content,
                  String const& section_identifier);
-template<int parametric_dimensionality>
-Coordinate WriteSpline(SplineEntry const& spline,
-                       String const& delimiter,
-                       String& parameter_data_section_contribution,
-                       Precision const& precision,
-                       Tolerance const& tolerance);
+
 template<int parametric_dimensionality>
 Coordinate WriteSpline(SplineEntry const& spline,
                        String const& delimiter,
@@ -191,11 +186,9 @@ void Write(Splines const& splines,
         entity_name = MakeBlock("BSp Surf", 8, true);
         break;
       default:
-#ifndef NDEBUG
         throw RuntimeError("The spline's parametric dimensionality ("
                            + to_string(parametric_dimensionality)
                            + ") must be greater than 0 and less than 3.");
-#endif
         break;
       }
       if (maximum_coordinate <= maximum_coordinate_of_spline)
@@ -313,8 +306,8 @@ template<int parametric_dimensionality>
 SplineEntry CreateSpline(SplineDataInt const& spline_data_int,
                          SplineDataDouble const& spline_data_double,
                          int const& knot_vector_start) {
-  using BSpline = BSpline<parametric_dimensionality, 3>;
-  using Nurbs = Nurbs<parametric_dimensionality, 3>;
+  using BSpline = BSpline<parametric_dimensionality>;
+  using Nurbs = Nurbs<parametric_dimensionality>;
   using ParameterSpace = typename BSpline::ParameterSpace_;
   using VectorSpace = typename BSpline::VectorSpace_;
   using WeightedVectorSpace = typename Nurbs::WeightedVectorSpace_;
@@ -357,18 +350,19 @@ SplineEntry CreateSpline(SplineDataInt const& spline_data_int,
       make_shared<ParameterSpace>(std::move(knot_vectors), std::move(degrees))};
   int const& total_number_of_coordinates =
       parameter_space->GetTotalNumberOfBasisFunctions();
-  typename WeightedVectorSpace::Weights_ weights{};
-  weights.reserve(total_number_of_coordinates);
-  Index::ForEach(0, total_number_of_coordinates, [&](Index const&) {
-    weights.emplace_back(*(spline_datum_double++));
-  });
-  typename VectorSpace::Coordinates_ coordinates{};
-  coordinates.reserve(total_number_of_coordinates);
-  Index::ForEach(0, total_number_of_coordinates, [&](Index const&) {
-    coordinates.push_back({Coordinate{*(spline_datum_double++)},
-                           Coordinate{*(spline_datum_double++)},
-                           Coordinate{*(spline_datum_double++)}});
-  });
+  typename WeightedVectorSpace::Weights_ weights(total_number_of_coordinates);
+  typename WeightedVectorSpace::Weights_::value_type* w_ptr = weights.begin();
+  for (int i{}; i < weights.size(); ++i) {
+    *w_ptr++ = *(spline_datum_double++);
+  }
+
+  // always 3D!
+  typename VectorSpace::Coordinates_ coordinates(total_number_of_coordinates,
+                                                 3);
+  for (auto& c : coordinates) {
+    c = *(spline_datum_double++);
+  }
+
   if (*(spline_datum_int + 2) == 1) {
     return make_shared<BSpline>(
         std::move(parameter_space),
@@ -404,51 +398,15 @@ Coordinate WriteSpline(SplineEntry const& spline,
                        String& parameter_data_section_contribution,
                        Precision const& precision,
                        Tolerance const& tolerance) {
-  int const& dimensionality = spline->Dim();
-  switch (dimensionality) {
-  case 1:
-    return WriteSpline<parametric_dimensionality, 1>(
-        spline,
-        delimiter,
-        parameter_data_section_contribution,
-        precision,
-        tolerance);
-    break;
-  case 2:
-    return WriteSpline<parametric_dimensionality, 2>(
-        spline,
-        delimiter,
-        parameter_data_section_contribution,
-        precision,
-        tolerance);
-    break;
-  case 3:
-    return WriteSpline<parametric_dimensionality, 3>(
-        spline,
-        delimiter,
-        parameter_data_section_contribution,
-        precision,
-        tolerance);
-    break;
-  default:
-#ifndef NDEBUG
+  using std::static_pointer_cast;
+
+  const int dimensionality = spline->Dim();
+  if (dimensionality < 1 || dimensionality > 3) {
     throw RuntimeError("The spline's dimensionality ("
                        + to_string(dimensionality)
                        + ") must be greater than 0 and "
                          "less than 4.");
-#endif
-    return Coordinate{};
-    break;
   }
-}
-
-template<int parametric_dimensionality>
-Coordinate WriteSpline(SplineEntry const& spline,
-                       String const& delimiter,
-                       String& parameter_data_section_contribution,
-                       Precision const& precision,
-                       Tolerance const& tolerance) {
-  using std::static_pointer_cast;
 
   if (spline->is_rational_) {
     using Nurbs = Nurbs<parametric_dimensionality>;
@@ -459,7 +417,7 @@ Coordinate WriteSpline(SplineEntry const& spline,
         delimiter,
         parameter_data_section_contribution,
         precision);
-    return nurbs->ComputeUpperBoundForMaximumDistanceFromOrigin(tolerance);
+    return nurbs->ComputeUpperBoundForMaximumDistanceFromOrigin();
   } else {
     using BSpline = BSpline<parametric_dimensionality>;
 
@@ -470,7 +428,7 @@ Coordinate WriteSpline(SplineEntry const& spline,
         delimiter,
         parameter_data_section_contribution,
         precision);
-    return b_spline->ComputeUpperBoundForMaximumDistanceFromOrigin(tolerance);
+    return b_spline->ComputeUpperBoundForMaximumDistanceFromOrigin();
   }
 }
 

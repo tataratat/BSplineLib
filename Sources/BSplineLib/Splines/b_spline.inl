@@ -71,11 +71,11 @@ BSpline<parametric_dimensionality>::operator()(
   }
 #endif
   ParameterSpace_ const& parameter_space = *Base_::parameter_space_;
-  Coordinate_ evaluated_b_spline{};
+  Coordinate_ evaluated_b_spline(vector_space_->Dim());
 
   const auto basis_per_dim =
       parameter_space.EvaluateBasisValuesPerDimension(parametric_coordinate);
-  const auto beginning =
+  auto beginning =
       parameter_space.FindFirstNonZeroBasisFunction(parametric_coordinate);
   auto offset = parameter_space.First();
 
@@ -103,14 +103,14 @@ BSpline<parametric_dimensionality>::operator()(
   }
 #endif
   ParameterSpace_ const& parameter_space = *Base_::parameter_space_;
-  Coordinate_ evaluated_b_spline_derivative{};
+  Coordinate_ evaluated_b_spline_derivative(vector_space_->Dim());
 
   const auto basis_derivative_per_dim =
       parameter_space.EvaluateBasisDerivativeValuesPerDimension(
           parametric_coordinate,
           derivative,
           tolerance);
-  const auto beginning =
+  auto beginning =
       parameter_space.FindFirstNonZeroBasisFunction(parametric_coordinate);
   auto offset = parameter_space.First();
 
@@ -175,7 +175,7 @@ void BSpline<parametric_dimensionality>::InsertKnot(
       typename KnotRatios_::const_reverse_iterator coefficient{
           current_coefficients.rbegin()};
       Index const insertion_position = coordinate.GetIndex1d();
-      vector_space.Insert(
+      vector_space.ReallocateInsert(
           insertion_position,
           Add(Multiply(vector_space[Index_{previous_number_of_coordinates,
                                            coordinate_value}
@@ -367,7 +367,7 @@ void BSpline<parametric_dimensionality>::ElevateDegree(
                                             .GetIndex1d()],
                            coefficient));
             });
-        vector_space.Insert(insertion_position, coordinate);
+        vector_space.ReallocateInsert(insertion_position, coordinate);
       }
     }
     for (; interior_coordinate >= Index{}; --interior_coordinate) {
@@ -529,9 +529,8 @@ bool BSpline<parametric_dimensionality>::ReduceDegree(
 
 template<int parametric_dimensionality>
 Coordinate BSpline<parametric_dimensionality>::
-    ComputeUpperBoundForMaximumDistanceFromOrigin(
-        Tolerance const& tolerance) const {
-  return vector_space_->DetermineMaximumDistanceFromOrigin(tolerance);
+    ComputeUpperBoundForMaximumDistanceFromOrigin() const {
+  return vector_space_->DetermineMaximumDistanceFromOrigin();
 }
 
 template<int parametric_dimensionality>

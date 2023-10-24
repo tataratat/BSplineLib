@@ -22,11 +22,10 @@ auto CastToSpline(SplineEntry const& spline_entry) {
   using std::dynamic_pointer_cast;
 
   if constexpr (is_rational) {
-    return dynamic_pointer_cast
-           < Nurbs<parametric_dimensionality>(spline_entry);
+    return dynamic_pointer_cast<Nurbs<parametric_dimensionality>>(spline_entry);
   } else {
-    return dynamic_pointer_cast
-           < BSpline<parametric_dimensionality>(spline_entry);
+    return dynamic_pointer_cast<BSpline<parametric_dimensionality>>(
+        spline_entry);
   }
 }
 

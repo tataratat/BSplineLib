@@ -70,7 +70,7 @@ public:
   BSpline& operator=(BSpline&& rhs) noexcept = default;
   ~BSpline() override = default;
 
-  virtual int Dim() const { return vector_space_->Dim(); };
+  virtual int Dim() const override { return vector_space_->Dim(); };
 
   // Default evaluation uses lookup tricks
   Coordinate_ operator()(ParametricCoordinate_ const& parametric_coordinate,
@@ -99,8 +99,7 @@ public:
                     Multiplicity const& multiplicity = kMultiplicity,
                     Tolerance const& tolerance = kEpsilon) const override;
 
-  Coordinate ComputeUpperBoundForMaximumDistanceFromOrigin(
-      Tolerance const& tolerance = kEpsilon) const override;
+  Coordinate ComputeUpperBoundForMaximumDistanceFromOrigin() const override;
   OutputInformation_ Write(Precision const& precision = kPrecision) const;
 
 protected:

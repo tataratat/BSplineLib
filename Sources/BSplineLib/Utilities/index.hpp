@@ -101,6 +101,11 @@ public:
   Value_ GetIndex() const;
   Index_ GetIndex1d() const;
 
+  /// @brief Reference return of GetIndex() rename since everything is called
+  /// Index here.
+  /// @return
+  const Value_& MultiIndex() const { return value_; }
+
 protected:
   bool invalid_;
   Length_ length_;

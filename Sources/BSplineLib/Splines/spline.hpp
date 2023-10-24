@@ -95,8 +95,7 @@ public:
                             Multiplicity const& multiplicity = kMultiplicity,
                             Tolerance const& tolerance = kEpsilon) const = 0;
 
-  virtual Coordinate ComputeUpperBoundForMaximumDistanceFromOrigin(
-      Tolerance const& tolerance = kEpsilon) const = 0;
+  virtual Coordinate ComputeUpperBoundForMaximumDistanceFromOrigin() const = 0;
 
 protected:
   using Index_ = typename ParameterSpace_::Index_;

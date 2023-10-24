@@ -37,136 +37,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace bsplinelib::parameter_spaces {
 
-template<int parametric_dimensionality>
-class ParameterSpace;
-
-/// recursive combime adapted from bezman
-template<std::size_t depth, typename ValueType, std::size_t array_dim>
-constexpr void
-RecursiveCombine_(const Array<Vector<ValueType>, array_dim>& factors,
-                  Vector<ValueType>& result,
-                  const ValueType& c_value) {
-  static_assert(depth < array_dim,
-                "Implementation error, recursion loop to deep!");
-
-  for (std::size_t i{}; i < factors[depth].size(); ++i) {
-    if constexpr (depth == 0) {
-      result.push_back(c_value * factors[depth][i]);
-    } else {
-      RecursiveCombine_<static_cast<std::size_t>(depth - 1)>(
-          factors,
-          result,
-          c_value * factors[depth][i]);
-    }
-  }
-}
-
-/// recursive combime adapted from bezman
-template<typename ValueType, std::size_t array_dim>
-constexpr Vector<ValueType>
-RecursiveCombine(const Array<Vector<ValueType>, array_dim>& factors) {
-  // Precalculate required entries
-  int n_entries{1};
-  std::for_each(factors.begin(),
-                factors.end(),
-                [&](const std::vector<double>& ii) { n_entries *= ii.size(); });
-
-  // Init return type and reserve memory
-  Vector<ValueType> result{};
-  result.reserve(n_entries);
-
-  // Start computation
-  RecursiveCombine_<array_dim - 1>(factors, result, static_cast<ValueType>(1));
-  return result;
-}
-
-/// recursive combime taken from bezman
-template<std::size_t depth,
-         typename BasisValueType,
-         std::size_t array_dim,
-         typename ValueType,
-         typename BSplineLibIndex,
-         typename CoeffType,
-         typename ReturnType>
-constexpr void
-RecursiveCombine_(const Array<Vector<BasisValueType>, array_dim>& factors,
-                  const BSplineLibIndex& index,
-                  BSplineLibIndex& index_offset,
-                  const CoeffType& coeffs,
-                  const ValueType& c_value,
-                  ReturnType& result) {
-  static_assert(depth < array_dim,
-                "Implementation error, recursion loop to deep!");
-
-  for (const auto& factor : factors[depth]) {
-    if constexpr (depth == 0) {
-      // get basis
-      const auto fac = c_value * factor;
-      // get coeff
-      const auto& coeff =
-          coeffs[(index + index_offset.GetIndex()).GetIndex1d().Get()];
-      // contribute to each dim
-      int j{};
-      for (auto& r : result) {
-        r += typename ReturnType::value_type{static_cast<ValueType>(coeff[j])
-                                             * fac};
-        ++j;
-      }
-      ++index_offset;
-    } else {
-      RecursiveCombine_<static_cast<std::size_t>(depth - 1)>(factors,
-                                                             index,
-                                                             index_offset,
-                                                             coeffs,
-                                                             c_value * factor,
-                                                             result);
-    }
-  }
-}
-
-/// recursive combime adapted from bezman
-template<typename ValueType,
-         std::size_t array_dim,
-         typename BSplineLibIndex,
-         typename CoeffType,
-         typename ReturnType>
-constexpr void
-RecursiveCombine(const Array<Vector<ValueType>, array_dim>& factors,
-                 const BSplineLibIndex& index,
-                 BSplineLibIndex& index_offset,
-                 const CoeffType& coeffs,
-                 ReturnType& result) {
-
-  // Start computation
-  RecursiveCombine_<array_dim - 1>(factors,
-                                   index,
-                                   index_offset,
-                                   coeffs,
-                                   static_cast<ValueType>(1),
-                                   result);
-}
-
-template<typename T>
-struct TemporaryArray {
-  T* data_;
-  TemporaryArray(const int n) : data_(new T[n]) {}
-  ~TemporaryArray() { delete[] data_; }
-  constexpr T& operator[](const int& i) { return data_[i]; }
-  constexpr const T& operator[](const int& i) const { return data_[i]; }
-};
-template<typename T>
-struct TemporaryArray2D {
-  T* data_;
-  int dim_;
-  TemporaryArray2D(const int n, const int d) : data_(new T[n * d]), dim_(d) {}
-  ~TemporaryArray2D() { delete[] data_; }
-  constexpr T* operator[](const int& i) { return &data_[i * dim_]; }
-  constexpr const T* operator[](const int& i) const { return &data_[i * dim_]; }
-};
-
-// ParameterSpaces provide the B-spline basis functions corresponding to given
-// knot vectors and degrees.
-
 /// @brief ParameterSpaces provide the B-spline basis functions corresponding to
 /// given knot vectors and degrees.
 /// @tparam parametric_dimensionality
@@ -207,12 +77,12 @@ public:
   template<typename T>
   using TemporaryData_ = bsplinelib::utilities::containers::TemporaryData<T>;
   template<typename T>
-  using TemporaryArray2D_ =
+  using TemporaryData2D_ =
       bsplinelib::utilities::containers::TemporaryData2D<T>;
   template<typename T>
   using Data_ = bsplinelib::utilities::containers::Data<T>;
 
-  using BasisValues_ = Vector<Type_>;
+  using BasisValues_ = Data_<Type_>;
   using BasisValueType_ = typename BasisValues_::value_type;
   using BasisValuesPerDimension_ =
       Array<BasisValues_, parametric_dimensionality>;
@@ -352,6 +222,120 @@ private:
       Tolerance const& tolerance) const;
 #endif
 };
+
+/// @brief shortcut to ParameterSpace<>::BasisValues_
+using BasisValues = bsplinelib::utilities::containers::Data<Type>;
+
+/// recursive combime adapted from bezman
+template<std::size_t depth, std::size_t array_dim>
+constexpr void RecursiveCombine_(const Array<BasisValues, array_dim>& factors,
+                                 BasisValues& result,
+                                 int& counter,
+                                 const Type& c_value) {
+  static_assert(depth < array_dim,
+                "Implementation error, recursion loop to deep!");
+
+  for (int i{}; i < factors[depth].size(); ++i) {
+    if constexpr (depth == 0) {
+      // compute result and advance counter
+      result[counter++] = c_value * factors[depth][i];
+    } else {
+      RecursiveCombine_<static_cast<std::size_t>(depth - 1)>(
+          factors,
+          result,
+          counter,
+          c_value * factors[depth][i]);
+    }
+  }
+}
+
+/// recursive combime adapted from bezman
+template<std::size_t array_dim>
+constexpr BasisValues
+RecursiveCombine(const Array<BasisValues, array_dim>& factors) {
+  // Precalculate required entries
+  int n_entries{1};
+  std::for_each(factors.begin(), factors.end(), [&](const BasisValues& ii) {
+    n_entries *= ii.size();
+  });
+
+  // Init return type and reserve memory
+  BasisValues result(n_entries);
+  int counter{};
+
+  // Start computation
+  RecursiveCombine_<array_dim - 1>(factors, result, counter, 1.);
+
+  assert(counter == n_entries);
+
+  return result;
+}
+
+/// recursive combime taken from bezman
+template<std::size_t depth,
+         std::size_t array_dim,
+         typename ValueType,
+         typename BSplineLibIndex,
+         typename CoeffType,
+         typename ReturnType>
+constexpr void RecursiveCombine_(const Array<BasisValues, array_dim>& factors,
+                                 BSplineLibIndex& index,
+                                 BSplineLibIndex& index_offset,
+                                 const CoeffType& coeffs,
+                                 const ValueType& c_value,
+                                 ReturnType& result) {
+  static_assert(depth < array_dim,
+                "Implementation error, recursion loop to deep!");
+
+  for (const auto& factor : factors[depth]) {
+    if constexpr (depth == 0) {
+      // get basis contribution
+      const auto fac = c_value * factor;
+      // add index offset and get beginning of corresponding control point
+      const auto& index_offset_multi_index = index_offset.MultiIndex();
+      index += index_offset_multi_index;
+      const auto* coeff = &coeffs(index.GetIndex1d().Get(), 0);
+
+      // contribute to each dim
+      result.Add(fac, coeff);
+
+      // setback index offset
+      index -= index_offset_multi_index;
+      ;
+
+      // advance to the next index offset - this needs to be done after offset
+      // setback
+      ++index_offset;
+    } else {
+      RecursiveCombine_<static_cast<std::size_t>(depth - 1)>(factors,
+                                                             index,
+                                                             index_offset,
+                                                             coeffs,
+                                                             c_value * factor,
+                                                             result);
+    }
+  }
+}
+
+/// recursive combime adapted from bezman
+template<std::size_t array_dim,
+         typename BSplineLibIndex,
+         typename CoeffType,
+         typename ReturnType>
+constexpr void RecursiveCombine(const Array<BasisValues, array_dim>& factors,
+                                BSplineLibIndex& index,
+                                BSplineLibIndex& index_offset,
+                                const CoeffType& coeffs,
+                                ReturnType& result) {
+
+  // Start computation
+  RecursiveCombine_<array_dim - 1>(factors,
+                                   index,
+                                   index_offset,
+                                   coeffs,
+                                   1.,
+                                   result);
+}
 
 #include "BSplineLib/ParameterSpaces/parameter_space.inl"
 
