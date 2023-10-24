@@ -63,13 +63,9 @@ public:
 
   ~Spline() override = default;
 
-  virtual Coordinate_
-  operator()(const Type_* parametric_coordinate,
-             Tolerance const& tolerance = kEpsilon) const = 0;
-  virtual Coordinate_
-  operator()(const Type_* parametric_coordinate,
-             const IntType_* derivative,
-             Tolerance const& tolerance = kEpsilon) const = 0;
+  virtual Coordinate_ operator()(const Type_* parametric_coordinate) const = 0;
+  virtual Coordinate_ operator()(const Type_* parametric_coordinate,
+                                 const IntType_* derivative) const = 0;
 
   virtual void InsertKnot(Dimension const& dimension,
                           Knot_ knot,

@@ -59,19 +59,15 @@ BSpline<parametric_dimensionality>::operator=(BSpline const& rhs) {
 }
 
 template<int parametric_dimensionality>
-typename Spline<parametric_dimensionality>::Coordinate_
-BSpline<parametric_dimensionality>::operator()(
+void BSpline<parametric_dimensionality>::Evaluate(
     const Type_* parametric_coordinate,
-    Tolerance const& tolerance) const {
-#ifndef NDEBUG
-  try {
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, "bsplinelib::splines::BSpline::operator()");
-  }
-#endif
+    Type_* evaluated) const {
+
   ParameterSpace_ const& parameter_space = *Base_::parameter_space_;
-  Coordinate_ evaluated_b_spline(vector_space_->Dim());
+
+  Coordinate_ evaluated_b_spline;
+  evaluated_b_spline.SetData(evaluated);
+  evaluated_b_spline.SetShape(vector_space_->Dim());
 
   const auto basis_per_dim =
       parameter_space.EvaluateBasisValuesPerDimension(parametric_coordinate);
@@ -85,31 +81,22 @@ BSpline<parametric_dimensionality>::operator()(
       offset,
       vector_space_->GetCoordinates(),
       evaluated_b_spline);
-
-  return evaluated_b_spline;
 }
 
 template<int parametric_dimensionality>
-typename Spline<parametric_dimensionality>::Coordinate_
-BSpline<parametric_dimensionality>::operator()(
+void BSpline<parametric_dimensionality>::EvaluateDerivative(
     const Type_* parametric_coordinate,
     const IntType_* derivative,
-    Tolerance const& tolerance) const {
-#ifndef NDEBUG
-  try {
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, "bsplinelib::splines::BSpline::operator()");
-  }
-#endif
+    Type_* evaluated) const {
   ParameterSpace_ const& parameter_space = *Base_::parameter_space_;
-  Coordinate_ evaluated_b_spline_derivative(vector_space_->Dim());
+  Coordinate_ evaluated_b_spline_derivative;
+  evaluated_b_spline_derivative.SetData(evaluated);
+  evaluated_b_spline_derivative.SetShape(vector_space_->Dim());
 
   const auto basis_derivative_per_dim =
       parameter_space.EvaluateBasisDerivativeValuesPerDimension(
           parametric_coordinate,
-          derivative,
-          tolerance);
+          derivative);
   auto beginning =
       parameter_space.FindFirstNonZeroBasisFunction(parametric_coordinate);
   auto offset = parameter_space.First();
@@ -120,6 +107,29 @@ BSpline<parametric_dimensionality>::operator()(
       offset,
       vector_space_->GetCoordinates(),
       evaluated_b_spline_derivative);
+}
+
+template<int parametric_dimensionality>
+typename Spline<parametric_dimensionality>::Coordinate_
+BSpline<parametric_dimensionality>::operator()(
+    const Type_* parametric_coordinate) const {
+  Coordinate_ evaluated_b_spline(vector_space_->Dim());
+
+  Evaluate(parametric_coordinate, evaluated_b_spline.data());
+
+  return evaluated_b_spline;
+}
+
+template<int parametric_dimensionality>
+typename Spline<parametric_dimensionality>::Coordinate_
+BSpline<parametric_dimensionality>::operator()(
+    const Type_* parametric_coordinate,
+    const IntType_* derivative) const {
+  Coordinate_ evaluated_b_spline_derivative(vector_space_->Dim());
+
+  EvaluateDerivative(parametric_coordinate,
+                     derivative,
+                     evaluated_b_spline_derivative.data());
 
   return evaluated_b_spline_derivative;
 }

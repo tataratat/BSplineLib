@@ -63,16 +63,33 @@ Nurbs<parametric_dimensionality>::operator=(Nurbs const& rhs) {
 }
 
 template<int parametric_dimensionality>
-typename Spline<parametric_dimensionality>::Coordinate_
-Nurbs<parametric_dimensionality>::operator()(const Type_* parametric_coordinate,
-                                             Tolerance const& tolerance) const {
-#ifndef NDEBUG
-  try {
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, "bsplinelib::splines::Nurbs::operator()");
+void Nurbs<parametric_dimensionality>::Evaluate(
+    const Type_* parametric_coordinate,
+    Type_* evaluated) const {
+  const int h_dim = weighted_vector_space_->Dim();
+  const int dim = h_dim - 1;
+
+  Coordinate_ homogeneous_eval(h_dim);
+  homogeneous_b_spline_->Evaluate(parametric_coordinate,
+                                  homogeneous_eval.data());
+
+  const Type_ w_inv = 1. / homogeneous_eval[dim];
+  const Type_* eval_ptr = homogeneous_eval.begin();
+  for (int i{}; i < dim; ++i) {
+    *evaluated++ = *eval_ptr++ * w_inv;
   }
-#endif
+}
+
+template<int parametric_dimensionality>
+void Nurbs<parametric_dimensionality>::EvaluateDerivative(
+    const Type_* parametric_coordinate,
+    const IntType_* derivative,
+    Type_* evaluated) const {}
+
+template<int parametric_dimensionality>
+typename Spline<parametric_dimensionality>::Coordinate_
+Nurbs<parametric_dimensionality>::operator()(
+    const Type_* parametric_coordinate) const {
   return WeightedVectorSpace_::Project(
       (*homogeneous_b_spline_)(parametric_coordinate));
 }
@@ -82,11 +99,12 @@ Nurbs<parametric_dimensionality>::operator()(const Type_* parametric_coordinate,
 template<int parametric_dimensionality>
 typename Spline<parametric_dimensionality>::Coordinate_
 Nurbs<parametric_dimensionality>::operator()(const Type_* parametric_coordinate,
-                                             const IntType_* derivative,
-                                             Tolerance const& tolerance) const {
-  const int dimensionality = Dim();
+                                             const IntType_* derivative) const {
+  Coordinate_ evaluated_nurbs(Dim());
 
-  return Coordinate_(0);
+  EvaluateDerivative(parametric_coordinate, derivative, evaluated_nurbs.data());
+
+  return evaluated_nurbs;
 }
 
 template<int parametric_dimensionality>

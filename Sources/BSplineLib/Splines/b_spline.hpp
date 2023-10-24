@@ -75,12 +75,23 @@ public:
 
   virtual int Dim() const override { return vector_space_->Dim(); };
 
-  // Default evaluation uses lookup tricks
+  void Evaluate(const Type_* parametric_coordinate, Type_* evaluated) const;
+  void EvaluateDerivative(const Type_* parametric_coordinate,
+                          const IntType_* derivative,
+                          Type_* evaluated) const;
+
+  /// @brief returning evaluate. kept for backward compatibility
+  /// @param parametric_coordinate
+  /// @param tolerance
+  /// @return
+  Coordinate_ operator()(const Type_* parametric_coordinate) const override;
+
+  /// @brief returning evaluate. kept for backward compatibility
+  /// @param parametric_coordinate
+  /// @param tolerance
+  /// @return
   Coordinate_ operator()(const Type_* parametric_coordinate,
-                         Tolerance const& tolerance = kEpsilon) const override;
-  Coordinate_ operator()(const Type_* parametric_coordinate,
-                         const IntType_* derivative,
-                         Tolerance const& tolerance = kEpsilon) const override;
+                         const IntType_* derivative) const override;
 
   void InsertKnot(Dimension const& dimension,
                   Knot_ knot,

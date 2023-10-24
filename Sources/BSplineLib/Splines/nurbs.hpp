@@ -72,11 +72,14 @@ public:
     return weighted_vector_space_->Dim() - 1;
   };
 
+  void Evaluate(const Type_* parametric_coordinate, Type_* evaluated) const;
+  void EvaluateDerivative(const Type_* parametric_coordinate,
+                          const IntType_* derivative,
+                          Type_* evaluated) const;
+
+  Coordinate_ operator()(const Type_* parametric_coordinate) const final;
   Coordinate_ operator()(const Type_* parametric_coordinate,
-                         Tolerance const& tolerance = kEpsilon) const final;
-  Coordinate_ operator()(const Type_* parametric_coordinate,
-                         const IntType_* derivative,
-                         Tolerance const& tolerance = kEpsilon) const final;
+                         const IntType_* derivative) const final;
 
   void InsertKnot(Dimension const& dimension,
                   Knot_ knot,
