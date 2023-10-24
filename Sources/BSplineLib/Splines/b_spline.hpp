@@ -61,6 +61,9 @@ public:
   using OutputInformation_ = Tuple<typename ParameterSpace_::OutputInformation_,
                                    typename VectorSpace_::OutputInformation_>;
 
+  using Type_ = typename ParameterSpace_::Type_;
+  using IntType_ = typename ParameterSpace_::IntType_;
+
   BSpline();
   BSpline(SharedPointer<ParameterSpace_> parameter_space,
           SharedPointer<VectorSpace_> vector_space);
@@ -73,10 +76,10 @@ public:
   virtual int Dim() const override { return vector_space_->Dim(); };
 
   // Default evaluation uses lookup tricks
-  Coordinate_ operator()(ParametricCoordinate_ const& parametric_coordinate,
+  Coordinate_ operator()(const Type_* parametric_coordinate,
                          Tolerance const& tolerance = kEpsilon) const override;
-  Coordinate_ operator()(ParametricCoordinate_ const& parametric_coordinate,
-                         Derivative_ const& derivative,
+  Coordinate_ operator()(const Type_* parametric_coordinate,
+                         const IntType_* derivative,
                          Tolerance const& tolerance = kEpsilon) const override;
 
   void InsertKnot(Dimension const& dimension,

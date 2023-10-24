@@ -61,7 +61,7 @@ BSpline<parametric_dimensionality>::operator=(BSpline const& rhs) {
 template<int parametric_dimensionality>
 typename Spline<parametric_dimensionality>::Coordinate_
 BSpline<parametric_dimensionality>::operator()(
-    ParametricCoordinate_ const& parametric_coordinate,
+    const Type_* parametric_coordinate,
     Tolerance const& tolerance) const {
 #ifndef NDEBUG
   try {
@@ -92,8 +92,8 @@ BSpline<parametric_dimensionality>::operator()(
 template<int parametric_dimensionality>
 typename Spline<parametric_dimensionality>::Coordinate_
 BSpline<parametric_dimensionality>::operator()(
-    ParametricCoordinate_ const& parametric_coordinate,
-    Derivative_ const& derivative,
+    const Type_* parametric_coordinate,
+    const IntType_* derivative,
     Tolerance const& tolerance) const {
 #ifndef NDEBUG
   try {
@@ -438,7 +438,7 @@ bool BSpline<parametric_dimensionality>::ReduceDegree(
       parameter_space.GetNumberOfBasisFunctions()};
   auto const& [last_segment_coordinate, coefficients] =
       parameter_space.ReduceDegree(dimension, multiplicity);
-  Degree::Type_ const& elevatetd_degree = (coefficients.size() + 1);
+  Degree const& elevatetd_degree = (coefficients.size() + 1);
   IndexLength_ number_of_coordinates_in_slice{number_of_coordinates};
   number_of_coordinates_in_slice[dimension_value] = Length{};
   for (int segment{number_of_segments - 1}; segment >= 0; --segment) {

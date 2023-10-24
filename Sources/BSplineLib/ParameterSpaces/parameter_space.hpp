@@ -64,8 +64,8 @@ public:
             StringArray_>;
   using ParametricCoordinate_ =
       Array<ParametricCoordinate, parametric_dimensionality>;
-  using ParametricCoordinates_ = Vector<ParametricCoordinate_>;
   using Type_ = Type;
+  using IntType_ = Degree; // same as derivative
   using InsertionCoefficients_ = Vector<KnotRatios_>;
   using InsertionInformation_ = Tuple<Index, InsertionCoefficients_>;
   using Knots_ = typename KnotVectors_::value_type::element_type::Knots_;
@@ -108,13 +108,12 @@ public:
   virtual SharedPointer<ParameterSpace<parametric_dimensionality - 1>>
   RemoveOneParametricDimension(const int parametric_dimension) const;
 
-  virtual Index_ FindFirstNonZeroBasisFunction(
-      ParametricCoordinate_ const& parametric_coordinate,
-      Tolerance const& tolerance = kEpsilon) const;
+  virtual Index_
+  FindFirstNonZeroBasisFunction(const Type_* parametric_coordinate,
+                                Tolerance const& tolerance = kEpsilon) const;
 
-  virtual KnotSpans_
-  FindKnotSpans(ParametricCoordinate_ const& parametric_coordinate,
-                Tolerance const& tolerance = kEpsilon) const;
+  virtual KnotSpans_ FindKnotSpans(const Type_* parametric_coordinate,
+                                   Tolerance const& tolerance = kEpsilon) const;
   virtual BezierInformation_
   DetermineBezierExtractionKnots(Dimension const& dimension,
                                  Tolerance const& tolerance = kEpsilon) const;
@@ -123,12 +122,12 @@ public:
   /// @param parametric_coordinate
   /// @param tolerance
   /// @return
-  virtual BasisValuesPerDimension_ EvaluateBasisValuesPerDimension(
-      ParametricCoordinate_ const& parametric_coordinate,
-      Tolerance const& tolerance = kEpsilon) const;
+  virtual BasisValuesPerDimension_
+  EvaluateBasisValuesPerDimension(const Type_* parametric_coordinate,
+                                  Tolerance const& tolerance = kEpsilon) const;
 
   virtual BasisValues_
-  EvaluateBasisValues(ParametricCoordinate_ const& parametric_coordinate,
+  EvaluateBasisValues(const Type_* parametric_coordinate,
                       Tolerance const& tolerance = kEpsilon) const;
 
   /// @brief Implements The NURBS Book A2.3
@@ -137,14 +136,14 @@ public:
   /// @param tolerance
   /// @return
   virtual BasisValuesPerDimension_ EvaluateBasisDerivativeValuesPerDimension(
-      ParametricCoordinate_ const& parametric_coordinate,
-      Derivative_ const& derivative,
+      const Type_* parametric_coordinate,
+      const IntType_* derivative,
       Tolerance const& tolerance = kEpsilon) const;
 
-  virtual BasisValues_ EvaluateBasisDerivativeValues(
-      ParametricCoordinate_ const& parametric_coordinate,
-      Derivative_ const& derivative,
-      Tolerance const& tolerance = kEpsilon) const;
+  virtual BasisValues_
+  EvaluateBasisDerivativeValues(const Type_* parametric_coordinate,
+                                const IntType_* derivative,
+                                Tolerance const& tolerance = kEpsilon) const;
 
   virtual InsertionInformation_
   InsertKnot(Dimension const& dimension,
@@ -172,9 +171,6 @@ public:
                Multiplicity const& multiplicity = kMultiplicity,
                Tolerance const& tolerance = kEpsilon);
 
-  virtual ParametricCoordinates_
-  Sample(NumberOfParametricCoordinates_ const& number_of_parametric_coordinates)
-      const;
   virtual OutputInformation_
   Write(Precision const& precision = kPrecision) const;
 

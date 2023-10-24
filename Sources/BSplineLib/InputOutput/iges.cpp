@@ -340,7 +340,7 @@ SplineEntry CreateSpline(SplineDataInt const& spline_data_int,
         typename ParameterSpace::Knots_ knots{};
         Index::ForEach(0,
                        number_of_coordinates[current_dimension].Get()
-                           + degrees[current_dimension].Get() + 1,
+                           + degrees[current_dimension] + 1,
                        [&](Index const&) {
                          knots.emplace_back(*(spline_datum_double++));
                        });

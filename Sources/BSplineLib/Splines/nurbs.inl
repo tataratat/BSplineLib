@@ -64,9 +64,8 @@ Nurbs<parametric_dimensionality>::operator=(Nurbs const& rhs) {
 
 template<int parametric_dimensionality>
 typename Spline<parametric_dimensionality>::Coordinate_
-Nurbs<parametric_dimensionality>::operator()(
-    ParametricCoordinate_ const& parametric_coordinate,
-    Tolerance const& tolerance) const {
+Nurbs<parametric_dimensionality>::operator()(const Type_* parametric_coordinate,
+                                             Tolerance const& tolerance) const {
 #ifndef NDEBUG
   try {
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
@@ -82,193 +81,11 @@ Nurbs<parametric_dimensionality>::operator()(
 // <https://en.wikipedia.org/wiki/General_Leibniz_rule>).
 template<int parametric_dimensionality>
 typename Spline<parametric_dimensionality>::Coordinate_
-Nurbs<parametric_dimensionality>::operator()(
-    ParametricCoordinate_ const& parametric_coordinate,
-    Derivative_ const& derivative,
-    Tolerance const& tolerance) const {
-  using BinomialCoefficients = Vector<Derivative::Type_>;
-  using DemandForPartialDerivatives =
-      std::deque<bool>; // std::vector<bool> is not a proper STD container.
-  using Index = typename Base_::Index_;
-  using IndexLength = typename Index::Length_;
-  using IndexValue = typename Index::Value_;
-  using ScalarIndexValue = typename IndexValue::value_type;
-  using ScalarIndexValueType = typename ScalarIndexValue::Type_;
-  using utilities::containers::TransformNamedTypes;
-
+Nurbs<parametric_dimensionality>::operator()(const Type_* parametric_coordinate,
+                                             const IntType_* derivative,
+                                             Tolerance const& tolerance) const {
   const int dimensionality = Dim();
 
-#ifndef NDEBUG
-  try {
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, "bsplinelib::splines::Nurbs::operator()");
-  }
-#endif
-  // IndexLength derivative_length;
-  // std::transform(derivative.begin(),
-  //                derivative.end(),
-  //                derivative_length.begin(),
-  //                [](Derivative const& derivative_for_dimension) {
-  //                  return Length{derivative_for_dimension.Get() + 1};
-  //                });
-  // Index const &zero_derivative = Index::First(derivative_length),
-  //             &end_derivative = Index::Behind(derivative_length);
-  // int const& total_number_of_derivatives =
-  //     zero_derivative.GetTotalNumberOfIndices();
-
-  // // Evaluate all homogeneous derivatives of same or lower order.
-  // typename HomogeneousBSpline_::VectorSpace_::Coordinates_
-  //     homogeneous_b_spline_derivatives;
-  // homogeneous_b_spline_derivatives.reserve(total_number_of_derivatives);
-  // for (Index current_derivative{zero_derivative};
-  //      current_derivative != end_derivative;
-  //      ++current_derivative)
-  //   homogeneous_b_spline_derivatives.push_back((*homogeneous_b_spline_)(
-  //       parametric_coordinate,
-  //       TransformNamedTypes<Derivative_>(current_derivative.GetIndex())));
-
-  // // Compute binomial coefficients of derivatives up to maximum order.
-  // Vector<BinomialCoefficients> binomial_coefficients;
-  // ScalarIndexValueType const& number_of_derivatives =
-  //     ((*std::max_element(derivative.begin(), derivative.end())).Get() + 1);
-  // binomial_coefficients.reserve(number_of_derivatives);
-  // Derivative::ForEach(
-  //     0,
-  //     number_of_derivatives,
-  //     [&](Derivative const& current_derivative) {
-  //       Derivative::Type_ const &current_derivative_value =
-  //                                   current_derivative.Get(),
-  //                               &current_number_of_derivatives =
-  //                                   (current_derivative_value + 1);
-  //       BinomialCoefficients current_binomial_coefficients;
-  //       current_binomial_coefficients.reserve(current_number_of_derivatives);
-  //       Derivative::ForEach(
-  //           0,
-  //           current_number_of_derivatives,
-  //           [&](Derivative const& lower_derivative) {
-  //             current_binomial_coefficients.push_back(
-  //                 utilities::math_operations::ComputeBinomialCoefficient(
-  //                     current_derivative_value,
-  //                     lower_derivative.Get()));
-  //           });
-  //       binomial_coefficients.push_back(current_binomial_coefficients);
-  //     });
-
-  // // Evaluate requested rational derivative requiring evaluation of all
-  // rational
-  // // derivatives of lower order.
-  // typename WeightedVectorSpace_::Coordinates_ rational_derivatives;
-  // rational_derivatives.reserve(total_number_of_derivatives);
-  // for (Index current_derivative{zero_derivative};
-  //      current_derivative != end_derivative;
-  //      ++current_derivative) {
-  //   IndexValue const& current_derivative_value =
-  //   current_derivative.GetIndex(); typename HomogeneousBSpline_::Coordinate_
-  //   const&
-  //       homogeneous_b_spline_derivative =
-  //           homogeneous_b_spline_derivatives[current_derivative.GetIndex1d()
-  //                                                .Get()];
-  //   Coordinate_ homogeneous_derivative;
-  //   std::copy(homogeneous_b_spline_derivative.begin(),
-  //             std::prev(homogeneous_b_spline_derivative.end()),
-  //             homogeneous_derivative.begin());
-  //   // Subtract contributions of lower order rational derivatives from
-  //   current
-  //   // homogeneous derivative by subtracting all incorporated sums.
-  //   DemandForPartialDerivatives are_required_derivatives_currently_required(
-  //       std::count_if(current_derivative_value.begin(),
-  //                     current_derivative_value.end(),
-  //                     [](ScalarIndexValue const& derivative) {
-  //                       return (derivative > ScalarIndexValue{} ? true :
-  //                       false);
-  //                     }),
-  //       true);
-  //   DemandForPartialDerivatives::iterator const
-  //       &are_required_derivatives_currently_required_begin =
-  //           are_required_derivatives_currently_required.begin(),
-  //       &are_required_derivatives_currently_required_end =
-  //           are_required_derivatives_currently_required.end();
-  //   Dimension::ForEach(
-  //       0,
-  //       parametric_dimensionality,
-  //       [&](Dimension const& dimension) {
-  //         // If all permutations corresponding to the current number of
-  //         // parametric dimensions participating in the sums have been
-  //         // considered, reduce this number by one until all sums have been
-  //         // considered.
-  //         if (std::find(are_required_derivatives_currently_required_begin,
-  //                       are_required_derivatives_currently_required_end,
-  //                       true)
-  //             != are_required_derivatives_currently_required_end) {
-  //           do {
-  //             IndexLength lower_derivative_length{
-  //                 utilities::containers::TransformNamedTypes<IndexLength>(
-  //                     current_derivative_value)};
-  //             ScalarIndexValueType permutation_element{};
-  //             Dimension::ForEach(
-  //                 0,
-  //                 parametric_dimensionality,
-  //                 [&](Dimension const& current_dimension) {
-  //                   Dimension::Type_ const& current_dimension_value =
-  //                       current_dimension.Get();
-  //                   if (lower_derivative_length[current_dimension_value]
-  //                       > Length{})
-  //                     if (!are_required_derivatives_currently_required
-  //                             [permutation_element++])
-  //                       lower_derivative_length[current_dimension_value] =
-  //                           Length{};
-  //                 });
-  //             for (Index lower_derivative =
-  //                      Index::First(lower_derivative_length);
-  //                  lower_derivative !=
-  //                  Index::Behind(lower_derivative_length);
-  //                  ++lower_derivative) {
-  //               Index const current_lower_derivative{
-  //                   derivative_length,
-  //                   utilities::containers::Add(
-  //                       utilities::containers::Subtract(
-  //                           current_derivative_value,
-  //                           TransformNamedTypes<IndexValue>(
-  //                               lower_derivative_length)),
-  //                       lower_derivative.GetIndex())};
-  //               Index const& current_complementary_derivative =
-  //                   (current_derivative -
-  //                   current_lower_derivative.GetIndex());
-  //               Degree::Type_ product_of_binomial_coefficients{1};
-  //               Dimension::ForEach(
-  //                   0,
-  //                   parametric_dimensionality,
-  //                   [&](Dimension const& current_dimension) {
-  //                     product_of_binomial_coefficients *=
-  //                     binomial_coefficients
-  //                         [lower_derivative_length[current_dimension.Get()]
-  //                              .Get()]
-  //                         [current_complementary_derivative[current_dimension]
-  //                              .Get()];
-  //                   });
-  //               utilities::containers::SubtractAndAssignToFirst(
-  //                   homogeneous_derivative,
-  //                   utilities::containers::Multiply(
-  //                       rational_derivatives
-  //                           [current_lower_derivative.GetIndex1d().Get()],
-  //                       product_of_binomial_coefficients
-  //                           * homogeneous_b_spline_derivatives
-  //                               [current_complementary_derivative.GetIndex1d()
-  //                                    .Get()][dimensionality]));
-  //             }
-  //           } while (std::next_permutation(
-  //               are_required_derivatives_currently_required_begin,
-  //               are_required_derivatives_currently_required_end));
-  //           are_required_derivatives_currently_required[dimension.Get()] =
-  //               false;
-  //         }
-  //       });
-  //   rational_derivatives.push_back(utilities::containers::Divide(
-  //       homogeneous_derivative,
-  //       homogeneous_b_spline_derivatives[0][dimensionality]));
-  // }
-  // return rational_derivatives[total_number_of_derivatives - 1];
   return Coordinate_(0);
 }
 

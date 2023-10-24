@@ -101,7 +101,7 @@ ParameterSpace<parametric_dimensionality>::RemoveOneParametricDimension(
 template<int parametric_dimensionality>
 typename ParameterSpace<parametric_dimensionality>::Index_
 ParameterSpace<parametric_dimensionality>::FindFirstNonZeroBasisFunction(
-    ParametricCoordinate_ const& parametric_coordinate,
+    const Type_* parametric_coordinate,
     Tolerance const& tolerance) const {
 #ifndef NDEBUG
   try {
@@ -122,7 +122,7 @@ ParameterSpace<parametric_dimensionality>::FindFirstNonZeroBasisFunction(
             Index{knot_vectors_[current_dimension]->FindSpan(
                       parametric_coordinate[current_dimension],
                       tolerance)
-                  - degrees_[current_dimension].Get()};
+                  - degrees_[current_dimension]};
       });
   return Index_{GetNumberOfBasisFunctions(),
                 first_non_zero_basis_function_index_value};
@@ -130,7 +130,7 @@ ParameterSpace<parametric_dimensionality>::FindFirstNonZeroBasisFunction(
 template<int parametric_dimensionality>
 typename ParameterSpace<parametric_dimensionality>::KnotSpans_
 ParameterSpace<parametric_dimensionality>::FindKnotSpans(
-    ParametricCoordinate_ const& parametric_coordinate,
+    const Type_* parametric_coordinate,
     Tolerance const& tolerance) const {
   KnotSpans_ out;
   for (int i{}; i < parametric_dimensionality; ++i) {
@@ -174,7 +174,7 @@ ParameterSpace<parametric_dimensionality>::DetermineBezierExtractionKnots(
       [&](ParametricCoordinate const& interior_knot) {
         std::fill_n(
             std::back_inserter(bezier_extraction_knots),
-            degrees_[dimension_value].Get()
+            degrees_[dimension_value]
                 - knot_vector.DetermineMultiplicity(interior_knot).Get(),
             interior_knot);
       });
@@ -185,7 +185,7 @@ ParameterSpace<parametric_dimensionality>::DetermineBezierExtractionKnots(
 template<int parametric_dimensionality>
 typename ParameterSpace<parametric_dimensionality>::BasisValuesPerDimension_
 ParameterSpace<parametric_dimensionality>::EvaluateBasisValuesPerDimension(
-    ParametricCoordinate_ const& parametric_coordinate,
+    const Type_* parametric_coordinate,
     Tolerance const& tolerance) const {
 
   // prepare output
@@ -193,7 +193,7 @@ ParameterSpace<parametric_dimensionality>::EvaluateBasisValuesPerDimension(
   for (int i{}; i < parametric_dimensionality; ++i) {
 
     // get this dim's info
-    const auto& this_dim_degree = degrees_[i].Get();
+    const auto& this_dim_degree = degrees_[i];
     const auto this_dim_n_basis = this_dim_degree + 1;
     const auto& this_dim_parametric_coordinate = parametric_coordinate[i];
     const auto& this_knot_vector = *knot_vectors_[i];
@@ -235,7 +235,7 @@ ParameterSpace<parametric_dimensionality>::EvaluateBasisValuesPerDimension(
 template<int parametric_dimensionality>
 typename ParameterSpace<parametric_dimensionality>::BasisValues_
 ParameterSpace<parametric_dimensionality>::EvaluateBasisValues(
-    ParametricCoordinate_ const& parametric_coordinate,
+    const Type_* parametric_coordinate,
     Tolerance const& tolerance) const {
   return RecursiveCombine(
       EvaluateBasisValuesPerDimension(parametric_coordinate, tolerance));
@@ -245,8 +245,8 @@ template<int parametric_dimensionality>
 typename ParameterSpace<parametric_dimensionality>::BasisValuesPerDimension_
 ParameterSpace<parametric_dimensionality>::
     EvaluateBasisDerivativeValuesPerDimension(
-        ParametricCoordinate_ const& parametric_coordinate,
-        Derivative_ const& derivative,
+        const Type_* parametric_coordinate,
+        const IntType_* derivative,
         Tolerance const& tolerance) const {
 
   // prepare output
@@ -255,7 +255,7 @@ ParameterSpace<parametric_dimensionality>::
   for (int i{}; i < parametric_dimensionality; ++i) {
 
     // get this dim's info
-    const auto& this_dim_degree = degrees_[i].Get();
+    const auto& this_dim_degree = degrees_[i];
     const auto& this_dim_derivative = derivative[i];
     const auto this_dim_n_basis = this_dim_degree + 1;
     // this dim's output and allocate
@@ -264,7 +264,7 @@ ParameterSpace<parametric_dimensionality>::
 
     // special case for early exit - derivetive query is bigger than degree
     // all zeros.
-    if (this_dim_derivative.Get() > this_dim_degree) {
+    if (this_dim_derivative > this_dim_degree) {
       this_dim_output.Fill(0.);
       continue;
     }
@@ -281,7 +281,7 @@ ParameterSpace<parametric_dimensionality>::
     double saved, temp, d;
 
     // special case 2 - derivative 0 query is evaluation query
-    if (this_dim_derivative.Get() == 0) {
+    if (this_dim_derivative == 0) {
       // just raw copy of evaluation
       this_dim_output[0] = 1.;
 
@@ -327,7 +327,7 @@ ParameterSpace<parametric_dimensionality>::
       ndu(j, j) = saved;
     }
 
-    if (this_dim_derivative.Get() == 0) {
+    if (this_dim_derivative == 0) {
       for (int j{}; j < this_dim_n_basis; ++j) {
         this_dim_output[j] = ndu(j, this_dim_degree);
       }
@@ -337,7 +337,7 @@ ParameterSpace<parametric_dimensionality>::
     for (int r{}; r < this_dim_n_basis; ++r) {
       int s1{}, s2{1}, j;
       a(0, 0) = 1.0;
-      for (int k{1}; k < this_dim_derivative.Get() + 1; ++k) {
+      for (int k{1}; k < this_dim_derivative + 1; ++k) {
         d = 0.0;
         const int rk = r - k;
         const int pk = this_dim_degree - k;
@@ -378,7 +378,7 @@ ParameterSpace<parametric_dimensionality>::
     }
 
     temp = this_dim_degree;
-    for (int k{1}; k < this_dim_derivative.Get(); ++k) {
+    for (int k{1}; k < this_dim_derivative; ++k) {
       temp *= (this_dim_degree - k);
     }
     for (int j{}; j < this_dim_n_basis; ++j) {
@@ -392,8 +392,8 @@ ParameterSpace<parametric_dimensionality>::
 template<int parametric_dimensionality>
 typename ParameterSpace<parametric_dimensionality>::BasisValues_
 ParameterSpace<parametric_dimensionality>::EvaluateBasisDerivativeValues(
-    ParametricCoordinate_ const& parametric_coordinate,
-    Derivative_ const& derivative,
+    const Type_* parametric_coordinate,
+    const IntType_* derivative,
     Tolerance const& tolerance) const {
   return RecursiveCombine(
       EvaluateBasisDerivativeValuesPerDimension(parametric_coordinate,
@@ -432,7 +432,7 @@ ParameterSpace<parametric_dimensionality>::InsertKnot(
   KnotVector& knot_vector = *knot_vectors_[dimension_value];
   Multiplicity const insertion{
       std::min(multiplicity.Get(),
-               degrees_[dimension_value].Get()
+               degrees_[dimension_value]
                    - knot_vector.DetermineMultiplicity(knot, tolerance).Get())};
   InsertionInformation_ const& insertion_information =
       DetermineInsertionInformation(dimension, knot, insertion, tolerance);
@@ -525,42 +525,10 @@ ParameterSpace<parametric_dimensionality>::ReduceDegree(
   }
 #endif
   Degree& degree = degrees_[dimension_value];
-  Multiplicity const reduction{std::min(multiplicity.Get(), degree.Get() - 1)};
+  Multiplicity const reduction{std::min(multiplicity.Get(), degree - 1)};
   knot_vectors_[dimension_value]->DecreaseMultiplicities(reduction);
   degree -= Degree{reduction.Get()};
   return DetermineElevationInformation(dimension, reduction);
-}
-
-template<int parametric_dimensionality>
-typename ParameterSpace<parametric_dimensionality>::ParametricCoordinates_
-ParameterSpace<parametric_dimensionality>::Sample(
-    NumberOfParametricCoordinates_ const& number_of_parametric_coordinates)
-    const {
-  using Knot = Knot_;
-
-  Index_ index = Index_::First(number_of_parametric_coordinates);
-  ParametricCoordinates_ parametric_coordinates{};
-  parametric_coordinates.reserve(index.GetTotalNumberOfIndices());
-  for (; index != Index_::Behind(number_of_parametric_coordinates); ++index) {
-    ParametricCoordinate_ parametric_coordinate;
-    Dimension::ForEach(
-        0,
-        parametric_dimensionality,
-        [&](Dimension const& dimension) {
-          Dimension::Type_ const& current_dimension = dimension.Get();
-          KnotVector const& knot_vector = *knot_vectors_[current_dimension];
-          KnotVector::Knot_ const& front = knot_vector.GetFront();
-          parametric_coordinate[current_dimension] =
-              (front
-               + (static_cast<Knot>(index[dimension].Get())
-                  * (knot_vector.GetBack() - front)
-                  / static_cast<Knot>(
-                      number_of_parametric_coordinates[current_dimension].Get()
-                      - 1)));
-        });
-    parametric_coordinates.emplace_back(parametric_coordinate);
-  }
-  return parametric_coordinates;
 }
 
 template<int parametric_dimensionality>
@@ -616,7 +584,7 @@ void ParameterSpace<parametric_dimensionality>::CopyKnotVectors(
 template<int parametric_dimensionality>
 int ParameterSpace<parametric_dimensionality>::GetNumberOfNonZeroBasisFunctions(
     Dimension const& dimension) const {
-  return degrees_[dimension.Get()].Get() + 1;
+  return degrees_[dimension.Get()] + 1;
 }
 
 template<int parametric_dimensionality>
@@ -662,8 +630,8 @@ ParameterSpace<parametric_dimensionality>::DetermineInsertionInformation(
       multiplicity_value,
       [&](Multiplicity const& insertion) {
         KnotRatios_ current_knot_ratios;
-        MultiplicityType_ const remaining_mulitplicity{
-            degrees_[dimension_value].Get() - insertion.Get()};
+        MultiplicityType_ const remaining_mulitplicity{degrees_[dimension_value]
+                                                       - insertion.Get()};
         current_knot_ratios.reserve(remaining_mulitplicity
                                     - previous_multiplicity);
         Index::ForEach(
@@ -690,7 +658,7 @@ ParameterSpace<parametric_dimensionality>::DetermineElevationInformation(
   using IndexType = Index::Type_;
   using utilities::math_operations::ComputeBinomialCoefficient;
 
-  Degree::Type_ const& degree = degrees_[dimension.Get()].Get();
+  Degree const& degree = degrees_[dimension.Get()];
   MultiplicityType_ const& multiplicity_value = multiplicity.Get();
   Index::Type_ const& maximum_bezier_coordinate = (degree + multiplicity_value);
   ElevationCoefficients_ bezier_coefficients;

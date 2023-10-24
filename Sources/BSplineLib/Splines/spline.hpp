@@ -58,14 +58,17 @@ public:
       typename ParameterSpace_::NumberOfParametricCoordinates_;
   using ParametricCoordinate_ = typename ParameterSpace_::ParametricCoordinate_;
 
+  using Type_ = typename ParameterSpace_::Type_;
+  using IntType_ = typename ParameterSpace_::IntType_;
+
   ~Spline() override = default;
 
   virtual Coordinate_
-  operator()(ParametricCoordinate_ const& parametric_coordinate,
+  operator()(const Type_* parametric_coordinate,
              Tolerance const& tolerance = kEpsilon) const = 0;
   virtual Coordinate_
-  operator()(ParametricCoordinate_ const& parametric_coordinate,
-             Derivative_ const& derivative,
+  operator()(const Type_* parametric_coordinate,
+             const IntType_* derivative,
              Tolerance const& tolerance = kEpsilon) const = 0;
 
   virtual void InsertKnot(Dimension const& dimension,

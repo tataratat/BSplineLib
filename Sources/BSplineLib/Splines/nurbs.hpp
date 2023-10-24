@@ -53,6 +53,9 @@ public:
       Tuple<typename ParameterSpace_::OutputInformation_,
             typename WeightedVectorSpace_::OutputInformation_>;
 
+  using Type_ = typename ParameterSpace_::Type_;
+  using IntType_ = typename ParameterSpace_::IntType_;
+
   Nurbs();
   Nurbs(SharedPointer<ParameterSpace_> parameter_space,
         SharedPointer<WeightedVectorSpace_> weighted_vector_space);
@@ -69,10 +72,10 @@ public:
     return weighted_vector_space_->Dim() - 1;
   };
 
-  Coordinate_ operator()(ParametricCoordinate_ const& parametric_coordinate,
+  Coordinate_ operator()(const Type_* parametric_coordinate,
                          Tolerance const& tolerance = kEpsilon) const final;
-  Coordinate_ operator()(ParametricCoordinate_ const& parametric_coordinate,
-                         Derivative_ const& derivative,
+  Coordinate_ operator()(const Type_* parametric_coordinate,
+                         const IntType_* derivative,
                          Tolerance const& tolerance = kEpsilon) const final;
 
   void InsertKnot(Dimension const& dimension,
