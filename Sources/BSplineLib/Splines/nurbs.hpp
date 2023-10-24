@@ -37,18 +37,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace bsplinelib::splines {
 
-template<int parametric_dimensionality>
-class Nurbs;
-
 // NURBSs are rational B-splines.  Currently only single-patch NURBSs are
 // supported.
-//
-// Example (see NURBS book Exe. 4.4):
-//   using Curve = Nurbs<1, 3>;
-//   Curve::Coordinate_ const &first_derivative0 = curve({}, Derivative{1});  //
-//   Evaluating S'(0.0, 0.0) (Eq. (4.9)). curve.InsertKnot(Dimension{1},
-//   Curve::Knot_{0.5});  // Insert u = 0.5 into U_1.
-//   curve.ElevateDegree(Dimension{});  // Raise the spline's degree p_0 by one.
 template<int parametric_dimensionality>
 class Nurbs : public Spline<parametric_dimensionality> {
 public:

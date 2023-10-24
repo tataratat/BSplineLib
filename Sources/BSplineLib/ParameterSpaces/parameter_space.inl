@@ -204,15 +204,15 @@ ParameterSpace<parametric_dimensionality>::EvaluateBasisValuesPerDimension(
 
     // this dim's output
     auto& this_dim_output = output[i];
-    this_dim_output.reserve(this_dim_n_basis);
-    this_dim_output.push_back(1.);
+    this_dim_output.Reallocate(this_dim_n_basis);
+    this_dim_output[0] = 1.;
 
     TemporaryArray<double> left(this_dim_n_basis), right(this_dim_n_basis);
 
     double saved, temp;
 
     for (int k{1}; k < this_dim_n_basis; ++k) {
-      this_dim_output.push_back(1.);
+      this_dim_output[k] = 1.;
 
       left[k] = this_dim_parametric_coordinate
                 - this_knots[this_zero_degree_support + 1 - k];
@@ -258,13 +258,14 @@ ParameterSpace<parametric_dimensionality>::
     const auto& this_dim_degree = degrees_[i].Get();
     const auto& this_dim_derivative = derivative[i];
     const auto this_dim_n_basis = this_dim_degree + 1;
-    // this dim's output
+    // this dim's output and allocate
     auto& this_dim_output = output[i];
+    this_dim_output.Reallocate(this_dim_n_basis);
 
     // special case for early exit - derivetive query is bigger than degree
     // all zeros.
     if (this_dim_derivative.Get() > this_dim_degree) {
-      this_dim_output.assign(this_dim_n_basis, 0.);
+      this_dim_output.Fill(0.);
       continue;
     }
 
@@ -282,11 +283,10 @@ ParameterSpace<parametric_dimensionality>::
     // special case 2 - derivative 0 query is evaluation query
     if (this_dim_derivative.Get() == 0) {
       // just raw copy of evaluation
-      this_dim_output.reserve(this_dim_n_basis);
-      this_dim_output.push_back(1.);
+      this_dim_output[0] = 1.;
 
       for (int k{1}; k < this_dim_n_basis; ++k) {
-        this_dim_output.push_back(1.);
+        this_dim_output[k] = 1.;
 
         left[k] = this_dim_parametric_coordinate
                   - this_knots[this_zero_degree_support + 1 - k];
@@ -305,14 +305,12 @@ ParameterSpace<parametric_dimensionality>::
     }
 
     // here, proper derivative query.
-    this_dim_output.resize(this_dim_n_basis);
-
     // more temporary variables
     TemporaryArray2D<double> a(2, this_dim_n_basis),
         ndu(this_dim_n_basis, this_dim_n_basis);
     int j1, j2;
 
-    ndu[0][0] = 1.;
+    ndu(0, 0) = 1.;
     for (int j{1}; j < this_dim_n_basis; ++j) {
       left[j] = this_dim_parametric_coordinate
                 - this_knots[this_zero_degree_support + 1 - j];
@@ -321,31 +319,31 @@ ParameterSpace<parametric_dimensionality>::
 
       saved = 0.0;
       for (int r{}; r < j; ++r) {
-        ndu[j][r] = right[r + 1] + left[j - r];
-        temp = ndu[r][j - 1] / ndu[j][r];
-        ndu[r][j] = saved + right[r + 1] * temp;
+        ndu(j, r) = right[r + 1] + left[j - r];
+        temp = ndu(r, j - 1) / ndu(j, r);
+        ndu(r, j) = saved + right[r + 1] * temp;
         saved = left[j - r] * temp;
       }
-      ndu[j][j] = saved;
+      ndu(j, j) = saved;
     }
 
     if (this_dim_derivative.Get() == 0) {
       for (int j{}; j < this_dim_n_basis; ++j) {
-        this_dim_output[j] = ndu[j][this_dim_degree];
+        this_dim_output[j] = ndu(j, this_dim_degree);
       }
       continue;
     }
 
     for (int r{}; r < this_dim_n_basis; ++r) {
       int s1{}, s2{1}, j;
-      a[0][0] = 1.0;
+      a(0, 0) = 1.0;
       for (int k{1}; k < this_dim_derivative.Get() + 1; ++k) {
         d = 0.0;
         const int rk = r - k;
         const int pk = this_dim_degree - k;
         if (r >= k) {
-          a[s2][0] = a[s1][0] / ndu[pk + 1][rk];
-          d = a[s2][0] * ndu[rk][pk];
+          a(s2, 0) = a(s1, 0) / ndu(pk + 1, rk);
+          d = a(s2, 0) * ndu(rk, pk);
         }
 
         if (rk >= -1) {
@@ -361,13 +359,13 @@ ParameterSpace<parametric_dimensionality>::
         }
 
         for (j = j1; j < j2 + 1; ++j) {
-          a[s2][j] = (a[s1][j] - a[s1][j - 1]) / ndu[pk + 1][rk + j];
-          d += a[s2][j] * ndu[rk + j][pk];
+          a(s2, j) = (a(s1, j) - a(s1, j - 1)) / ndu(pk + 1, rk + j);
+          d += a(s2, j) * ndu(rk + j, pk);
         }
 
         if (r <= pk) {
-          a[s2][k] = -a[s1][k - 1] / ndu[pk + 1][r];
-          d += a[s2][j] * ndu[rk + j][pk];
+          a(s2, k) = -a(s1, k - 1) / ndu(pk + 1, r);
+          d += a(s2, j) * ndu(rk + j, pk);
         }
         // here, we could also gather lower derivative queries
         // for now, just rewrite at the same place

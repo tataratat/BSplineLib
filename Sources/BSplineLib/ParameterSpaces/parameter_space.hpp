@@ -165,30 +165,11 @@ struct TemporaryArray2D {
 };
 
 // ParameterSpaces provide the B-spline basis functions corresponding to given
-// knot vectors and degrees.  Only clamped knot vectors of degree p — i.e., both
-// the first knot a and last knot b have multiplicity p+1 (each of them is
-// repeated p times) and interior knots have multiplicities that are not greater
-// than p — are allowed: U = {u_0 = a, ..., u_p = a, u_{p+1}, ..., u_{m-(p+1)},
-// b = u_{m-p}, ..., b = u_m}.
-//
-// Example (see NURBS book Exa. 2.1):
-//   using ParameterSpace2d = ParameterSpace<2>;
-//   ParameterSpace2d::Knot_ const k0_0{0.0}, k1_0{1.0};
-//   ParameterSpace2d::KnotVectors_::value_type const &kKnotVector =
-//   std::make_shared<KnotVector>({k0_0, k0_0, k0_0, k1_0, k1_0, k1_0});
-//   ParameterSpace2d parameter_space{{kKnotVector, kKnotVector}, {Degree{2},
-//   Degree{2}}}}; constexpr ParametricCoordinate const k0_5{0.5};
-//   ParameterSpace2d::ParametricCoordinate_ const kParametricCoordinate{k0_5,
-//   k0_5};  // Set u = {0.5, 0.5}.
-//   // Find the first basis function whose support contains u = {0.5, 0.5}.
-//   ParameterSpace2d::Index_ const &non_zero =
-//   parameter_space.FindFirstNonZeroBasisFunction(kParametricCoordinate);
-//   // Evaluate N_{0,0}^{2,2}, i.e., the first basis function that is non-zero
-//   for u = {0.5, 0.5}. ParameterSpace2d::Type_ const &evaluated =
-//   parameter_space_.EvaluateBasisFunction(non_zero, kParametricCoordinate);
-//   parameter_space.RemoveKnot(Dimension{}, ParametricCoordinate{1.0});  // Try
-//   to remove u = {1.0} from U_0. parameter_space.ElevateDegree(Dimension{1});
-//   // Elevate the degree p for the second parametric dimension by one.
+// knot vectors and degrees.
+
+/// @brief ParameterSpaces provide the B-spline basis functions corresponding to
+/// given knot vectors and degrees.
+/// @tparam parametric_dimensionality
 template<int parametric_dimensionality>
 class ParameterSpace {
 private:
@@ -223,6 +204,14 @@ public:
   using KnotSpans_ = Array<KnotSpan, parametric_dimensionality>;
 
   // for evaluated basis values
+  template<typename T>
+  using TemporaryData_ = bsplinelib::utilities::containers::TemporaryData<T>;
+  template<typename T>
+  using TemporaryArray2D_ =
+      bsplinelib::utilities::containers::TemporaryData2D<T>;
+  template<typename T>
+  using Data_ = bsplinelib::utilities::containers::Data<T>;
+
   using BasisValues_ = Vector<Type_>;
   using BasisValueType_ = typename BasisValues_::value_type;
   using BasisValuesPerDimension_ =
