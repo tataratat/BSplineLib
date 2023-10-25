@@ -46,7 +46,7 @@ add_library(utilities ${SOURCES})
 add_library(BSplineLib::utilities ALIAS utilities)
 
 target_include_directories(utilities PUBLIC ${INCLUDE_DIRECTORIES})
-target_compile_definitions(utilities INTERFACE ${COMPILE_DEFINITIONS})
+target_compile_definitions(utilities PUBLIC ${COMPILE_DEFINITIONS})
 target_compile_options(utilities PRIVATE ${COMPILE_OPTIONS})
 target_compile_features(utilities PUBLIC ${BSPLINELIB_COMPILE_FEATURES})
 

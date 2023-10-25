@@ -17,6 +17,10 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
+#include "BSplineLib/VectorSpaces/weighted_vector_space.hpp"
+
+namespace bsplinelib::vector_spaces {
+
 WeightedVectorSpace::WeightedVectorSpace(Coordinates_ const& coordinates,
                                          Weights_ const& weights) {
   HomogenizeCoordinates(coordinates, weights);
@@ -132,3 +136,5 @@ WeightedVectorSpace::WriteProjected(Precision const& precision) const {
 
   return OutputInformation_{coordinates, weights};
 }
+
+} // namespace bsplinelib::vector_spaces

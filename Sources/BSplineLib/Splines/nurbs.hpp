@@ -101,6 +101,14 @@ public:
   Coordinate ComputeUpperBoundForMaximumDistanceFromOrigin() const final;
   OutputInformation_ Write(Precision const& precision = kPrecision) const;
 
+  /// @brief
+  /// @param from
+  /// @param to
+  virtual void ShareMembers(std::shared_ptr<Nurbs>& from) {
+    homogeneous_b_spline_ = from->homogeneous_b_spline_;
+    weighted_vector_space_ = from->weighted_vector_space_;
+  }
+
 protected:
   using HomogeneousBSpline_ = BSpline<parametric_dimensionality>;
 

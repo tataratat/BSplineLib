@@ -17,6 +17,10 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
+#include "BSplineLib/VectorSpaces/vector_space.hpp"
+
+namespace bsplinelib::vector_spaces {
+
 void VectorSpace::Replace(int const& coordinate_index,
                           const Coordinate_& coordinate) {
   std::copy_n(coordinate.begin(),
@@ -98,3 +102,5 @@ VectorSpace::Write(Precision const& precision) const {
       std::tuple_element_t<0, OutputInformation_>>(nested_coordinates,
                                                    precision)};
 }
+
+} // namespace bsplinelib::vector_spaces

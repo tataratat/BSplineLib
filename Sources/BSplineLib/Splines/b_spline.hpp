@@ -116,6 +116,14 @@ public:
   Coordinate ComputeUpperBoundForMaximumDistanceFromOrigin() const override;
   OutputInformation_ Write(Precision const& precision = kPrecision) const;
 
+  /// @brief
+  /// @param from
+  /// @param to
+  virtual void ShareMembers(std::shared_ptr<BSpline>& from) {
+    vector_space_ = from->vector_space_;
+    Base_::parameter_space_ = from->parameter_space_;
+  };
+
 protected:
   SharedPointer<VectorSpace_> vector_space_;
 

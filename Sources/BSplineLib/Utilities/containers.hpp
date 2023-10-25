@@ -419,7 +419,7 @@ public:
   /// @brief move ctor
   /// @param other
   Data(Data&& other) {
-    own_data_ = true;
+    own_data_ = other.own_data_;
     data_ = std::move(other.data_);
     size_ = std::move(other.size_);
     strides_ = std::move(other.strides_);
@@ -449,7 +449,7 @@ public:
   /// @param rhs
   /// @return
   constexpr Data& operator=(Data&& rhs) {
-    own_data_ = true;
+    own_data_ = rhs.own_data_;
     data_ = std::move(rhs.data_);
     size_ = std::move(rhs.size_);
     strides_ = std::move(rhs.strides_);
@@ -554,6 +554,22 @@ public:
     assert(data_);
 
     std::copy_n(a, size_, data_);
+
+    return *this;
+  }
+
+  /// @brief copies from a and this will own the data
+  /// @param a
+  /// @return
+  constexpr Data& OwnCopy(const Data& a) {
+    assert(data_);
+
+    Reallocate(a.size());
+
+    // then copy assign
+    operator=(a);
+
+    return *this;
   }
 
   /// @brief this[i] += a[i]

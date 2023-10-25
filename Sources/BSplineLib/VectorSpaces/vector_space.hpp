@@ -164,8 +164,6 @@ protected:
   Coordinates_ coordinates_;
 };
 
-#include "BSplineLib/VectorSpaces/vector_space.inl"
-
 } // namespace bsplinelib::vector_spaces
 
 #endif // SOURCES_VECTORSPACES_VECTOR_SPACE_HPP_
