@@ -247,7 +247,7 @@ constexpr void RecursiveCombine_(const Array<BasisValues, array_dim>& factors,
 
 /// recursive combime adapted from bezman
 template<std::size_t array_dim>
-constexpr BasisValues
+BasisValues
 RecursiveCombine(const Array<BasisValues, array_dim>& factors) {
   // Precalculate required entries
   int n_entries{1};

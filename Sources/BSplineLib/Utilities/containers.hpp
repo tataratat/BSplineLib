@@ -382,13 +382,13 @@ public:
   }
 
   /// @brief default. use SetData() and SetShape<false>
-  Data() = default;
+  constexpr Data() = default;
 
   /// @brief basic array ctor
   /// @tparam ...Ts
   /// @param ...shape
   template<typename... Ts>
-  Data(const Ts&... shape) {
+  constexpr Data(const Ts&... shape) {
     SetShape(shape...);
     Reallocate(size_);
   }
@@ -398,14 +398,14 @@ public:
   /// @param data_pointer
   /// @param ...shape
   template<typename... Ts>
-  Data(DataType* data_pointer, const Ts&... shape) {
+  constexpr Data(DataType* data_pointer, const Ts&... shape) {
     SetData(data_pointer);
     SetShape(shape...);
   }
 
   /// @brief copy ctor
   /// @param other
-  Data(const Data& other) {
+  constexpr Data(const Data& other) {
     // memory alloc
     Reallocate(other.size_);
     // copy data
@@ -418,7 +418,7 @@ public:
 
   /// @brief move ctor
   /// @param other
-  Data(Data&& other) {
+  constexpr Data(Data&& other) {
     own_data_ = other.own_data_;
     data_ = std::move(other.data_);
     size_ = std::move(other.size_);
@@ -459,7 +459,7 @@ public:
   }
 
   /// @brief
-  constexpr ~Data() { DestroyData(); }
+  ~Data() { DestroyData(); }
 
   /// @brief Returns const shape object
   /// @return
