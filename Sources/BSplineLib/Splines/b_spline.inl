@@ -69,6 +69,9 @@ void BSpline<parametric_dimensionality>::Evaluate(
   evaluated_b_spline.SetData(evaluated);
   evaluated_b_spline.SetShape(vector_space_->Dim());
 
+  // zero initialization is necessary
+  evaluated_b_spline.Fill(0.);
+
   const auto basis_per_dim =
       parameter_space.EvaluateBasisValuesPerDimension(parametric_coordinate);
   auto beginning =
@@ -92,6 +95,9 @@ void BSpline<parametric_dimensionality>::EvaluateDerivative(
   Coordinate_ evaluated_b_spline_derivative;
   evaluated_b_spline_derivative.SetData(evaluated);
   evaluated_b_spline_derivative.SetShape(vector_space_->Dim());
+
+  // zero initialization is necessary
+  evaluated_b_spline_derivative.Fill(0.);
 
   const auto basis_derivative_per_dim =
       parameter_space.EvaluateBasisDerivativeValuesPerDimension(
