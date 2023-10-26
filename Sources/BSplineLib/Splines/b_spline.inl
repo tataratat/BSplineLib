@@ -184,7 +184,7 @@ void BSpline<para_dim>::InsertKnot(Dimension const& dimension,
           current_coefficients.rbegin()};
       Index const insertion_position = coordinate.GetIndex1d();
       vector_space.ReallocateInsert(
-          insertion_position,
+          insertion_position.Get(),
           Add(Multiply(vector_space[Index_{previous_number_of_coordinates,
                                            coordinate_value}
                                         .GetIndex1d()
@@ -197,7 +197,7 @@ void BSpline<para_dim>::InsertKnot(Dimension const& dimension,
       for (; coefficient < current_coefficients.rend(); ++coefficient) {
         Index const& replacement_position = coordinate.GetIndex1d();
         vector_space.Replace(
-            replacement_position,
+            replacement_position.Get(),
             Add(Multiply(vector_space[replacement_position], *coefficient),
                 Multiply(
                     vector_space[coordinate.Decrement(dimension).GetIndex1d()],
@@ -266,7 +266,7 @@ Multiplicity BSpline<para_dim>::RemoveKnot(Dimension const& dimension,
         lower_coordinate_index = coordinate_index;
         coordinate_index = coordinate.Increment(dimension).GetIndex1d();
         vector_space.Replace(
-            coordinate_index,
+            coordinate_index.Get(),
             Divide(Subtract(vector_space[coordinate_index],
                             Multiply(vector_space[lower_coordinate_index],
                                      k1_0 - current_coefficient)),
@@ -285,7 +285,7 @@ Multiplicity BSpline<para_dim>::RemoveKnot(Dimension const& dimension,
                                .GetIndex1d()
                            + slice_coordinate.GetIndex1d() + Index{1}])
           <= tolerance_removal) {
-        vector_space.Erase(coordinate_index);
+        vector_space.Erase(coordinate_index.Get());
       } else {
         Multiplicity const& successful_removals = (multiplicity - removal);
         parameter_space_backup.RemoveKnot(dimension,
@@ -371,7 +371,7 @@ void BSpline<para_dim>::ElevateDegree(Dimension const& dimension,
                                             .GetIndex1d()],
                            coefficient));
             });
-        vector_space.ReallocateInsert(insertion_position, coordinate);
+        vector_space.ReallocateInsert(insertion_position.Get(), coordinate);
       }
     }
     for (; interior_coordinate >= Index{}; --interior_coordinate) {
@@ -398,7 +398,7 @@ void BSpline<para_dim>::ElevateDegree(Dimension const& dimension,
                                             .GetIndex1d()],
                            coefficient));
             });
-        vector_space.Replace(replacement_position, coordinate);
+        vector_space.Replace(replacement_position.Get(), coordinate);
       }
     }
   }
@@ -470,7 +470,7 @@ bool BSpline<para_dim>::ReduceDegree(Dimension const& dimension,
                            coefficient));
             });
         vector_space.Replace(
-            replacement_position,
+            replacement_position.Get(),
             utilities::containers::Divide(coordinate,
                                           GetBack(current_coefficients)));
       }
@@ -516,7 +516,7 @@ bool BSpline<para_dim>::ReduceDegree(Dimension const& dimension,
                                  .GetIndex1d()
                              + slice_coordinate.GetIndex1d() + Index{1}])
             <= tolerance_reduction) {
-          vector_space.Erase(erasure_position);
+          vector_space.Erase(erasure_position.Get());
         } else {
           parameter_space = parameter_space_backup;
           vector_space = vector_space_backup;

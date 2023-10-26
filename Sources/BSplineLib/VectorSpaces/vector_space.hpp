@@ -98,10 +98,10 @@ public:
   virtual int Dim() const { return coordinates_.Shape()[1]; }
 
   virtual Coordinate_ operator[](Index const& i) {
-    return Coordinate_(&coordinates_(i, 0), coordinates_.Shape()[1]);
+    return Coordinate_(&coordinates_(i.Get(), 0), coordinates_.Shape()[1]);
   }
   virtual ConstCoordinate_ operator[](Index const& i) const {
-    return ConstCoordinate_(&coordinates_(i, 0), coordinates_.Shape()[1]);
+    return ConstCoordinate_(&coordinates_(i.Get(), 0), coordinates_.Shape()[1]);
   }
   virtual Coordinate_ operator[](const int& i) {
     return Coordinate_(&coordinates_(i, 0), coordinates_.Shape()[1]);
