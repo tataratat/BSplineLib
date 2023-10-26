@@ -39,10 +39,10 @@ namespace bsplinelib::splines {
 
 // NURBSs are rational B-splines.  Currently only single-patch NURBSs are
 // supported.
-template<int parametric_dimensionality>
-class Nurbs : public Spline<parametric_dimensionality> {
+template<int para_dim>
+class Nurbs : public Spline<para_dim> {
 public:
-  using Base_ = Spline<parametric_dimensionality>;
+  using Base_ = Spline<para_dim>;
   using Coordinate_ = typename Base_::Coordinate_;
   using Derivative_ = typename Base_::Derivative_;
   using Knot_ = typename Base_::Knot_;
@@ -110,7 +110,7 @@ public:
   }
 
 protected:
-  using HomogeneousBSpline_ = BSpline<parametric_dimensionality>;
+  using HomogeneousBSpline_ = BSpline<para_dim>;
 
   SharedPointer<HomogeneousBSpline_> homogeneous_b_spline_;
   SharedPointer<WeightedVectorSpace_> weighted_vector_space_;

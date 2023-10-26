@@ -39,17 +39,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 namespace bsplinelib::input_output::operations {
 
 enum class FileFormat { kInvalid, kIges, kIrit, kVtk, kXml };
-template<int parametric_dimensionality>
-using BSpline = splines::BSpline<parametric_dimensionality>;
-template<int parametric_dimensionality>
-using Nurbs = splines::Nurbs<parametric_dimensionality>;
+template<int para_dim>
+using BSpline = splines::BSpline<para_dim>;
+template<int para_dim>
+using Nurbs = splines::Nurbs<para_dim>;
 using SplineEntry = SharedPointer<splines::SplineItem>;
 using Splines = Vector<SplineEntry>;
 
 FileFormat DetermineFileFormat(String const& file_name);
 Splines Read(String const& file_name);
 
-template<int parametric_dimensionality, bool is_rational>
+template<int para_dim, bool is_rational>
 auto CastToSpline(SplineEntry const& spline_entry);
 
 template<typename Coordinate>
@@ -61,10 +61,10 @@ String WriteCoordinate3d(Coordinate const& coordinate, String const& delimiter);
 
 namespace bsplinelib::input_output {
 
-template<int parametric_dimensionality>
-using BSpline = operations::BSpline<parametric_dimensionality>;
-template<int parametric_dimensionality>
-using Nurbs = operations::Nurbs<parametric_dimensionality>;
+template<int para_dim>
+using BSpline = operations::BSpline<para_dim>;
+template<int para_dim>
+using Nurbs = operations::Nurbs<para_dim>;
 using SplineEntry = operations::SplineEntry;
 using Splines = operations::Splines;
 

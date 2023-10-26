@@ -127,11 +127,11 @@ private:
   using ConstIterator_ = typename Knots_::const_iterator;
 };
 
-template<int parametric_dimensionality>
-using KnotVectors = Array<SharedPointer<KnotVector>, parametric_dimensionality>;
-template<int parametric_dimensionality>
+template<int para_dim>
+using KnotVectors = Array<SharedPointer<KnotVector>, para_dim>;
+template<int para_dim>
 using KnotVectorsOutputInformation =
-    Array<KnotVector::OutputInformation_, parametric_dimensionality>;
+    Array<KnotVector::OutputInformation_, para_dim>;
 } // namespace bsplinelib::parameter_spaces
 
 #endif // SOURCES_PARAMETERSPACES_KNOT_VECTOR_HPP_

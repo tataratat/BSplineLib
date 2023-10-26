@@ -42,7 +42,7 @@ public:
 
 protected:
   SplineItem() = default;
-  SplineItem(int parametric_dimensionality, bool is_rational);
+  SplineItem(int para_dim, bool is_rational);
   SplineItem(SplineItem const& other) = default;
   SplineItem(SplineItem&& other) noexcept = default;
   SplineItem& operator=(SplineItem const& rhs) = default;

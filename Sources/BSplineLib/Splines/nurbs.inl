@@ -17,11 +17,11 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-template<int parametric_dimensionality>
-Nurbs<parametric_dimensionality>::Nurbs() : Base_(true) {}
+template<int para_dim>
+Nurbs<para_dim>::Nurbs() : Base_(true) {}
 
-template<int parametric_dimensionality>
-Nurbs<parametric_dimensionality>::Nurbs(
+template<int para_dim>
+Nurbs<para_dim>::Nurbs(
     SharedPointer<ParameterSpace_> parameter_space,
     SharedPointer<WeightedVectorSpace_> weighted_vector_space)
     : Base_(std::move(parameter_space), true) {
@@ -46,26 +46,24 @@ Nurbs<parametric_dimensionality>::Nurbs(
   weighted_vector_space_ = std::move(weighted_vector_space);
 }
 
-template<int parametric_dimensionality>
-Nurbs<parametric_dimensionality>::Nurbs(Nurbs const& other)
+template<int para_dim>
+Nurbs<para_dim>::Nurbs(Nurbs const& other)
     : Base_(other),
       homogeneous_b_spline_{
           std::make_shared<HomogeneousBSpline_>(*other.homogeneous_b_spline_)} {
 }
 
-template<int parametric_dimensionality>
-Nurbs<parametric_dimensionality>&
-Nurbs<parametric_dimensionality>::operator=(Nurbs const& rhs) {
+template<int para_dim>
+Nurbs<para_dim>& Nurbs<para_dim>::operator=(Nurbs const& rhs) {
   Base_::operator=(rhs);
   homogeneous_b_spline_ =
       std::make_shared<HomogeneousBSpline_>(*rhs.homogeneous_b_spline_);
   return *this;
 }
 
-template<int parametric_dimensionality>
-void Nurbs<parametric_dimensionality>::Evaluate(
-    const Type_* parametric_coordinate,
-    Type_* evaluated) const {
+template<int para_dim>
+void Nurbs<para_dim>::Evaluate(const Type_* parametric_coordinate,
+                               Type_* evaluated) const {
   const int h_dim = weighted_vector_space_->Dim();
   const int dim = h_dim - 1;
 
@@ -80,26 +78,24 @@ void Nurbs<parametric_dimensionality>::Evaluate(
   }
 }
 
-template<int parametric_dimensionality>
-void Nurbs<parametric_dimensionality>::EvaluateDerivative(
-    const Type_* parametric_coordinate,
-    const IntType_* derivative,
-    Type_* evaluated) const {}
+template<int para_dim>
+void Nurbs<para_dim>::EvaluateDerivative(const Type_* parametric_coordinate,
+                                         const IntType_* derivative,
+                                         Type_* evaluated) const {}
 
-template<int parametric_dimensionality>
-typename Spline<parametric_dimensionality>::Coordinate_
-Nurbs<parametric_dimensionality>::operator()(
-    const Type_* parametric_coordinate) const {
+template<int para_dim>
+typename Spline<para_dim>::Coordinate_
+Nurbs<para_dim>::operator()(const Type_* parametric_coordinate) const {
   return WeightedVectorSpace_::Project(
       (*homogeneous_b_spline_)(parametric_coordinate));
 }
 
 // See NURBS book Eq. (4.20) (cf. Generalized Leibniz rule at
 // <https://en.wikipedia.org/wiki/General_Leibniz_rule>).
-template<int parametric_dimensionality>
-typename Spline<parametric_dimensionality>::Coordinate_
-Nurbs<parametric_dimensionality>::operator()(const Type_* parametric_coordinate,
-                                             const IntType_* derivative) const {
+template<int para_dim>
+typename Spline<para_dim>::Coordinate_
+Nurbs<para_dim>::operator()(const Type_* parametric_coordinate,
+                            const IntType_* derivative) const {
   Coordinate_ evaluated_nurbs(Dim());
 
   EvaluateDerivative(parametric_coordinate, derivative, evaluated_nurbs.data());
@@ -107,18 +103,16 @@ Nurbs<parametric_dimensionality>::operator()(const Type_* parametric_coordinate,
   return evaluated_nurbs;
 }
 
-template<int parametric_dimensionality>
-void Nurbs<parametric_dimensionality>::InsertKnot(
-    Dimension const& dimension,
-    Knot_ knot,
-    Multiplicity const& multiplicity,
-    Tolerance const& tolerance) const {
+template<int para_dim>
+void Nurbs<para_dim>::InsertKnot(Dimension const& dimension,
+                                 Knot_ knot,
+                                 Multiplicity const& multiplicity,
+                                 Tolerance const& tolerance) const {
 #ifndef NDEBUG
   Message const kName{"bsplinelib::splines::Nurbs::InsertKnot"};
 
   try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension,
-                                                parametric_dimensionality - 1);
+    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, para_dim - 1);
     Base_::parameter_space_->ThrowIfParametricCoordinateIsOutsideScope(
         dimension,
         knot,
@@ -135,13 +129,12 @@ void Nurbs<parametric_dimensionality>::InsertKnot(
   homogeneous_b_spline_->InsertKnot(dimension, knot, multiplicity, tolerance);
 }
 
-template<int parametric_dimensionality>
-Multiplicity
-Nurbs<parametric_dimensionality>::RemoveKnot(Dimension const& dimension,
-                                             Knot_ const& knot,
-                                             Tolerance const& tolerance_removal,
-                                             Multiplicity const& multiplicity,
-                                             Tolerance const& tolerance) const {
+template<int para_dim>
+Multiplicity Nurbs<para_dim>::RemoveKnot(Dimension const& dimension,
+                                         Knot_ const& knot,
+                                         Tolerance const& tolerance_removal,
+                                         Multiplicity const& multiplicity,
+                                         Tolerance const& tolerance) const {
   using std::get;
 
 #ifndef NDEBUG
@@ -150,8 +143,7 @@ Nurbs<parametric_dimensionality>::RemoveKnot(Dimension const& dimension,
   Message const kName{"bsplinelib::splines::Nurbs::RemoveKnot"};
 
   try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension,
-                                                parametric_dimensionality - 1);
+    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, para_dim - 1);
     ThrowIfToleranceIsNegative(tolerance_removal);
     ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
@@ -173,17 +165,15 @@ Nurbs<parametric_dimensionality>::RemoveKnot(Dimension const& dimension,
       tolerance);
 }
 
-template<int parametric_dimensionality>
-void Nurbs<parametric_dimensionality>::ElevateDegree(
-    Dimension const& dimension,
-    Multiplicity const& multiplicity,
-    Tolerance const& tolerance) const {
+template<int para_dim>
+void Nurbs<para_dim>::ElevateDegree(Dimension const& dimension,
+                                    Multiplicity const& multiplicity,
+                                    Tolerance const& tolerance) const {
 #ifndef NDEBUG
   Message const kName{"bsplinelib::splines::Nurbs::ElevateDegree"};
 
   try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension,
-                                                parametric_dimensionality - 1);
+    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, para_dim - 1);
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
     Throw(exception, kName);
@@ -194,20 +184,18 @@ void Nurbs<parametric_dimensionality>::ElevateDegree(
   homogeneous_b_spline_->ElevateDegree(dimension, multiplicity, tolerance);
 }
 
-template<int parametric_dimensionality>
-bool Nurbs<parametric_dimensionality>::ReduceDegree(
-    Dimension const& dimension,
-    Tolerance const& tolerance_removal,
-    Multiplicity const& multiplicity,
-    Tolerance const& tolerance) const {
+template<int para_dim>
+bool Nurbs<para_dim>::ReduceDegree(Dimension const& dimension,
+                                   Tolerance const& tolerance_removal,
+                                   Multiplicity const& multiplicity,
+                                   Tolerance const& tolerance) const {
 #ifndef NDEBUG
   using utilities::numeric_operations::ThrowIfToleranceIsNegative;
 
   Message const kName{"bsplinelib::splines::Nurbs::ReduceDegree"};
 
   try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension,
-                                                parametric_dimensionality - 1);
+    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, para_dim - 1);
     ThrowIfToleranceIsNegative(tolerance_removal);
     ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
@@ -222,17 +210,17 @@ bool Nurbs<parametric_dimensionality>::ReduceDegree(
                                              tolerance);
 }
 
-template<int parametric_dimensionality>
-Coordinate Nurbs<parametric_dimensionality>::
-    ComputeUpperBoundForMaximumDistanceFromOrigin() const {
+template<int para_dim>
+Coordinate
+Nurbs<para_dim>::ComputeUpperBoundForMaximumDistanceFromOrigin() const {
   return std::get<0>(
       weighted_vector_space_
           ->DetermineMaximumDistanceFromOriginAndMinimumWeight());
 }
 
-template<int parametric_dimensionality>
-typename Nurbs<parametric_dimensionality>::OutputInformation_
-Nurbs<parametric_dimensionality>::Write(Precision const& precision) const {
+template<int para_dim>
+typename Nurbs<para_dim>::OutputInformation_
+Nurbs<para_dim>::Write(Precision const& precision) const {
   return OutputInformation_{Base_::parameter_space_->Write(precision),
                             weighted_vector_space_->WriteProjected(precision)};
 }

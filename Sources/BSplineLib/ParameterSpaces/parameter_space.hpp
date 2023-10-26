@@ -39,31 +39,28 @@ namespace bsplinelib::parameter_spaces {
 
 /// @brief ParameterSpaces provide the B-spline basis functions corresponding to
 /// given knot vectors and degrees.
-/// @tparam parametric_dimensionality
-template<int parametric_dimensionality>
+/// @tparam para_dim
+template<int para_dim>
 class ParameterSpace {
 private:
-  using StringArray_ = StringArray<parametric_dimensionality>;
+  using StringArray_ = StringArray<para_dim>;
 
 public:
   using BinomialRatios_ = Vector<BinomialRatio>;
-  using Degrees_ = Array<Degree, parametric_dimensionality>;
-  using Derivative_ = Array<Derivative, parametric_dimensionality>;
+  using Degrees_ = Array<Degree, para_dim>;
+  using Derivative_ = Array<Derivative, para_dim>;
   using ElevationCoefficients_ = Vector<BinomialRatios_>;
   using ElevationInformation_ = Tuple<Index, ElevationCoefficients_>;
-  using Index_ = utilities::Index<parametric_dimensionality>;
+  using Index_ = utilities::Index<para_dim>;
   using IndexLength_ = typename Index_::Length_;
   using IndexValue_ = typename Index_::Value_;
   using KnotRatios_ = Vector<KnotRatio>;
-  using KnotVectors_ = KnotVectors<parametric_dimensionality>;
+  using KnotVectors_ = KnotVectors<para_dim>;
   using NumberOfBasisFunctions_ = IndexLength_;
   using NumberOfParametricCoordinates_ = IndexLength_;
   using OutputInformation_ =
-      Tuple<KnotVectorsOutputInformation<parametric_dimensionality>,
-            StringArray_,
-            StringArray_>;
-  using ParametricCoordinate_ =
-      Array<ParametricCoordinate, parametric_dimensionality>;
+      Tuple<KnotVectorsOutputInformation<para_dim>, StringArray_, StringArray_>;
+  using ParametricCoordinate_ = Array<ParametricCoordinate, para_dim>;
   using Type_ = Type;
   using IntType_ = Degree; // same as derivative
   using InsertionCoefficients_ = Vector<KnotRatios_>;
@@ -71,7 +68,7 @@ public:
   using Knots_ = typename KnotVectors_::value_type::element_type::Knots_;
   using BezierInformation_ = Tuple<int, Knots_>;
   using Knot_ = typename Knots_::value_type;
-  using KnotSpans_ = Array<KnotSpan, parametric_dimensionality>;
+  using KnotSpans_ = Array<KnotSpan, para_dim>;
 
   // for evaluated basis values
   template<typename T>
@@ -84,8 +81,7 @@ public:
 
   using BasisValues_ = Data_<Type_>;
   using BasisValueType_ = typename BasisValues_::value_type;
-  using BasisValuesPerDimension_ =
-      Array<BasisValues_, parametric_dimensionality>;
+  using BasisValuesPerDimension_ = Array<BasisValues_, para_dim>;
 
   ParameterSpace() = default;
   ParameterSpace(KnotVectors_ knot_vectors, Degrees_ degrees)
@@ -105,7 +101,7 @@ public:
   // Number of non-zero basis functions is equal to p+1 - see NURBS book P2.2.
   NumberOfBasisFunctions_ GetNumberOfNonZeroBasisFunctions() const;
 
-  virtual SharedPointer<ParameterSpace<parametric_dimensionality - 1>>
+  virtual SharedPointer<ParameterSpace<para_dim - 1>>
   RemoveOneParametricDimension(const int parametric_dimension) const;
 
   virtual Index_
@@ -247,8 +243,7 @@ constexpr void RecursiveCombine_(const Array<BasisValues, array_dim>& factors,
 
 /// recursive combime adapted from bezman
 template<std::size_t array_dim>
-BasisValues
-RecursiveCombine(const Array<BasisValues, array_dim>& factors) {
+BasisValues RecursiveCombine(const Array<BasisValues, array_dim>& factors) {
   // Precalculate required entries
   int n_entries{1};
   std::for_each(factors.begin(), factors.end(), [&](const BasisValues& ii) {

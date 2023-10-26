@@ -26,8 +26,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace bsplinelib::splines {
 
-SplineItem::SplineItem(int parametric_dimensionality, bool is_rational)
-    : parametric_dimensionality_(std::move(parametric_dimensionality)),
+SplineItem::SplineItem(int para_dim, bool is_rational)
+    : parametric_dimensionality_(std::move(para_dim)),
       is_rational_(std::move(is_rational)) {}
 
 } // namespace bsplinelib::splines
