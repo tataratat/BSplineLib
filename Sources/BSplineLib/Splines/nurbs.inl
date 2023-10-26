@@ -81,7 +81,108 @@ void Nurbs<para_dim>::Evaluate(const Type_* parametric_coordinate,
 template<int para_dim>
 void Nurbs<para_dim>::EvaluateDerivative(const Type_* parametric_coordinate,
                                          const IntType_* derivative,
-                                         Type_* evaluated) const {}
+                                         Type_* evaluated) const {
+
+  using Data = bsplinelib::utilities::containers::Data<double>;
+  using Data2D = bsplinelib::utilities::containers::Data<double, 2>;
+
+  // Global (scalar) indexing to local index-system
+  auto multi_index_ = [&derivative](int id) -> std::array<int, para_dim> {
+    std::array<int, para_dim> local_ids{};
+    for (int i{}; i < para_dim; ++i) {
+      if (derivative[i] == 0) {
+        // local_ids[i] = 0;
+        continue;
+      }
+      local_ids[i] = id % (derivative[i] + 1);
+      id -= local_ids[i];
+      id /= derivative[i] + 1;
+    }
+    return local_ids;
+  };
+
+  // Check if requested derivative is "subset" to current derivative
+  auto is_not_subset_ =
+      [](const std::array<int, para_dim>& req_derivs_max,
+         const std::array<int, para_dim>& req_derivs) -> bool {
+    for (int i{}; i < para_dim; ++i) {
+      if (req_derivs[i] > req_derivs_max[i])
+        return true;
+    }
+    return false;
+  };
+
+  // Initialize return type
+  const int number_of_derivs = [&derivative]() {
+    int id{};
+    int offset{1};
+    for (int i{}; i < para_dim; ++i) {
+      // assert(derivative[i] <= derivative[i]);
+      if (derivative[i] == 0)
+        continue;
+      id += offset * (derivative[i]);
+      offset = derivative[i] > 0 ? offset * (derivative[i] + 1) : offset;
+    }
+    return id;
+  }() + 1;
+
+  // Please remember that the first derivative is not used
+  const int dim = Dim();
+  // evaluated derivatives and a view array for row-wise operation
+  Data2D der(number_of_derivs, dim);
+  Data d_row;
+  d_row.SetShape(dim);
+
+  // evaluated derivatives from homogeneous bspline and a view array for
+  // row-wise operation
+  Data2D homogeneous_der(number_of_derivs, dim + 1);
+
+  // Fill all homogeneous b spline derivatives (and values for id=0)
+  for (int i{}; i < number_of_derivs; ++i) {
+    const auto req_derivs = multi_index_(i);
+    homogeneous_b_spline_->EvaluateDerivative(parametric_coordinate,
+                                              req_derivs.data(),
+                                              &homogeneous_der(i, 0));
+  }
+
+  // Precompute inverse of weighted function
+  const double inv_w_fact = 1. / homogeneous_der(0, dim);
+
+  // Loop over all lower-order derivatives and assign derivatives-vector
+  // Notation follows "The NURBS book" eq. 4.20 (extended for n-d splines)
+  for (int i{}; i < number_of_derivs; ++i) {
+    // Retrieve index-wise order of the derivative for current ID
+    const auto derivative_order_indexwise_LHS = multi_index_(i);
+    // copy derivative of Numerator-function
+    // d_row.Copy() copies according to d_row's size (dim).
+    d_row.SetData(&der(i, 0));
+    d_row.Copy(&homogeneous_der(i, 0));
+    // Substract all weighted lower-order functions
+    for (int j{1}; j <= i; ++j) {
+      // Retrieve order of current index
+      const auto derivative_order_indexwise_RHS = multi_index_(j);
+      // Check only subsets
+      if (is_not_subset_(derivative_order_indexwise_LHS,
+                         derivative_order_indexwise_RHS))
+        continue;
+      // Precompute Product of binomial coefficients
+      int binom_fact{1};
+      for (int k{}; k < para_dim; ++k) {
+        binom_fact *=
+            bsplinelib::utilities::math_operations::ComputeBinomialCoefficient(
+                derivative_order_indexwise_LHS[k],
+                derivative_order_indexwise_RHS[k]);
+      }
+      // Substract low-order function
+      d_row.Add(-(binom_fact * homogeneous_der(j, dim)), &der(i - j, 0));
+    }
+    // Finalize
+    d_row.Multiply(inv_w_fact);
+  }
+
+  // Return last value
+  std::copy_n(&der(number_of_derivs - 1, 0), dim, evaluated);
+}
 
 template<int para_dim>
 typename Spline<para_dim>::Coordinate_

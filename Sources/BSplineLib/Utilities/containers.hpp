@@ -562,7 +562,7 @@ public:
   /// @param a
   /// @return
   constexpr Data& OwnCopy(const Data& a) {
-    assert(data_);
+    // this one doesn't need to have an "active" data_
 
     Reallocate(a.size());
 
