@@ -449,12 +449,15 @@ public:
   /// @param rhs
   /// @return
   constexpr Data& operator=(Data&& rhs) {
+    DestroyData();
+
     own_data_ = rhs.own_data_;
     data_ = std::move(rhs.data_);
     size_ = std::move(rhs.size_);
     strides_ = std::move(rhs.strides_);
     shape_ = std::move(rhs.shape_);
     rhs.own_data_ = false;
+
     return *this;
   }
 
