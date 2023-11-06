@@ -686,74 +686,6 @@ public:
     return dot;
   }
 
-  constexpr void AAt(Data& aa_t) const {
-    static_assert(dim == 2, "AAt is only applicable for dim=2 array.");
-
-    const auto& height = shape_[0];
-    const auto& width = shape_[1];
-
-    for (int i{}; i < height; ++i) {
-      // compute upper triangle
-      for (int j{i}; j < height; ++j) {
-
-        // element to fill
-        DataType& ij = aa_t(i, j);
-        // init
-        ij = 0.0;
-        // get beginning of i and j row
-        const DataType* i_ptr = &operator()(i, 0);
-        const DataType* j_ptr = &operator()(j, 0);
-
-        // inner product
-        for (int k{}; k < width; ++k) {
-          ij += i_ptr[k] * j_ptr[k];
-        }
-
-        // fill symmetric part - this will write diagonal twice. it's okay.
-        aa_t(j, i) = ij;
-      }
-    }
-  }
-
-  /// @brief given upper and lower bounds, clips data values inplace.
-  /// @tparam Iterable
-  /// @tparam IntegerType
-  /// @param lower_bound
-  /// @param upper_bound
-  /// @param clipped
-  template<typename Iterable, typename IntegerType>
-  constexpr void Clip(const Iterable& lower_bound,
-                      const Iterable& upper_bound,
-                      Data<IntegerType, dim, IndexType>& clipped) {
-    static_assert(std::is_integral_v<IntegerType>,
-                  "clipped array should be an integral type");
-    static_assert(std::is_signed_v<IntegerType>,
-                  "clipped array should be a signed type");
-
-    assert(lower_bound.size() == size_);
-    assert(upper_bound.size() == size_);
-
-    for (IndexType i{}; i < size_; ++i) {
-
-      // deref values to write
-      DataType& data = data_[i];
-      IntegerType& clip = clipped[i];
-
-      if (const DataType& ub = upper_bound[i]; data > ub) {
-        // upper bound check
-        clip = 1;
-        data = ub;
-      } else if (const DataType& lb = lower_bound[i]; data < lb) {
-        // lower bound check
-        clip = -1;
-        data = lb;
-      } else {
-        // within the bounds
-        clip = 0;
-      }
-    }
-  }
-
   /// @brief L2 norm
   /// @return
   constexpr DataType NormL2() {
@@ -763,18 +695,6 @@ public:
       norm += data_i * data_i;
     }
     return std::sqrt(norm);
-  }
-
-  /// @brief returns number of non (exact) zero elements.
-  /// @return
-  constexpr IndexType NonZeros() const {
-    IndexType n{};
-    for (IndexType i{}; i < size_; ++i) {
-      if (n != static_cast<DataType>(0)) {
-        ++n;
-      }
-    }
-    return n;
   }
 };
 

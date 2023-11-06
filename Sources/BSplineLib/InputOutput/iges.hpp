@@ -34,8 +34,7 @@ namespace bsplinelib::input_output::iges {
 Splines Read(String const& file_name);
 void Write(Splines const& splines,
            String const& file_name,
-           Precision const& precision = kPrecision,
-           Tolerance const& tolerance = kEpsilon);
+           Precision const& precision = kPrecision);
 
 } // namespace bsplinelib::input_output::iges
 

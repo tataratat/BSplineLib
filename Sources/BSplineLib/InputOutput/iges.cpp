@@ -58,8 +58,7 @@ template<int para_dim>
 Coordinate WriteSpline(SplineEntry const& spline,
                        String const& delimiter,
                        String& parameter_data_section_contribution,
-                       Precision const& precision,
-                       Tolerance const& tolerance);
+                       Precision const& precision);
 template<int para_dim, bool is_rational, typename SplineType>
 void WriteSpline(SplineType const& spline,
                  String const& delimiter,
@@ -141,8 +140,7 @@ Splines Read(String const& file_name) {
 
 void Write(Splines const& splines,
            String const& file_name,
-           Precision const& precision,
-           Tolerance const& tolerance) {
+           Precision const& precision) {
   using std::numeric_limits;
 
 #ifndef NDEBUG
@@ -169,8 +167,7 @@ void Write(Splines const& splines,
             WriteSpline<1>(spline,
                            ",",
                            parameter_data_section_contribution,
-                           precision,
-                           tolerance);
+                           precision);
         entity_type = MakeBlock("126", 8, true),
         entity_name = MakeBlock("BSp Crv", 8, true);
         break;
@@ -180,8 +177,7 @@ void Write(Splines const& splines,
             WriteSpline<2>(spline,
                            ",",
                            parameter_data_section_contribution,
-                           precision,
-                           tolerance);
+                           precision);
         entity_type = MakeBlock("128", 8, true),
         entity_name = MakeBlock("BSp Surf", 8, true);
         break;
@@ -387,8 +383,7 @@ template<int para_dim>
 Coordinate WriteSpline(SplineEntry const& spline,
                        String const& delimiter,
                        String& parameter_data_section_contribution,
-                       Precision const& precision,
-                       Tolerance const& tolerance) {
+                       Precision const& precision) {
   using std::static_pointer_cast;
 
   const int dimensionality = spline->Dim();
