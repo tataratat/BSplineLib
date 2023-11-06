@@ -106,6 +106,7 @@ public:
   /// @param to
   virtual void ShareMembers(std::shared_ptr<Nurbs>& from) {
     homogeneous_b_spline_ = from->homogeneous_b_spline_;
+    Base_::parameter_space_ = from->parameter_space_;
     weighted_vector_space_ = from->weighted_vector_space_;
   }
 
