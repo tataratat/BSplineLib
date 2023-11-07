@@ -26,30 +26,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace bsplinelib::splines {
 
-SplineItem::SplineItem(int parametric_dimensionality,
-                       int dimensionality,
-                       bool is_rational)
-    : dimensionality_(std::move(dimensionality)),
-      parametric_dimensionality_(std::move(parametric_dimensionality)),
+SplineItem::SplineItem(int para_dim, bool is_rational)
+    : parametric_dimensionality_(std::move(para_dim)),
       is_rational_(std::move(is_rational)) {}
-
-bool IsEqual(SplineItem const& lhs,
-             SplineItem const& rhs,
-             Tolerance const& tolerance) {
-#ifndef NDEBUG
-  try {
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (RuntimeError const& exception) {
-    Throw(exception, "bsplinelib::splines::IsEqual::SplineItem");
-  }
-#endif
-  return ((lhs.parametric_dimensionality_ == rhs.parametric_dimensionality_)
-          && (lhs.dimensionality_ == rhs.dimensionality_)
-          && (lhs.is_rational_ == rhs.is_rational_));
-}
-
-bool operator==(SplineItem const& lhs, SplineItem const& rhs) {
-  return IsEqual(lhs, rhs);
-}
 
 } // namespace bsplinelib::splines

@@ -104,8 +104,8 @@ template<typename ContainerTypeTo, typename ContainerTypeFrom>
 ContainerTypeTo Write(ContainerTypeFrom const& from,
                       Precision const& precision) {
   using TypeFrom = typename ContainerTypeFrom::value_type;
-  using error_handling::is_false, std::transform,
-      std_container_operations::is_array, std_container_operations::is_vector;
+  using error_handling::is_false, std::transform, containers::is_array,
+      containers::is_vector;
   using Index = bsplinelib::Index;
 
   ContainerTypeTo to;

@@ -25,55 +25,30 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include <iterator>
 #include <limits>
 
+#include "BSplineLib/Utilities/containers.hpp"
 #include "BSplineLib/Utilities/error_handling.hpp"
 #include "BSplineLib/Utilities/named_type.hpp"
 #include "BSplineLib/Utilities/numeric_operations.hpp"
-#include "BSplineLib/Utilities/std_container_operations.hpp"
 #include "BSplineLib/Utilities/string_operations.hpp"
 #include "BSplineLib/VectorSpaces/vector_space.hpp"
 
 namespace bsplinelib::vector_spaces {
 
-template<int dimensionality>
-class WeightedVectorSpace;
-
-template<int dimensionality>
-bool IsEqual(WeightedVectorSpace<dimensionality> const& lhs,
-             WeightedVectorSpace<dimensionality> const& rhs,
-             Tolerance const& tolerance = kEpsilon);
-template<int dimensionality>
-bool operator==(WeightedVectorSpace<dimensionality> const& lhs,
-                WeightedVectorSpace<dimensionality> const& rhs);
-
 // WeightedVectorSpaces store coordinates and weights together using
 // homogeneous, i.e., weighted coordinates.
 //
-// Example:
-//   using WeightedVectorSpace2d = WeightedVectorSpace<2>;
-//   Coordinate const k0_0{}, k2_0{2.0};
-//   WeightedVectorSpace2d::HomogeneousCoordinate_ const
-//   homogeneous_coordinate1{k2_0, k2_0, k2_0};
-//   WeightedVectorSpace2d::Coordinate_ const &coordinate1 =
-//   WeightedVectorSpace2d::Project(homogeneous_coordinate1);
-//   WeightedVectorSpace3d const weighted_vector_space{{{k0_0, k0_0},
-//   coordinate1}, {Weight{1.0}, Weight{2.0}}};
-//   WeightedVectorSpace3d::DetermineMaximumDistanceFromOriginAndMinimumWeight_
-//   const &sqrt2_0_and_1_0 =
-//       weighted_vector_space.DetermineMaximumDistanceFromOriginAndMinimumWeight();
-template<int dimensionality>
-class WeightedVectorSpace : public VectorSpace<dimensionality + 1> {
-private:
-  using VectorSpace_ = VectorSpace<dimensionality>;
-
+class WeightedVectorSpace : public VectorSpace {
 public:
-  using Base_ = VectorSpace<dimensionality + 1>;
-  using Coordinate_ = typename VectorSpace_::Coordinate_;
-  using Coordinates_ = typename VectorSpace_::Coordinates_;
+  using Base_ = VectorSpace;
+  using DataType_ = typename Base_::DataType_;
+  using Coordinate_ = typename Base_::Coordinate_;
+  using ConstCoordinate_ = typename Base_::ConstCoordinate_;
+  using Coordinates_ = typename Base_::Coordinates_;
+  using HomogeneousCoordinates_ = Coordinates_; // for backward compatibility
   using HomogeneousCoordinate_ = typename Base_::Coordinate_;
   using MaximumDistanceFromOriginAndMinimumWeight_ = Tuple<Coordinate, Weight>;
-  using OutputInformation_ =
-      Tuple<Vector<StringArray<dimensionality>>, StringVector>;
-  using Weights_ = Vector<Weight>;
+  using Weights_ = Base_::Data_<Weight>;
+  using OutputInformation_ = Tuple<Vector<StringVector>, StringVector>;
 
   // Make Base Constructor public
   using Base_::Base_;
@@ -86,33 +61,19 @@ public:
   WeightedVectorSpace& operator=(WeightedVectorSpace&& rhs) noexcept = default;
   ~WeightedVectorSpace() override = default;
 
-  // Comparison based on tolerance.
-  friend bool IsEqual<dimensionality>(WeightedVectorSpace const& lhs,
-                                      WeightedVectorSpace const& rhs,
-                                      Tolerance const& tolerance);
-  // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
-  friend bool operator==<dimensionality>(WeightedVectorSpace const& lhs,
-                                         WeightedVectorSpace const& rhs);
-
   static Coordinate_
   Project(HomogeneousCoordinate_ const& homogeneous_coordinate);
+
   virtual MaximumDistanceFromOriginAndMinimumWeight_
-  DetermineMaximumDistanceFromOriginAndMinimumWeight(
-      Tolerance const& tolerance = kEpsilon) const;
+  DetermineMaximumDistanceFromOriginAndMinimumWeight() const;
 
   virtual OutputInformation_
   WriteProjected(Precision const& precision = kPrecision) const;
-  virtual OutputInformation_
-  WriteWeighted(Precision const& precision = kPrecision) const;
 
 private:
-  using HomogeneousCoordinates_ = typename Base_::Coordinates_;
-
-  HomogeneousCoordinates_ HomogenizeCoordinates(Coordinates_ const& coordinates,
-                                                Weights_ const& weights) const;
+  constexpr void HomogenizeCoordinates(Coordinates_ const& coordinates,
+                                       Weights_ const& weights);
 };
-
-#include "BSplineLib/VectorSpaces/weighted_vector_space.inl"
 
 } // namespace bsplinelib::vector_spaces
 

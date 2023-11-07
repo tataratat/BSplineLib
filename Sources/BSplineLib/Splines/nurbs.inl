@@ -17,11 +17,11 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-template<int parametric_dimensionality, int dimensionality>
-Nurbs<parametric_dimensionality, dimensionality>::Nurbs() : Base_(true) {}
+template<int para_dim>
+Nurbs<para_dim>::Nurbs() : Base_(true) {}
 
-template<int parametric_dimensionality, int dimensionality>
-Nurbs<parametric_dimensionality, dimensionality>::Nurbs(
+template<int para_dim>
+Nurbs<para_dim>::Nurbs(
     SharedPointer<ParameterSpace_> parameter_space,
     SharedPointer<WeightedVectorSpace_> weighted_vector_space)
     : Base_(std::move(parameter_space), true) {
@@ -46,249 +46,174 @@ Nurbs<parametric_dimensionality, dimensionality>::Nurbs(
   weighted_vector_space_ = std::move(weighted_vector_space);
 }
 
-template<int parametric_dimensionality, int dimensionality>
-Nurbs<parametric_dimensionality, dimensionality>::Nurbs(Nurbs const& other)
+template<int para_dim>
+Nurbs<para_dim>::Nurbs(Nurbs const& other)
     : Base_(other),
       homogeneous_b_spline_{
           std::make_shared<HomogeneousBSpline_>(*other.homogeneous_b_spline_)} {
 }
 
-template<int parametric_dimensionality, int dimensionality>
-Nurbs<parametric_dimensionality, dimensionality>&
-Nurbs<parametric_dimensionality, dimensionality>::operator=(Nurbs const& rhs) {
+template<int para_dim>
+Nurbs<para_dim>& Nurbs<para_dim>::operator=(Nurbs const& rhs) {
   Base_::operator=(rhs);
   homogeneous_b_spline_ =
       std::make_shared<HomogeneousBSpline_>(*rhs.homogeneous_b_spline_);
   return *this;
 }
 
-template<int parametric_dimensionality, int dimensionality>
-bool IsEqual(Nurbs<parametric_dimensionality, dimensionality> const& lhs,
-             Nurbs<parametric_dimensionality, dimensionality> const& rhs,
-             Tolerance const& tolerance) {
-  return IsEqual(*lhs.homogeneous_b_spline_,
-                 *rhs.homogeneous_b_spline_,
-                 tolerance);
-}
+template<int para_dim>
+void Nurbs<para_dim>::Evaluate(const Type_* parametric_coordinate,
+                               Type_* evaluated) const {
+  const int h_dim = weighted_vector_space_->Dim();
+  const int dim = h_dim - 1;
 
-template<int parametric_dimensionality, int dimensionality>
-bool operator==(Nurbs<parametric_dimensionality, dimensionality> const& lhs,
-                Nurbs<parametric_dimensionality, dimensionality> const& rhs) {
-  return IsEqual(lhs, rhs);
-}
+  Coordinate_ homogeneous_eval(h_dim);
+  homogeneous_b_spline_->Evaluate(parametric_coordinate,
+                                  homogeneous_eval.data());
 
-template<int parametric_dimensionality, int dimensionality>
-typename Spline<parametric_dimensionality, dimensionality>::Coordinate_
-Nurbs<parametric_dimensionality, dimensionality>::operator()(
-    ParametricCoordinate_ const& parametric_coordinate,
-    Tolerance const& tolerance) const {
-#ifndef NDEBUG
-  try {
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, "bsplinelib::splines::Nurbs::operator()");
+  const Type_ w_inv = 1. / homogeneous_eval[dim];
+  const Type_* eval_ptr = homogeneous_eval.begin();
+  for (int i{}; i < dim; ++i) {
+    *evaluated++ = *eval_ptr++ * w_inv;
   }
-#endif
+}
+
+template<int para_dim>
+void Nurbs<para_dim>::EvaluateDerivative(const Type_* parametric_coordinate,
+                                         const IntType_* derivative,
+                                         Type_* evaluated) const {
+
+  using Data = bsplinelib::utilities::containers::Data<double>;
+  using Data2D = bsplinelib::utilities::containers::Data<double, 2>;
+
+  // Global (scalar) indexing to local index-system
+  auto multi_index_ = [&derivative](int id) -> std::array<int, para_dim> {
+    std::array<int, para_dim> local_ids{};
+    for (int i{}; i < para_dim; ++i) {
+      if (derivative[i] == 0) {
+        // local_ids[i] = 0;
+        continue;
+      }
+      local_ids[i] = id % (derivative[i] + 1);
+      id -= local_ids[i];
+      id /= derivative[i] + 1;
+    }
+    return local_ids;
+  };
+
+  // Check if requested derivative is "subset" to current derivative
+  auto is_not_subset_ =
+      [](const std::array<int, para_dim>& req_derivs_max,
+         const std::array<int, para_dim>& req_derivs) -> bool {
+    for (int i{}; i < para_dim; ++i) {
+      if (req_derivs[i] > req_derivs_max[i])
+        return true;
+    }
+    return false;
+  };
+
+  // Initialize return type
+  const int number_of_derivs = [&derivative]() {
+    int id{};
+    int offset{1};
+    for (int i{}; i < para_dim; ++i) {
+      // assert(derivative[i] <= derivative[i]);
+      if (derivative[i] == 0)
+        continue;
+      id += offset * (derivative[i]);
+      offset = derivative[i] > 0 ? offset * (derivative[i] + 1) : offset;
+    }
+    return id;
+  }() + 1;
+
+  // Please remember that the first derivative is not used
+  const int dim = Dim();
+  // evaluated derivatives and a view array for row-wise operation
+  Data2D der(number_of_derivs, dim);
+  Data d_row;
+  d_row.SetShape(dim);
+
+  // evaluated derivatives from homogeneous bspline and a view array for
+  // row-wise operation
+  Data2D homogeneous_der(number_of_derivs, dim + 1);
+
+  // Fill all homogeneous b spline derivatives (and values for id=0)
+  for (int i{}; i < number_of_derivs; ++i) {
+    const auto req_derivs = multi_index_(i);
+    homogeneous_b_spline_->EvaluateDerivative(parametric_coordinate,
+                                              req_derivs.data(),
+                                              &homogeneous_der(i, 0));
+  }
+
+  // Precompute inverse of weighted function
+  const double inv_w_fact = 1. / homogeneous_der(0, dim);
+
+  // Loop over all lower-order derivatives and assign derivatives-vector
+  // Notation follows "The NURBS book" eq. 4.20 (extended for n-d splines)
+  for (int i{}; i < number_of_derivs; ++i) {
+    // Retrieve index-wise order of the derivative for current ID
+    const auto derivative_order_indexwise_LHS = multi_index_(i);
+    // copy derivative of Numerator-function
+    // d_row.Copy() copies according to d_row's size (dim).
+    d_row.SetData(&der(i, 0));
+    d_row.Copy(&homogeneous_der(i, 0));
+    // Substract all weighted lower-order functions
+    for (int j{1}; j <= i; ++j) {
+      // Retrieve order of current index
+      const auto derivative_order_indexwise_RHS = multi_index_(j);
+      // Check only subsets
+      if (is_not_subset_(derivative_order_indexwise_LHS,
+                         derivative_order_indexwise_RHS))
+        continue;
+      // Precompute Product of binomial coefficients
+      int binom_fact{1};
+      for (int k{}; k < para_dim; ++k) {
+        binom_fact *=
+            bsplinelib::utilities::math_operations::ComputeBinomialCoefficient(
+                derivative_order_indexwise_LHS[k],
+                derivative_order_indexwise_RHS[k]);
+      }
+      // Substract low-order function
+      d_row.Add(-(binom_fact * homogeneous_der(j, dim)), &der(i - j, 0));
+    }
+    // Finalize
+    d_row.Multiply(inv_w_fact);
+  }
+
+  // Return last value
+  std::copy_n(&der(number_of_derivs - 1, 0), dim, evaluated);
+}
+
+template<int para_dim>
+typename Spline<para_dim>::Coordinate_
+Nurbs<para_dim>::operator()(const Type_* parametric_coordinate) const {
   return WeightedVectorSpace_::Project(
       (*homogeneous_b_spline_)(parametric_coordinate));
 }
 
 // See NURBS book Eq. (4.20) (cf. Generalized Leibniz rule at
 // <https://en.wikipedia.org/wiki/General_Leibniz_rule>).
-template<int parametric_dimensionality, int dimensionality>
-typename Spline<parametric_dimensionality, dimensionality>::Coordinate_
-Nurbs<parametric_dimensionality, dimensionality>::operator()(
-    ParametricCoordinate_ const& parametric_coordinate,
-    Derivative_ const& derivative,
-    Tolerance const& tolerance) const {
-  using BinomialCoefficients = Vector<Derivative::Type_>;
-  using DemandForPartialDerivatives =
-      std::deque<bool>; // std::vector<bool> is not a proper STD container.
-  using Index = typename Base_::Index_;
-  using IndexLength = typename Index::Length_;
-  using IndexValue = typename Index::Value_;
-  using ScalarIndexValue = typename IndexValue::value_type;
-  using ScalarIndexValueType = typename ScalarIndexValue::Type_;
-  using utilities::std_container_operations::TransformNamedTypes;
+template<int para_dim>
+typename Spline<para_dim>::Coordinate_
+Nurbs<para_dim>::operator()(const Type_* parametric_coordinate,
+                            const IntType_* derivative) const {
+  Coordinate_ evaluated_nurbs(Dim());
 
-#ifndef NDEBUG
-  try {
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, "bsplinelib::splines::Nurbs::operator()");
-  }
-#endif
-  IndexLength derivative_length;
-  std::transform(derivative.begin(),
-                 derivative.end(),
-                 derivative_length.begin(),
-                 [](Derivative const& derivative_for_dimension) {
-                   return Length{derivative_for_dimension.Get() + 1};
-                 });
-  Index const &zero_derivative = Index::First(derivative_length),
-              &end_derivative = Index::Behind(derivative_length);
-  int const& total_number_of_derivatives =
-      zero_derivative.GetTotalNumberOfIndices();
+  EvaluateDerivative(parametric_coordinate, derivative, evaluated_nurbs.data());
 
-  // Evaluate all homogeneous derivatives of same or lower order.
-  typename HomogeneousBSpline_::VectorSpace_::Coordinates_
-      homogeneous_b_spline_derivatives;
-  homogeneous_b_spline_derivatives.reserve(total_number_of_derivatives);
-  for (Index current_derivative{zero_derivative};
-       current_derivative != end_derivative;
-       ++current_derivative)
-    homogeneous_b_spline_derivatives.push_back((*homogeneous_b_spline_)(
-        parametric_coordinate,
-        TransformNamedTypes<Derivative_>(current_derivative.GetIndex())));
-
-  // Compute binomial coefficients of derivatives up to maximum order.
-  Vector<BinomialCoefficients> binomial_coefficients;
-  ScalarIndexValueType const& number_of_derivatives =
-      ((*std::max_element(derivative.begin(), derivative.end())).Get() + 1);
-  binomial_coefficients.reserve(number_of_derivatives);
-  Derivative::ForEach(
-      0,
-      number_of_derivatives,
-      [&](Derivative const& current_derivative) {
-        Derivative::Type_ const &current_derivative_value =
-                                    current_derivative.Get(),
-                                &current_number_of_derivatives =
-                                    (current_derivative_value + 1);
-        BinomialCoefficients current_binomial_coefficients;
-        current_binomial_coefficients.reserve(current_number_of_derivatives);
-        Derivative::ForEach(
-            0,
-            current_number_of_derivatives,
-            [&](Derivative const& lower_derivative) {
-              current_binomial_coefficients.push_back(
-                  utilities::math_operations::ComputeBinomialCoefficient(
-                      current_derivative_value,
-                      lower_derivative.Get()));
-            });
-        binomial_coefficients.push_back(current_binomial_coefficients);
-      });
-
-  // Evaluate requested rational derivative requiring evaluation of all rational
-  // derivatives of lower order.
-  typename WeightedVectorSpace_::Coordinates_ rational_derivatives;
-  rational_derivatives.reserve(total_number_of_derivatives);
-  for (Index current_derivative{zero_derivative};
-       current_derivative != end_derivative;
-       ++current_derivative) {
-    IndexValue const& current_derivative_value = current_derivative.GetIndex();
-    typename HomogeneousBSpline_::Coordinate_ const&
-        homogeneous_b_spline_derivative =
-            homogeneous_b_spline_derivatives[current_derivative.GetIndex1d()
-                                                 .Get()];
-    Coordinate_ homogeneous_derivative;
-    std::copy(homogeneous_b_spline_derivative.begin(),
-              std::prev(homogeneous_b_spline_derivative.end()),
-              homogeneous_derivative.begin());
-    // Subtract contributions of lower order rational derivatives from current
-    // homogeneous derivative by subtracting all incorporated sums.
-    DemandForPartialDerivatives are_required_derivatives_currently_required(
-        std::count_if(current_derivative_value.begin(),
-                      current_derivative_value.end(),
-                      [](ScalarIndexValue const& derivative) {
-                        return (derivative > ScalarIndexValue{} ? true : false);
-                      }),
-        true);
-    DemandForPartialDerivatives::iterator const
-        &are_required_derivatives_currently_required_begin =
-            are_required_derivatives_currently_required.begin(),
-        &are_required_derivatives_currently_required_end =
-            are_required_derivatives_currently_required.end();
-    Dimension::ForEach(
-        0,
-        parametric_dimensionality,
-        [&](Dimension const& dimension) {
-          // If all permutations corresponding to the current number of
-          // parametric dimensions participating in the sums have been
-          // considered, reduce this number by one until all sums have been
-          // considered.
-          if (std::find(are_required_derivatives_currently_required_begin,
-                        are_required_derivatives_currently_required_end,
-                        true)
-              != are_required_derivatives_currently_required_end) {
-            do {
-              IndexLength lower_derivative_length{
-                  utilities::std_container_operations::TransformNamedTypes<
-                      IndexLength>(current_derivative_value)};
-              ScalarIndexValueType permutation_element{};
-              Dimension::ForEach(
-                  0,
-                  parametric_dimensionality,
-                  [&](Dimension const& current_dimension) {
-                    Dimension::Type_ const& current_dimension_value =
-                        current_dimension.Get();
-                    if (lower_derivative_length[current_dimension_value]
-                        > Length{})
-                      if (!are_required_derivatives_currently_required
-                              [permutation_element++])
-                        lower_derivative_length[current_dimension_value] =
-                            Length{};
-                  });
-              for (Index lower_derivative =
-                       Index::First(lower_derivative_length);
-                   lower_derivative != Index::Behind(lower_derivative_length);
-                   ++lower_derivative) {
-                Index const current_lower_derivative{
-                    derivative_length,
-                    utilities::std_container_operations::Add(
-                        utilities::std_container_operations::Subtract(
-                            current_derivative_value,
-                            TransformNamedTypes<IndexValue>(
-                                lower_derivative_length)),
-                        lower_derivative.GetIndex())};
-                Index const& current_complementary_derivative =
-                    (current_derivative - current_lower_derivative.GetIndex());
-                Degree::Type_ product_of_binomial_coefficients{1};
-                Dimension::ForEach(
-                    0,
-                    parametric_dimensionality,
-                    [&](Dimension const& current_dimension) {
-                      product_of_binomial_coefficients *= binomial_coefficients
-                          [lower_derivative_length[current_dimension.Get()]
-                               .Get()]
-                          [current_complementary_derivative[current_dimension]
-                               .Get()];
-                    });
-                utilities::std_container_operations::SubtractAndAssignToFirst(
-                    homogeneous_derivative,
-                    utilities::std_container_operations::Multiply(
-                        rational_derivatives
-                            [current_lower_derivative.GetIndex1d().Get()],
-                        product_of_binomial_coefficients
-                            * homogeneous_b_spline_derivatives
-                                [current_complementary_derivative.GetIndex1d()
-                                     .Get()][dimensionality]));
-              }
-            } while (std::next_permutation(
-                are_required_derivatives_currently_required_begin,
-                are_required_derivatives_currently_required_end));
-            are_required_derivatives_currently_required[dimension.Get()] =
-                false;
-          }
-        });
-    rational_derivatives.push_back(utilities::std_container_operations::Divide(
-        homogeneous_derivative,
-        homogeneous_b_spline_derivatives[0][dimensionality]));
-  }
-  return rational_derivatives[total_number_of_derivatives - 1];
+  return evaluated_nurbs;
 }
 
-template<int parametric_dimensionality, int dimensionality>
-void Nurbs<parametric_dimensionality, dimensionality>::InsertKnot(
-    Dimension const& dimension,
-    Knot_ knot,
-    Multiplicity const& multiplicity,
-    Tolerance const& tolerance) const {
+template<int para_dim>
+void Nurbs<para_dim>::InsertKnot(Dimension const& dimension,
+                                 Knot_ knot,
+                                 Multiplicity const& multiplicity,
+                                 Tolerance const& tolerance) const {
 #ifndef NDEBUG
   Message const kName{"bsplinelib::splines::Nurbs::InsertKnot"};
 
   try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension,
-                                                parametric_dimensionality - 1);
+    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, para_dim - 1);
     Base_::parameter_space_->ThrowIfParametricCoordinateIsOutsideScope(
         dimension,
         knot,
@@ -305,13 +230,12 @@ void Nurbs<parametric_dimensionality, dimensionality>::InsertKnot(
   homogeneous_b_spline_->InsertKnot(dimension, knot, multiplicity, tolerance);
 }
 
-template<int parametric_dimensionality, int dimensionality>
-Multiplicity Nurbs<parametric_dimensionality, dimensionality>::RemoveKnot(
-    Dimension const& dimension,
-    Knot_ const& knot,
-    Tolerance const& tolerance_removal,
-    Multiplicity const& multiplicity,
-    Tolerance const& tolerance) const {
+template<int para_dim>
+Multiplicity Nurbs<para_dim>::RemoveKnot(Dimension const& dimension,
+                                         Knot_ const& knot,
+                                         Tolerance const& tolerance_removal,
+                                         Multiplicity const& multiplicity,
+                                         Tolerance const& tolerance) const {
   using std::get;
 
 #ifndef NDEBUG
@@ -320,8 +244,7 @@ Multiplicity Nurbs<parametric_dimensionality, dimensionality>::RemoveKnot(
   Message const kName{"bsplinelib::splines::Nurbs::RemoveKnot"};
 
   try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension,
-                                                parametric_dimensionality - 1);
+    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, para_dim - 1);
     ThrowIfToleranceIsNegative(tolerance_removal);
     ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
@@ -343,17 +266,15 @@ Multiplicity Nurbs<parametric_dimensionality, dimensionality>::RemoveKnot(
       tolerance);
 }
 
-template<int parametric_dimensionality, int dimensionality>
-void Nurbs<parametric_dimensionality, dimensionality>::ElevateDegree(
-    Dimension const& dimension,
-    Multiplicity const& multiplicity,
-    Tolerance const& tolerance) const {
+template<int para_dim>
+void Nurbs<para_dim>::ElevateDegree(Dimension const& dimension,
+                                    Multiplicity const& multiplicity,
+                                    Tolerance const& tolerance) const {
 #ifndef NDEBUG
   Message const kName{"bsplinelib::splines::Nurbs::ElevateDegree"};
 
   try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension,
-                                                parametric_dimensionality - 1);
+    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, para_dim - 1);
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
     Throw(exception, kName);
@@ -364,20 +285,18 @@ void Nurbs<parametric_dimensionality, dimensionality>::ElevateDegree(
   homogeneous_b_spline_->ElevateDegree(dimension, multiplicity, tolerance);
 }
 
-template<int parametric_dimensionality, int dimensionality>
-bool Nurbs<parametric_dimensionality, dimensionality>::ReduceDegree(
-    Dimension const& dimension,
-    Tolerance const& tolerance_removal,
-    Multiplicity const& multiplicity,
-    Tolerance const& tolerance) const {
+template<int para_dim>
+bool Nurbs<para_dim>::ReduceDegree(Dimension const& dimension,
+                                   Tolerance const& tolerance_removal,
+                                   Multiplicity const& multiplicity,
+                                   Tolerance const& tolerance) const {
 #ifndef NDEBUG
   using utilities::numeric_operations::ThrowIfToleranceIsNegative;
 
   Message const kName{"bsplinelib::splines::Nurbs::ReduceDegree"};
 
   try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension,
-                                                parametric_dimensionality - 1);
+    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, para_dim - 1);
     ThrowIfToleranceIsNegative(tolerance_removal);
     ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
@@ -392,27 +311,17 @@ bool Nurbs<parametric_dimensionality, dimensionality>::ReduceDegree(
                                              tolerance);
 }
 
-template<int parametric_dimensionality, int dimensionality>
-Coordinate Nurbs<parametric_dimensionality, dimensionality>::
-    ComputeUpperBoundForMaximumDistanceFromOrigin(
-        Tolerance const& tolerance) const {
+template<int para_dim>
+Coordinate
+Nurbs<para_dim>::ComputeUpperBoundForMaximumDistanceFromOrigin() const {
   return std::get<0>(
       weighted_vector_space_
-          ->DetermineMaximumDistanceFromOriginAndMinimumWeight(tolerance));
+          ->DetermineMaximumDistanceFromOriginAndMinimumWeight());
 }
 
-template<int parametric_dimensionality, int dimensionality>
-typename Nurbs<parametric_dimensionality, dimensionality>::OutputInformation_
-Nurbs<parametric_dimensionality, dimensionality>::Write(
-    Precision const& precision) const {
+template<int para_dim>
+typename Nurbs<para_dim>::OutputInformation_
+Nurbs<para_dim>::Write(Precision const& precision) const {
   return OutputInformation_{Base_::parameter_space_->Write(precision),
                             weighted_vector_space_->WriteProjected(precision)};
-}
-
-template<int parametric_dimensionality, int dimensionality>
-typename Nurbs<parametric_dimensionality, dimensionality>::OutputInformation_
-Nurbs<parametric_dimensionality, dimensionality>::WriteWeighted(
-    Precision const& precision) const {
-  return OutputInformation_{Base_::parameter_space_->Write(precision),
-                            weighted_vector_space_->WriteWeighted(precision)};
 }

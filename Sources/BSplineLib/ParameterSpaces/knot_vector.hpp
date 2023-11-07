@@ -20,8 +20,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #ifndef SOURCES_PARAMETERSPACES_KNOT_VECTOR_HPP_
 #define SOURCES_PARAMETERSPACES_KNOT_VECTOR_HPP_
 
+#include "BSplineLib/Utilities/containers.hpp"
 #include "BSplineLib/Utilities/named_type.hpp"
-#include "BSplineLib/Utilities/std_container_operations.hpp"
 #include "BSplineLib/Utilities/string_operations.hpp"
 
 namespace bsplinelib::parameter_spaces {
@@ -61,12 +61,6 @@ public:
   KnotVector& operator=(KnotVector&& rhs) noexcept = default;
   virtual ~KnotVector() = default;
 
-  // Comparison based on tolerance.
-  friend bool IsEqual(KnotVector const& lhs,
-                      KnotVector const& rhs,
-                      Tolerance const& tolerance);
-  // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
-  friend bool operator==(KnotVector const& lhs, KnotVector const& rhs);
   virtual Knot_ const& operator[](Index const& index) const;
   virtual Knot_ const& operator[](int const& index) const;
 
@@ -133,16 +127,11 @@ private:
   using ConstIterator_ = typename Knots_::const_iterator;
 };
 
-bool IsEqual(KnotVector const& lhs,
-             KnotVector const& rhs,
-             Tolerance const& tolerance = kEpsilon);
-bool operator==(KnotVector const& lhs, KnotVector const& rhs);
-
-template<int parametric_dimensionality>
-using KnotVectors = Array<SharedPointer<KnotVector>, parametric_dimensionality>;
-template<int parametric_dimensionality>
+template<int para_dim>
+using KnotVectors = Array<SharedPointer<KnotVector>, para_dim>;
+template<int para_dim>
 using KnotVectorsOutputInformation =
-    Array<KnotVector::OutputInformation_, parametric_dimensionality>;
+    Array<KnotVector::OutputInformation_, para_dim>;
 } // namespace bsplinelib::parameter_spaces
 
 #endif // SOURCES_PARAMETERSPACES_KNOT_VECTOR_HPP_

@@ -23,8 +23,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include <limits>
 #include <utility>
 
+#include "BSplineLib/Utilities/containers.hpp"
 #include "BSplineLib/Utilities/error_handling.hpp"
-#include "BSplineLib/Utilities/std_container_operations.hpp"
 #include "BSplineLib/Utilities/string_operations.hpp"
 #include "BSplineLib/Utilities/system_operations.hpp"
 
@@ -32,11 +32,11 @@ namespace bsplinelib::input_output::iges {
 
 namespace {
 
-template<int parametric_dimensionality, int dimensionality>
-using BSpline = BSpline<parametric_dimensionality, dimensionality>;
+template<int para_dim>
+using BSpline = BSpline<para_dim>;
 using utilities::string_operations::Numbers;
-template<int parametric_dimensionality, int dimensionality>
-using Nurbs = Nurbs<parametric_dimensionality, dimensionality>;
+template<int para_dim>
+using Nurbs = Nurbs<para_dim>;
 using SplineDataDouble = Numbers<double>;
 using SplineDataInt = Numbers<int>;
 using std::for_each, std::to_string, utilities::string_operations::Append,
@@ -45,7 +45,7 @@ using std::for_each, std::to_string, utilities::string_operations::Append,
     utilities::system_operations::Open,
     utilities::system_operations::OutputStream;
 
-template<int parametric_dimensionality>
+template<int para_dim>
 SplineEntry CreateSpline(SplineDataInt const& spline_data_int,
                          SplineDataDouble const& spline_data_double,
                          int const& knot_vector_start);
@@ -53,22 +53,13 @@ SplineEntry CreateSpline(SplineDataInt const& spline_data_int,
 int WriteSection(OutputStream& file,
                  String const& section_content,
                  String const& section_identifier);
-template<int parametric_dimensionality>
+
+template<int para_dim>
 Coordinate WriteSpline(SplineEntry const& spline,
                        String const& delimiter,
                        String& parameter_data_section_contribution,
-                       Precision const& precision,
-                       Tolerance const& tolerance);
-template<int parametric_dimensionality, int dimensionality>
-Coordinate WriteSpline(SplineEntry const& spline,
-                       String const& delimiter,
-                       String& parameter_data_section_contribution,
-                       Precision const& precision,
-                       Tolerance const& tolerance);
-template<int parametric_dimensionality,
-         int dimensionality,
-         bool is_rational,
-         typename SplineType>
+                       Precision const& precision);
+template<int para_dim, bool is_rational, typename SplineType>
 void WriteSpline(SplineType const& spline,
                  String const& delimiter,
                  String& parameter_data_section_contribution,
@@ -83,7 +74,7 @@ String MakeBlock(String const& raw_string,
 
 Splines Read(String const& file_name) {
   using SplineSection = std::pair<Index, int>;
-  using utilities::std_container_operations::GetValue,
+  using utilities::containers::GetValue,
       utilities::string_operations::ConvertToNumbers,
       utilities::string_operations::TrimCharacter;
 
@@ -149,8 +140,7 @@ Splines Read(String const& file_name) {
 
 void Write(Splines const& splines,
            String const& file_name,
-           Precision const& precision,
-           Tolerance const& tolerance) {
+           Precision const& precision) {
   using std::numeric_limits;
 
 #ifndef NDEBUG
@@ -167,18 +157,17 @@ void Write(Splines const& splines,
     String entity_type, entity_name, directory_entry_section{},
         parameter_data_section{};
     for_each(splines.begin(), splines.end(), [&](SplineEntry const& spline) {
-      int const& parametric_dimensionality = spline->parametric_dimensionality_;
+      int const& para_dim = spline->parametric_dimensionality_;
       Coordinate maximum_coordinate_of_spline{};
       String parameter_data_section_contribution{};
-      switch (parametric_dimensionality) {
+      switch (para_dim) {
       case 1:
         parameter_data_section_contribution = ("126");
         maximum_coordinate_of_spline =
             WriteSpline<1>(spline,
                            ",",
                            parameter_data_section_contribution,
-                           precision,
-                           tolerance);
+                           precision);
         entity_type = MakeBlock("126", 8, true),
         entity_name = MakeBlock("BSp Crv", 8, true);
         break;
@@ -188,17 +177,14 @@ void Write(Splines const& splines,
             WriteSpline<2>(spline,
                            ",",
                            parameter_data_section_contribution,
-                           precision,
-                           tolerance);
+                           precision);
         entity_type = MakeBlock("128", 8, true),
         entity_name = MakeBlock("BSp Surf", 8, true);
         break;
       default:
-#ifndef NDEBUG
         throw RuntimeError("The spline's parametric dimensionality ("
-                           + to_string(parametric_dimensionality)
+                           + to_string(para_dim)
                            + ") must be greater than 0 and less than 3.");
-#endif
         break;
       }
       if (maximum_coordinate <= maximum_coordinate_of_spline)
@@ -312,12 +298,12 @@ void Write(Splines const& splines,
 
 namespace {
 
-template<int parametric_dimensionality>
+template<int para_dim>
 SplineEntry CreateSpline(SplineDataInt const& spline_data_int,
                          SplineDataDouble const& spline_data_double,
                          int const& knot_vector_start) {
-  using BSpline = BSpline<parametric_dimensionality, 3>;
-  using Nurbs = Nurbs<parametric_dimensionality, 3>;
+  using BSpline = BSpline<para_dim>;
+  using Nurbs = Nurbs<para_dim>;
   using ParameterSpace = typename BSpline::ParameterSpace_;
   using VectorSpace = typename BSpline::VectorSpace_;
   using WeightedVectorSpace = typename Nurbs::WeightedVectorSpace_;
@@ -327,51 +313,43 @@ SplineEntry CreateSpline(SplineDataInt const& spline_data_int,
 
   SplineDataInt::const_iterator spline_datum_int{spline_data_int.begin() + 1};
   typename ParameterSpace::NumberOfBasisFunctions_ number_of_coordinates;
-  Dimension::ForEach(0,
-                     parametric_dimensionality,
-                     [&](Dimension const& dimension) {
-                       number_of_coordinates[dimension.Get()] =
-                           Length{*(spline_datum_int++) + 1};
-                     });
+  Dimension::ForEach(0, para_dim, [&](Dimension const& dimension) {
+    number_of_coordinates[dimension.Get()] = Length{*(spline_datum_int++) + 1};
+  });
   typename ParameterSpace::Degrees_ degrees;
-  Dimension::ForEach(0,
-                     parametric_dimensionality,
-                     [&](Dimension const& dimension) {
-                       degrees[dimension.Get()] = Degree{*(spline_datum_int++)};
-                     });
+  Dimension::ForEach(0, para_dim, [&](Dimension const& dimension) {
+    degrees[dimension.Get()] = Degree{*(spline_datum_int++)};
+  });
   SplineDataDouble::const_iterator spline_datum_double{
       spline_data_double.begin() + knot_vector_start};
   KnotVectors knot_vectors;
-  Dimension::ForEach(
-      0,
-      parametric_dimensionality,
-      [&](Dimension const& dimension) {
-        Dimension::Type_ const& current_dimension = dimension.Get();
-        typename ParameterSpace::Knots_ knots{};
-        Index::ForEach(0,
-                       number_of_coordinates[current_dimension].Get()
-                           + degrees[current_dimension].Get() + 1,
-                       [&](Index const&) {
-                         knots.emplace_back(*(spline_datum_double++));
-                       });
-        knot_vectors[current_dimension] = make_shared<KnotVector>(knots);
-      });
+  Dimension::ForEach(0, para_dim, [&](Dimension const& dimension) {
+    Dimension::Type_ const& current_dimension = dimension.Get();
+    typename ParameterSpace::Knots_ knots{};
+    Index::ForEach(
+        0,
+        number_of_coordinates[current_dimension].Get()
+            + degrees[current_dimension] + 1,
+        [&](Index const&) { knots.emplace_back(*(spline_datum_double++)); });
+    knot_vectors[current_dimension] = make_shared<KnotVector>(knots);
+  });
   SharedPointer<ParameterSpace> parameter_space{
       make_shared<ParameterSpace>(std::move(knot_vectors), std::move(degrees))};
   int const& total_number_of_coordinates =
       parameter_space->GetTotalNumberOfBasisFunctions();
-  typename WeightedVectorSpace::Weights_ weights{};
-  weights.reserve(total_number_of_coordinates);
-  Index::ForEach(0, total_number_of_coordinates, [&](Index const&) {
-    weights.emplace_back(*(spline_datum_double++));
-  });
-  typename VectorSpace::Coordinates_ coordinates{};
-  coordinates.reserve(total_number_of_coordinates);
-  Index::ForEach(0, total_number_of_coordinates, [&](Index const&) {
-    coordinates.push_back({Coordinate{*(spline_datum_double++)},
-                           Coordinate{*(spline_datum_double++)},
-                           Coordinate{*(spline_datum_double++)}});
-  });
+  typename WeightedVectorSpace::Weights_ weights(total_number_of_coordinates);
+  typename WeightedVectorSpace::Weights_::value_type* w_ptr = weights.begin();
+  for (int i{}; i < weights.size(); ++i) {
+    *w_ptr++ = *(spline_datum_double++);
+  }
+
+  // always 3D!
+  typename VectorSpace::Coordinates_ coordinates(total_number_of_coordinates,
+                                                 3);
+  for (auto& c : coordinates) {
+    c = *(spline_datum_double++);
+  }
+
   if (*(spline_datum_int + 2) == 1) {
     return make_shared<BSpline>(
         std::move(parameter_space),
@@ -401,86 +379,44 @@ int WriteSection(OutputStream& file,
   return line;
 }
 
-template<int parametric_dimensionality>
+template<int para_dim>
 Coordinate WriteSpline(SplineEntry const& spline,
                        String const& delimiter,
                        String& parameter_data_section_contribution,
-                       Precision const& precision,
-                       Tolerance const& tolerance) {
-  int const& dimensionality = spline->dimensionality_;
-  switch (dimensionality) {
-  case 1:
-    return WriteSpline<parametric_dimensionality, 1>(
-        spline,
-        delimiter,
-        parameter_data_section_contribution,
-        precision,
-        tolerance);
-    break;
-  case 2:
-    return WriteSpline<parametric_dimensionality, 2>(
-        spline,
-        delimiter,
-        parameter_data_section_contribution,
-        precision,
-        tolerance);
-    break;
-  case 3:
-    return WriteSpline<parametric_dimensionality, 3>(
-        spline,
-        delimiter,
-        parameter_data_section_contribution,
-        precision,
-        tolerance);
-    break;
-  default:
-#ifndef NDEBUG
+                       Precision const& precision) {
+  using std::static_pointer_cast;
+
+  const int dimensionality = spline->Dim();
+  if (dimensionality < 1 || dimensionality > 3) {
     throw RuntimeError("The spline's dimensionality ("
                        + to_string(dimensionality)
                        + ") must be greater than 0 and "
                          "less than 4.");
-#endif
-    return Coordinate{};
-    break;
   }
-}
-
-template<int parametric_dimensionality, int dimensionality>
-Coordinate WriteSpline(SplineEntry const& spline,
-                       String const& delimiter,
-                       String& parameter_data_section_contribution,
-                       Precision const& precision,
-                       Tolerance const& tolerance) {
-  using std::static_pointer_cast;
 
   if (spline->is_rational_) {
-    using Nurbs = Nurbs<parametric_dimensionality, dimensionality>;
+    using Nurbs = Nurbs<para_dim>;
 
     SharedPointer<Nurbs> const& nurbs = static_pointer_cast<Nurbs>(spline);
-    WriteSpline<parametric_dimensionality, dimensionality, true>(
-        *nurbs,
-        delimiter,
-        parameter_data_section_contribution,
-        precision);
-    return nurbs->ComputeUpperBoundForMaximumDistanceFromOrigin(tolerance);
+    WriteSpline<para_dim, true>(*nurbs,
+                                delimiter,
+                                parameter_data_section_contribution,
+                                precision);
+    return nurbs->ComputeUpperBoundForMaximumDistanceFromOrigin();
   } else {
-    using BSpline = BSpline<parametric_dimensionality, dimensionality>;
+    using BSpline = BSpline<para_dim>;
 
     SharedPointer<BSpline> const& b_spline =
         static_pointer_cast<BSpline>(spline);
-    WriteSpline<parametric_dimensionality, dimensionality, false>(
-        *b_spline,
-        delimiter,
-        parameter_data_section_contribution,
-        precision);
-    return b_spline->ComputeUpperBoundForMaximumDistanceFromOrigin(tolerance);
+    WriteSpline<para_dim, false>(*b_spline,
+                                 delimiter,
+                                 parameter_data_section_contribution,
+                                 precision);
+    return b_spline->ComputeUpperBoundForMaximumDistanceFromOrigin();
   }
 }
 
-template<int parametric_dimensionality,
-         int dimensionality,
-         bool is_rational,
-         typename SplineType>
+template<int para_dim, bool is_rational, typename SplineType>
 void WriteSpline(SplineType const& spline,
                  String const& delimiter,
                  String& parameter_data_section_contribution,
@@ -512,7 +448,7 @@ void WriteSpline(SplineType const& spline,
   Append(parameter_data_section_contribution,
          delimiter,
          is_rational ? "0" : "1");
-  Dimension::ForEach(0, parametric_dimensionality, [&](Dimension const&) {
+  Dimension::ForEach(0, para_dim, [&](Dimension const&) {
     Append(parameter_data_section_contribution, delimiter, "0");
   });
   KnotVectors const& knot_vectors = get<0>(parameter_space);
@@ -536,17 +472,14 @@ void WriteSpline(SplineType const& spline,
                     delimiter,
                     operations::WriteCoordinate3d(coordinate, ","));
            });
-  Dimension::ForEach(
-      0,
-      parametric_dimensionality,
-      [&](Dimension const& dimension) {
-        typename KnotVectors::value_type const& knot_vector =
-            knot_vectors[dimension.Get()];
-        Append(parameter_data_section_contribution, delimiter, knot_vector[0]);
-        Append(parameter_data_section_contribution,
-               delimiter,
-               utilities::std_container_operations::GetBack(knot_vector));
-      });
+  Dimension::ForEach(0, para_dim, [&](Dimension const& dimension) {
+    typename KnotVectors::value_type const& knot_vector =
+        knot_vectors[dimension.Get()];
+    Append(parameter_data_section_contribution, delimiter, knot_vector[0]);
+    Append(parameter_data_section_contribution,
+           delimiter,
+           utilities::containers::GetBack(knot_vector));
+  });
 }
 
 String ConvertToHollerith(String const& raw_string) {

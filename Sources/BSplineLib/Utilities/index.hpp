@@ -25,9 +25,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include <numeric>
 #include <utility>
 
+#include "BSplineLib/Utilities/containers.hpp"
 #include "BSplineLib/Utilities/error_handling.hpp"
 #include "BSplineLib/Utilities/named_type.hpp"
-#include "BSplineLib/Utilities/std_container_operations.hpp"
 
 namespace bsplinelib::utilities {
 
@@ -100,6 +100,11 @@ public:
   int GetTotalNumberOfIndices() const;
   Value_ GetIndex() const;
   Index_ GetIndex1d() const;
+
+  /// @brief Reference return of GetIndex() rename since everything is called
+  /// Index here.
+  /// @return
+  const Value_& MultiIndex() const { return value_; }
 
 protected:
   bool invalid_;

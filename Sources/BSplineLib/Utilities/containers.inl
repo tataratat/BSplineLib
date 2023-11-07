@@ -87,7 +87,7 @@ constexpr bool DoesContainEqualValues(ContainerType const& lhs,
     numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
     Throw(exception,
-          "bsplinelib::utilities::std_container_operations::"
+          "bsplinelib::utilities::containers::"
           "DoesContainEqualValues");
   }
 #endif
@@ -115,7 +115,7 @@ constexpr bool DoesContainPointersToEqualValues(
     numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
     Throw(exception,
-          "bsplinelib::utilities::std_container_operations::"
+          "bsplinelib::utilities::containers::"
           "DoesContainPointersToEqualValues");
   }
 #endif
@@ -138,7 +138,7 @@ constexpr ContainerType& AddAndAssignToFirst(ContainerType& lhs,
       ThrowIfContainerSizesDiffer(lhs, rhs);
     } catch (InvalidArgument const& exception) {
       Throw(exception,
-            "bsplinelib::utilities::std_container_operations::"
+            "bsplinelib::utilities::containers::"
             "AddAndAssignToFirst");
     }
 #endif
@@ -163,7 +163,7 @@ constexpr ContainerType Add(ContainerType const& lhs,
     AddAndAssignToFirst(sum, rhs...);
 #ifndef NDEBUG
   } catch (InvalidArgument const& exception) {
-    Throw(exception, "bsplinelib::utilities::std_container_operations::Add");
+    Throw(exception, "bsplinelib::utilities::containers::Add");
   }
 #endif
   return sum;
@@ -178,7 +178,7 @@ constexpr ContainerType& SubtractAndAssignToFirst(ContainerType& lhs,
       ThrowIfContainerSizesDiffer(lhs, rhs);
     } catch (InvalidArgument const& exception) {
       Throw(exception,
-            "bsplinelib::utilities::std_container_operations::"
+            "bsplinelib::utilities::containers::"
             "SubtractAndAssignToFirst");
     }
 #endif
@@ -201,15 +201,14 @@ SubtractAndAssignToFirst(ContainerType& lhs,
 template<typename ContainerType, typename... ContainerTypes>
 constexpr ContainerType Subtract(ContainerType const& lhs,
                                  ContainerTypes const&... rhs) {
-  ContainerType difference{lhs};
+  ContainerType difference(lhs);
 #ifndef NDEBUG
   try {
 #endif
     SubtractAndAssignToFirst(difference, rhs...);
 #ifndef NDEBUG
   } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "bsplinelib::utilities::std_container_operations::Subtract");
+    Throw(exception, "bsplinelib::utilities::containers::Subtract");
   }
 #endif
   return difference;
@@ -234,8 +233,14 @@ constexpr ContainerType Multiply(ContainerType const& container,
               std::back_inserter(multiplied),
               bind(multiplies{}, _1, factor));
   } else {
-    static_assert(error_handling::is_false<ContainerType>,
-                  "Only std::array and std::vector are supported.");
+    // static_assert(error_handling::is_false<ContainerType>,
+    //               "Only std::array and std::vector are supported.");
+
+    multiplied.Reallocate(container.size());
+    transform(container.begin(),
+              container.end(),
+              multiplied.begin(),
+              bind(multiplies{}, _1, factor));
   }
   return multiplied;
 }
@@ -248,7 +253,7 @@ ContainerType& DivideAndAssignToFirst(ContainerType& container,
   if (numeric_operations::IsEqual(divisor, DivisorType{}, tolerance))
     Throw(InvalidArgument("Division by zero (" + std::to_string(divisor)
                           + ") encountered."),
-          "bsplinelib::utilities::std_container_operations::"
+          "bsplinelib::utilities::containers::"
           "DivideAndAssignToFirst");
 #endif
   std::transform(container.begin(),
@@ -274,7 +279,7 @@ constexpr ContainerType Divide(ContainerType const& container,
     DivideAndAssignToFirst(divided, divisor, tolerance);
 #ifndef NDEBUG
   } catch (InvalidArgument const& exception) {
-    Throw(exception, "bsplinelib::utilities::std_container_operations::Divide");
+    Throw(exception, "bsplinelib::utilities::containers::Divide");
   }
 #endif
   return divided;
@@ -289,7 +294,7 @@ DotProduct(ContainerType const& lhs, ContainerType const& rhs) {
       ThrowIfContainerSizesDiffer(lhs, rhs);
     } catch (InvalidArgument const& exception) {
       Throw(exception,
-            "bsplinelib::utilities::std_container_operations::"
+            "bsplinelib::utilities::containers::"
             "DotProduct");
     }
 #endif
@@ -315,7 +320,7 @@ EuclidianDistance(ContainerType const& lhs, ContainerType const& rhs) {
       ThrowIfContainerSizesDiffer(lhs, rhs);
     } catch (InvalidArgument const& exception) {
       Throw(exception,
-            "bsplinelib::utilities::std_container_operations::"
+            "bsplinelib::utilities::containers::"
             "EuclidianDistance");
     }
 #endif

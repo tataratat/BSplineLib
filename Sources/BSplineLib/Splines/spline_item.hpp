@@ -27,41 +27,27 @@ namespace bsplinelib::splines {
 // SplineItems allow to store lists of splines without losing the information on
 // their parametric dimensionality, dimensionality or whether they are rational
 // or not.
-//
-// Example:
-//   using std::make_shared;
-//   Vector<SplineItem> const splines{make_shared<BSpline<2, 3>>(),
-//   make_shared<Nurbs<3, 4>>()}; int const &two =
-//   splines[0]->parametric_dimensionality_;
 class SplineItem {
 public:
   using Type_ = Type;
 
   virtual ~SplineItem() = default;
 
-  friend bool IsEqual(SplineItem const& lhs,
-                      SplineItem const& rhs,
-                      Tolerance const& tolerance);
-  friend bool operator==(SplineItem const& lhs, SplineItem const& rhs);
-
-  int dimensionality_, parametric_dimensionality_;
+  int parametric_dimensionality_;
   bool is_rational_;
+
+  /// @brief dim is determined dynamically
+  /// @return
+  virtual int Dim() const = 0;
 
 protected:
   SplineItem() = default;
-  SplineItem(int parametric_dimensionality,
-             int dimensionality,
-             bool is_rational);
+  SplineItem(int para_dim, bool is_rational);
   SplineItem(SplineItem const& other) = default;
   SplineItem(SplineItem&& other) noexcept = default;
   SplineItem& operator=(SplineItem const& rhs) = default;
   SplineItem& operator=(SplineItem&& rhs) noexcept = default;
 };
-
-bool IsEqual(SplineItem const& lhs,
-             SplineItem const& rhs,
-             Tolerance const& tolerance = kEpsilon);
-bool operator==(SplineItem const& lhs, SplineItem const& rhs);
 
 } // namespace bsplinelib::splines
 

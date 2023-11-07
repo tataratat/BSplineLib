@@ -25,25 +25,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include <utility>
 
 #include "BSplineLib/Splines/spline.hpp"
+#include "BSplineLib/Utilities/containers.hpp"
 #include "BSplineLib/Utilities/error_handling.hpp"
 #include "BSplineLib/Utilities/index.hpp"
 #include "BSplineLib/Utilities/named_type.hpp"
 #include "BSplineLib/Utilities/numeric_operations.hpp"
-#include "BSplineLib/Utilities/std_container_operations.hpp"
 #include "BSplineLib/VectorSpaces/vector_space.hpp"
 
 namespace bsplinelib::splines {
 
-template<int parametric_dimensionality, int dimensionality>
+template<int para_dim>
 class BSpline;
-
-template<int parametric_dimensionality, int dimensionality>
-bool IsEqual(BSpline<parametric_dimensionality, dimensionality> const& lhs,
-             BSpline<parametric_dimensionality, dimensionality> const& rhs,
-             Tolerance const& tolerance = kEpsilon);
-template<int parametric_dimensionality, int dimensionality>
-bool operator==(BSpline<parametric_dimensionality, dimensionality> const& lhs,
-                BSpline<parametric_dimensionality, dimensionality> const& rhs);
 
 // B-splines are non-rational splines.  Currently only single-patch B-splines
 // are supported.
@@ -56,10 +48,10 @@ bool operator==(BSpline<parametric_dimensionality, dimensionality> const& lhs,
 //   Surface::Knot_{0.5}); bool const &successful =
 //   surface.ReduceDegree(Dimension{1}, kEpsilon);  // True if spline's degree
 //   p_0 be reduced.
-template<int parametric_dimensionality, int dimensionality>
-class BSpline : public Spline<parametric_dimensionality, dimensionality> {
+template<int para_dim>
+class BSpline : public Spline<para_dim> {
 public:
-  using Base_ = Spline<parametric_dimensionality, dimensionality>;
+  using Base_ = Spline<para_dim>;
   using Coordinate_ = typename Base_::Coordinate_;
   using Derivative_ = typename Base_::Derivative_;
   using Knot_ = typename Base_::Knot_;
@@ -68,6 +60,9 @@ public:
   using VectorSpace_ = typename Base_::VectorSpace_;
   using OutputInformation_ = Tuple<typename ParameterSpace_::OutputInformation_,
                                    typename VectorSpace_::OutputInformation_>;
+
+  using Type_ = typename ParameterSpace_::Type_;
+  using IntType_ = typename ParameterSpace_::IntType_;
 
   BSpline();
   BSpline(SharedPointer<ParameterSpace_> parameter_space,
@@ -78,21 +73,25 @@ public:
   BSpline& operator=(BSpline&& rhs) noexcept = default;
   ~BSpline() override = default;
 
-  // Comparison based on tolerance.
-  friend bool IsEqual<parametric_dimensionality, dimensionality>(
-      BSpline const& lhs,
-      BSpline const& rhs,
-      Tolerance const& tolerance);
-  // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
-  friend bool
-  operator==<parametric_dimensionality, dimensionality>(BSpline const& lhs,
-                                                        BSpline const& rhs);
-  // Default evaluation uses lookup tricks
-  Coordinate_ operator()(ParametricCoordinate_ const& parametric_coordinate,
-                         Tolerance const& tolerance = kEpsilon) const override;
-  Coordinate_ operator()(ParametricCoordinate_ const& parametric_coordinate,
-                         Derivative_ const& derivative,
-                         Tolerance const& tolerance = kEpsilon) const override;
+  virtual int Dim() const override { return vector_space_->Dim(); };
+
+  void Evaluate(const Type_* parametric_coordinate, Type_* evaluated) const;
+  void EvaluateDerivative(const Type_* parametric_coordinate,
+                          const IntType_* derivative,
+                          Type_* evaluated) const;
+
+  /// @brief returning evaluate. kept for backward compatibility
+  /// @param parametric_coordinate
+  /// @param tolerance
+  /// @return
+  Coordinate_ operator()(const Type_* parametric_coordinate) const override;
+
+  /// @brief returning evaluate. kept for backward compatibility
+  /// @param parametric_coordinate
+  /// @param tolerance
+  /// @return
+  Coordinate_ operator()(const Type_* parametric_coordinate,
+                         const IntType_* derivative) const override;
 
   void InsertKnot(Dimension const& dimension,
                   Knot_ knot,
@@ -114,9 +113,16 @@ public:
                     Multiplicity const& multiplicity = kMultiplicity,
                     Tolerance const& tolerance = kEpsilon) const override;
 
-  Coordinate ComputeUpperBoundForMaximumDistanceFromOrigin(
-      Tolerance const& tolerance = kEpsilon) const override;
+  Coordinate ComputeUpperBoundForMaximumDistanceFromOrigin() const override;
   OutputInformation_ Write(Precision const& precision = kPrecision) const;
+
+  /// @brief
+  /// @param from
+  /// @param to
+  virtual void ShareMembers(std::shared_ptr<BSpline>& from) {
+    vector_space_ = from->vector_space_;
+    Base_::parameter_space_ = from->parameter_space_;
+  };
 
 protected:
   SharedPointer<VectorSpace_> vector_space_;

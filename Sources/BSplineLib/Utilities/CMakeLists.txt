@@ -28,8 +28,8 @@ set(HEADERS
     named_type.hpp
     numeric_operations.inl
     numeric_operations.hpp
-    std_container_operations.inl
-    std_container_operations.hpp
+    containers.inl
+    containers.hpp
     string_operations.inl
     string_operations.hpp
     system_operations.hpp
@@ -46,7 +46,7 @@ add_library(utilities ${SOURCES})
 add_library(BSplineLib::utilities ALIAS utilities)
 
 target_include_directories(utilities PUBLIC ${INCLUDE_DIRECTORIES})
-target_compile_definitions(utilities INTERFACE ${COMPILE_DEFINITIONS})
+target_compile_definitions(utilities PUBLIC ${COMPILE_DEFINITIONS})
 target_compile_options(utilities PRIVATE ${COMPILE_OPTIONS})
 target_compile_features(utilities PUBLIC ${BSPLINELIB_COMPILE_FEATURES})
 

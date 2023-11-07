@@ -25,43 +25,31 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "BSplineLib/ParameterSpaces/parameter_space.hpp"
 #include "BSplineLib/Splines/spline_item.hpp"
+#include "BSplineLib/Utilities/containers.hpp"
 #include "BSplineLib/Utilities/error_handling.hpp"
 #include "BSplineLib/Utilities/named_type.hpp"
 #include "BSplineLib/Utilities/numeric_operations.hpp"
-#include "BSplineLib/Utilities/std_container_operations.hpp"
 #include "BSplineLib/VectorSpaces/vector_space.hpp"
 
 namespace bsplinelib::splines {
 
-template<int parametric_dimensionality, int dimensionality>
-class Spline;
-
-template<int parametric_dimensionality, int dimensionality>
-bool IsEqual(Spline<parametric_dimensionality, dimensionality> const& lhs,
-             Spline<parametric_dimensionality, dimensionality> const& rhs,
-             Tolerance const& tolerance = kEpsilon);
-template<int parametric_dimensionality, int dimensionality>
-bool operator==(Spline<parametric_dimensionality, dimensionality> const& lhs,
-                Spline<parametric_dimensionality, dimensionality> const& rhs);
-
 // Splines are (non-)rational mappings from parameter spaces of arbitrary
-// parametric_dimensionality to vector spaces of arbitrary dimensionality.  They
+// para_dim to vector spaces of arbitrary dimensionality.  They
 // can be used, e.g., to seamlessly integrate geometry representation,
 // computational analysis, and optimization.
 //
 // Example (see, e.g., NURBS book Exe. 3.8 or Exe. 4.4):
 //   spline.RefineKnots(Dimension{1}, {Spline<2, 3>::Knot_{0.5}});
-template<int parametric_dimensionality, int dimensionality>
+template<int para_dim>
 class Spline : public SplineItem {
 protected:
-  using VectorSpace_ = vector_spaces::VectorSpace<dimensionality>;
+  using VectorSpace_ = vector_spaces::VectorSpace;
 
 public:
   using Base_ = SplineItem;
   using Coordinate_ = typename VectorSpace_::Coordinate_;
   using Coordinates_ = typename VectorSpace_::Coordinates_;
-  using ParameterSpace_ =
-      parameter_spaces::ParameterSpace<parametric_dimensionality>;
+  using ParameterSpace_ = parameter_spaces::ParameterSpace<para_dim>;
   using Derivative_ = typename ParameterSpace_::Derivative_;
   using Knot_ = typename ParameterSpace_::Knot_;
   using Knots_ = typename ParameterSpace_::Knots_;
@@ -69,24 +57,14 @@ public:
       typename ParameterSpace_::NumberOfParametricCoordinates_;
   using ParametricCoordinate_ = typename ParameterSpace_::ParametricCoordinate_;
 
+  using Type_ = typename ParameterSpace_::Type_;
+  using IntType_ = typename ParameterSpace_::IntType_;
+
   ~Spline() override = default;
 
-  // Comparison based on tolerance.
-  friend bool IsEqual<parametric_dimensionality, dimensionality>(
-      Spline const& lhs,
-      Spline const& rhs,
-      Tolerance const& tolerance);
-  // Comparison based on numeric_operations::GetEpsilon<Tolerance>().
-  friend bool
-  operator==<parametric_dimensionality, dimensionality>(Spline const& lhs,
-                                                        Spline const& rhs);
-  virtual Coordinate_
-  operator()(ParametricCoordinate_ const& parametric_coordinate,
-             Tolerance const& tolerance = kEpsilon) const = 0;
-  virtual Coordinate_
-  operator()(ParametricCoordinate_ const& parametric_coordinate,
-             Derivative_ const& derivative,
-             Tolerance const& tolerance = kEpsilon) const = 0;
+  virtual Coordinate_ operator()(const Type_* parametric_coordinate) const = 0;
+  virtual Coordinate_ operator()(const Type_* parametric_coordinate,
+                                 const IntType_* derivative) const = 0;
 
   virtual void InsertKnot(Dimension const& dimension,
                           Knot_ knot,
@@ -115,11 +93,7 @@ public:
                             Multiplicity const& multiplicity = kMultiplicity,
                             Tolerance const& tolerance = kEpsilon) const = 0;
 
-  virtual Coordinate ComputeUpperBoundForMaximumDistanceFromOrigin(
-      Tolerance const& tolerance = kEpsilon) const = 0;
-  virtual Coordinates_
-  Sample(NumberOfParametricCoordinates_ const& number_of_parametric_coordinates,
-         Tolerance const& tolerance = kEpsilon) const;
+  virtual Coordinate ComputeUpperBoundForMaximumDistanceFromOrigin() const = 0;
 
 protected:
   using Index_ = typename ParameterSpace_::Index_;
