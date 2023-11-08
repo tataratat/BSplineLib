@@ -182,7 +182,7 @@ void BSpline<para_dim>::InsertKnot(Dimension const& dimension,
       Index_ coordinate{number_of_coordinates, coordinate_value};
       Index const insertion_position = coordinate.GetIndex1d();
 
-      // c^0 to c^-1 insertion
+      // C^0 to C^-1 insertion, second case does not apply (insert repetition)
       if (current_coefficients.empty()) {
         vector_space.ReallocateInsert(
             coordinate.GetIndex1d().Get(),

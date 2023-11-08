@@ -416,6 +416,8 @@ ParameterSpace<para_dim>::InsertKnot(Dimension const& dimension,
   }
 #endif
   KnotVector& knot_vector = *knot_vectors_[dimension_value];
+  // instead of (degree - current_multiplicity),
+  // clip at (degree - current_multiplicity) + 1 is to allow C^-1
   Multiplicity const insertion{std::min(
       multiplicity.Get(),
       degrees_[dimension_value]
