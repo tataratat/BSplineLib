@@ -193,6 +193,30 @@ KnotVector::DetermineMultiplicity(Knot const& parametric_coordinate,
       }))};
 }
 
+Vector<int>
+KnotVector::DetermineMultiplicities(Tolerance const& tolerance) const {
+  Knots_ const& unique_knots = GetUniqueKnots(tolerance);
+
+  Vector<int> multiplicities;
+  multiplicities.reserve(unique_knots.size());
+
+  int current_multiplicity{};
+  auto unique_knot_iter = unique_knots.begin();
+  for (const Knot_& knot : knots_) {
+    if (std::abs(*unique_knot_iter - knot) < tolerance) {
+      ++current_multiplicity;
+    } else {
+      multiplicities.push_back(current_multiplicity);
+      current_multiplicity = 0; // reset counter
+      ++unique_knot_iter;
+    }
+  }
+
+  assert(multiplicities.size() == unique_knots.size());
+
+  return multiplicities;
+}
+
 KnotVector::Knots_
 KnotVector::GetUniqueKnots(Tolerance const& tolerance) const {
 #ifndef NDEBUG

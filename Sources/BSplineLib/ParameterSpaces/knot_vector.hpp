@@ -93,6 +93,8 @@ public:
   virtual Multiplicity
   DetermineMultiplicity(Knot_ const& knot,
                         Tolerance const& tolerance = kEpsilon) const;
+  virtual Vector<int>
+  DetermineMultiplicities(Tolerance const& tolerance = kEpsilon) const;
   virtual Knots_ GetUniqueKnots(Tolerance const& tolerance = kEpsilon) const;
 
   virtual void Insert(Knot_ knot,
