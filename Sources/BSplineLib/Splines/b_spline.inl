@@ -180,9 +180,21 @@ void BSpline<para_dim>::InsertKnot(Dimension const& dimension,
       IndexValue_ coordinate_value{slice_coordinate.GetIndex()};
       coordinate_value[dimension_value] = start_value;
       Index_ coordinate{number_of_coordinates, coordinate_value};
+      Index const insertion_position = coordinate.GetIndex1d();
+
+      // C^0 to C^-1 insertion, second case does not apply (insert repetition)
+      if (current_coefficients.empty()) {
+        vector_space.ReallocateInsert(
+            coordinate.GetIndex1d().Get(),
+            vector_space[Index_{previous_number_of_coordinates,
+                                coordinate_value}
+                             .GetIndex1d()
+                         + slice_coordinate.GetIndex1d()]);
+        continue;
+      }
+
       typename KnotRatios_::const_reverse_iterator coefficient{
           current_coefficients.rbegin()};
-      Index const insertion_position = coordinate.GetIndex1d();
       vector_space.ReallocateInsert(
           insertion_position.Get(),
           Add(Multiply(vector_space[Index_{previous_number_of_coordinates,

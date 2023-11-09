@@ -416,10 +416,12 @@ ParameterSpace<para_dim>::InsertKnot(Dimension const& dimension,
   }
 #endif
   KnotVector& knot_vector = *knot_vectors_[dimension_value];
-  Multiplicity const insertion{
-      std::min(multiplicity.Get(),
-               degrees_[dimension_value]
-                   - knot_vector.DetermineMultiplicity(knot, tolerance).Get())};
+  // instead of (degree - current_multiplicity),
+  // clip at (degree - current_multiplicity) + 1 is to allow C^-1
+  Multiplicity const insertion{std::min(
+      multiplicity.Get(),
+      degrees_[dimension_value]
+          - knot_vector.DetermineMultiplicity(knot, tolerance).Get() + 1)};
   InsertionInformation_ const& insertion_information =
       DetermineInsertionInformation(dimension, knot, insertion, tolerance);
   knot_vector.Insert(std::move(knot), insertion, tolerance);
@@ -616,6 +618,7 @@ ParameterSpace<para_dim>::DetermineInsertionInformation(
             });
         knot_ratios.push_back(current_knot_ratios);
       });
+
   return InsertionInformation_{end_knot, knot_ratios};
 }
 
