@@ -185,12 +185,27 @@ KnotVector::DetermineMultiplicity(Knot const& parametric_coordinate,
     Throw(exception, kName);
   }
 #endif
-  return Multiplicity{static_cast<int>(std::count_if(
-      knots_.begin(),
-      knots_.end(),
-      [&](Knot const& current_knot) {
-        return std::abs(current_knot - parametric_coordinate) < tolerance;
-      }))};
+  auto knot_iter = knots_.cbegin();
+
+  // return if current knot and para_coord is same.
+  // advance iterator before returning.
+  auto is_same = [&]() -> bool {
+    return std::abs(parametric_coordinate - *knot_iter++) < tolerance;
+  };
+
+  // initialize multiplicity and loop around
+  int multiplicity{};
+  for (; knot_iter != knots_.cend();) {
+    if (is_same()) {
+      ++multiplicity;
+      while (is_same()) {
+        ++multiplicity;
+      }
+      break;
+    }
+  }
+
+  return Multiplicity{multiplicity};
 }
 
 Vector<int>
