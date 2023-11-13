@@ -100,7 +100,7 @@ public:
                         Tolerance const& tolerance = kEpsilon) const;
 
   /// @brief static function to determine multiplicites based on
-  /// buffer data. Assumes an ordered knot vector.
+  /// buffer data. Assumes a sorted knot vector.
   /// @param knot_vector
   /// @param tolerance
   /// @return
