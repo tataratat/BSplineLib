@@ -202,30 +202,34 @@ KnotVector::DetermineMultiplicity(Knot const& parametric_coordinate,
   return Multiplicity{multiplicity};
 }
 
-Vector<int>
-KnotVector::DetermineMultiplicities(Tolerance const& tolerance) const {
-  Knots_ const& unique_knots = GetUniqueKnots(tolerance);
+Vector<int> KnotVector::DetermineMultiplicities(const Knot_* knot_vector_data,
+                                                const int knot_vector_size,
+                                                Tolerance const& tolerance) {
+  // a block to sort can come here
 
+  // create return
   Vector<int> multiplicities;
-  multiplicities.reserve(unique_knots.size());
+  multiplicities.reserve(knot_vector_size);
 
-  int current_multiplicity{};
-  auto unique_knot_iter = unique_knots.begin();
-  for (const Knot_& knot : knots_) {
-    if (std::abs(*unique_knot_iter - knot) < tolerance) {
-      ++current_multiplicity;
+  // initialize unique_knot - alternative is to have an iterator
+  double unique_knot{knot_vector_data[0]};
+  int multiplicity{};
+
+  // again, assumed sorted kv
+  for (int i{}; i < knot_vector_size; ++i) {
+    const Knot_& knot = knot_vector_data[i];
+    if (std::abs(knot - unique_knot) < tolerance) {
+      ++multiplicity;
     } else {
-      multiplicities.push_back(current_multiplicity);
-      current_multiplicity = 1; // reset counter
-      ++unique_knot_iter;
+      multiplicities.push_back(multiplicity);
+      // not same -> update unique_knot and reset counter
+      unique_knot = knot;
+      multiplicity = 1;
     }
   }
-  multiplicities.push_back(current_multiplicity);
-
-  assert(multiplicities.size() == unique_knots.size());
 
   return multiplicities;
-}
+};
 
 KnotVector::Knots_
 KnotVector::GetUniqueKnots(Tolerance const& tolerance) const {
