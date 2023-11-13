@@ -49,15 +49,20 @@ Nurbs<para_dim>::Nurbs(
 template<int para_dim>
 Nurbs<para_dim>::Nurbs(Nurbs const& other)
     : Base_(other),
-      homogeneous_b_spline_{
-          std::make_shared<HomogeneousBSpline_>(*other.homogeneous_b_spline_)} {
+      weighted_vector_space_{std::make_shared<WeightedVectorSpace_>(
+          *other.weighted_vector_space_)},
+      homogeneous_b_spline_{std::make_shared<HomogeneousBSpline_>(
+          Base_::parameter_space_,
+          weighted_vector_space_)} {
 }
 
 template<int para_dim>
 Nurbs<para_dim>& Nurbs<para_dim>::operator=(Nurbs const& rhs) {
   Base_::operator=(rhs);
+  weighted_vector_space_ = std::make_shared<WeightedVectorSpace_>(*rhs.weighted_vector_space_);
   homogeneous_b_spline_ =
-      std::make_shared<HomogeneousBSpline_>(*rhs.homogeneous_b_spline_);
+      std::make_shared<HomogeneousBSpline_>(std::make_shared<ParameterSpace_>(*rhs.parameter_space_),
+      weighted_vector_space_);
   return *this;
 }
 
