@@ -115,9 +115,7 @@ public:
                                  Tolerance const& tolerance = kEpsilon) const;
 
   /// @brief Return multiplicities of uninque_knots for each diemnsion
-  /// @param parametric_dim
   /// @param tolerance
-  /// @param multiplicities
   virtual Vector<Vector<int>>
   KnotMultiplicities(Tolerance const& tolerance = kEpsilon) const;
 

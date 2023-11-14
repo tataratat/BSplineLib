@@ -229,7 +229,7 @@ Vector<int> KnotVector::DetermineMultiplicities(const Knot_* knot_vector_data,
   }
 
   return multiplicities;
-};
+}
 
 KnotVector::Knots_
 KnotVector::GetUniqueKnots(Tolerance const& tolerance) const {
