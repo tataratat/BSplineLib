@@ -90,9 +90,36 @@ public:
   virtual int FindSpan_(Knot_ const& parametric_coordinate) const {
     return FindSpan(parametric_coordinate).Get();
   }
+
+  /// @brief determines multiplicity of given single knot.
+  /// @param knot
+  /// @param tolerance
+  /// @return
   virtual Multiplicity
   DetermineMultiplicity(Knot_ const& knot,
                         Tolerance const& tolerance = kEpsilon) const;
+
+  /// @brief static function to determine multiplicites based on
+  /// buffer data. Assumes a sorted knot vector.
+  /// @param knot_vector
+  /// @param tolerance
+  /// @return
+  static Vector<int>
+  DetermineMultiplicities(const Knot_* knot_vector_data,
+                          const int knot_vector_size,
+                          Tolerance const& tolerance = kEpsilon);
+
+  /// @brief returns multiplicities of current unique knots.
+  /// @param tolerance
+  /// @return
+  virtual Vector<int>
+  DetermineMultiplicities(Tolerance const& tolerance = kEpsilon) const {
+    return DetermineMultiplicities(knots_.data(), knots_.size(), tolerance);
+  };
+
+  /// @brief returns copy of unique knots
+  /// @param tolerance
+  /// @return
   virtual Knots_ GetUniqueKnots(Tolerance const& tolerance = kEpsilon) const;
 
   virtual void Insert(Knot_ knot,

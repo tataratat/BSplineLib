@@ -172,6 +172,20 @@ ParameterSpace<para_dim>::DetermineBezierExtractionKnots(
 }
 
 template<int para_dim>
+Vector<Vector<int>>
+ParameterSpace<para_dim>::KnotMultiplicities(Tolerance const& tolerance) const {
+
+  Vector<Vector<int>> multiplicities;
+  multiplicities.reserve(para_dim);
+  for (int i{}; i < para_dim; ++i) {
+    multiplicities.emplace_back(
+        knot_vectors_[i]->DetermineMultiplicities(tolerance));
+  }
+
+  return multiplicities;
+}
+
+template<int para_dim>
 typename ParameterSpace<para_dim>::BasisValuesPerDimension_
 ParameterSpace<para_dim>::EvaluateBasisValuesPerDimension(
     const Type_* parametric_coordinate,
