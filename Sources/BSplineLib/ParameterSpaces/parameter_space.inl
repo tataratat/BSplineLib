@@ -523,7 +523,7 @@ ParameterSpace<para_dim>::ReduceDegree(Dimension const& dimension,
   Degree& degree = degrees_[dimension_value];
   Multiplicity const reduction{std::min(multiplicity.Get(), degree - 1)};
   knot_vectors_[dimension_value]->DecreaseMultiplicities(reduction);
-  degree -= Degree{reduction.Get()};
+  degree -= reduction.Get();
   return DetermineElevationInformation(dimension, reduction);
 }
 
