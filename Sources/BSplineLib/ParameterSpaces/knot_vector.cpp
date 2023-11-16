@@ -228,6 +228,12 @@ Vector<int> KnotVector::DetermineMultiplicities(const Knot_* knot_vector_data,
     }
   }
 
+  // Add last knot if repeated (e.g. open knot vector)
+  if (std::abs(knot_vector_data[knot_vector_size - 1] - unique_knot)
+      < tolerance) {
+    multiplicities.push_back(multiplicity);
+  }
+
   return multiplicities;
 }
 
