@@ -87,10 +87,10 @@ public:
   Index& Increment(Dimension const& dimension);
   Index& operator--();
   Index& Decrement(Dimension const& dimension);
-  friend Index operator+<size>(Index const& lhs, Value_ const& rhs);
-  friend Index operator-<size>(Index const& lhs, Value_ const& rhs);
-  friend bool operator==<size>(Index const& lhs, Index const& rhs);
-  friend bool operator!=<size>(Index const& lhs, Index const& rhs);
+  friend Index operator+ <size>(Index const& lhs, Value_ const& rhs);
+  friend Index operator- <size>(Index const& lhs, Value_ const& rhs);
+  friend bool operator== <size>(Index const& lhs, Index const& rhs);
+  friend bool operator!= <size>(Index const& lhs, Index const& rhs);
   virtual Index_ const& operator[](Dimension const& dimension) const;
   static Index First(Length_ length);
   static Index Behind(Length_ length);
