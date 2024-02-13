@@ -98,15 +98,9 @@ typename ParameterSpace<para_dim>::Index_
 ParameterSpace<para_dim>::FindFirstNonZeroBasisFunction(
     const Type_* parametric_coordinate,
     Tolerance const& tolerance) const {
-#ifndef NDEBUG
-  try {
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception,
-          "bsplinelib::parameter_spaces::ParameterSpace::"
-          "FindFirstNonZeroBasisFunction");
-  }
-#endif
+
+  assert(tolerance > 0.0);
+
   Index_ first_support;
   first_support.GetLength() = std::move(GetNumberOfBasisFunctions());
   first_support.GetInvalid() = false;
@@ -136,17 +130,10 @@ typename ParameterSpace<para_dim>::BezierInformation_
 ParameterSpace<para_dim>::DetermineBezierExtractionKnots(
     Dimension const& dimension,
     Tolerance const& tolerance) const {
-#ifndef NDEBUG
-  Message const kName{"bsplinelib::parameter_spaces::ParameterSpace::"
-                      "DetermineBezierExtractionKnots"};
 
-  DimensionBoundCheck(kName, dimension);
-  try {
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, kName, dimension);
-  }
-#endif
+  assert(tolerance > 0.0);
+  DimensionBoundCheck(BSPLINELIB_HERE(), dimension, true);
+
   KnotVector const& knot_vector = *knot_vectors_[dimension];
   Knots_ const& unique_knots = knot_vector.GetUniqueKnots(tolerance);
   typename Knots_::const_iterator const &first_interior_knot =
@@ -408,23 +395,21 @@ ParameterSpace<para_dim>::InsertKnot(Dimension const& dimension,
                                      Knot_ knot,
                                      Multiplicity const& multiplicity,
                                      Tolerance const& tolerance) {
-#ifndef NDEBUG
-  Message const kName(
-      "bsplinelib::parameter_spaces::ParameterSpace::InsertKnot");
+  assert(tolerance > 0.0);
 
-  DimensionBoundCheck(kName, dimension);
-  try {
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-    knot_vectors_[dimension]->ThrowIfParametricCoordinateIsOutsideScope(
-        knot,
-        tolerance);
-    ThrowIfFrontOrBackKnotIsToBeInsertedOrRemoved(dimension, knot, tolerance);
-  } catch (DomainError const& exception) {
-    Throw(exception, kName, dimension);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, kName, dimension);
+  // runtime checks
+  DimensionBoundCheck(BSPLINELIB_HERE(), dimension, true);
+  KnotWithinBoundCheck(BSPLINELIB_HERE(), dimension, knot, true);
+
+  // if it is on bound, early exit
+  if (!KnotNotOnBoundCheck(BSPLINELIB_HERE(),
+                           dimension,
+                           knot,
+                           tolerance,
+                           false)) {
+    return InsertionInformation_{};
   }
-#endif
+
   KnotVector& knot_vector = *knot_vectors_[dimension];
   // instead of (degree - current_multiplicity),
   // clip at (degree - current_multiplicity) + 1 is to allow C^-1
@@ -444,22 +429,23 @@ ParameterSpace<para_dim>::RemoveKnot(Dimension const& dimension,
                                      Knot_ const& knot,
                                      Multiplicity const& multiplicity,
                                      Tolerance const& tolerance) {
-#ifndef NDEBUG
-  Message const kName{
-      "bsplinelib::parameter_spaces::ParameterSpace::RemoveKnot"};
-  DimensionBoundCheck(kName, dimension);
+  assert(tolerance > 0.0);
 
-  try {
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-    ThrowIfFrontOrBackKnotIsToBeInsertedOrRemoved(dimension, knot, tolerance);
-  } catch (DomainError const& exception) {
-    Throw(exception, kName, dimension);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, kName, dimension);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, kName, dimension);
+  assert(tolerance > 0.0);
+
+  // runtime checks
+  DimensionBoundCheck(BSPLINELIB_HERE(), dimension, true);
+  KnotWithinBoundCheck(BSPLINELIB_HERE(), dimension, knot, true);
+
+  // if it is on bound, early exit
+  if (!KnotNotOnBoundCheck(BSPLINELIB_HERE(),
+                           dimension,
+                           knot,
+                           tolerance,
+                           false)) {
+    return InsertionInformation_{};
   }
-#endif
+
   if (Multiplicity const& removals =
           knot_vectors_[dimension]->Remove(knot, multiplicity, tolerance);
       removals != Multiplicity{}) {
@@ -475,19 +461,9 @@ typename ParameterSpace<para_dim>::ElevationInformation_
 ParameterSpace<para_dim>::ElevateDegree(Dimension const& dimension,
                                         Multiplicity const& multiplicity,
                                         Tolerance const& tolerance) {
-#ifndef NDEBUG
-  Message const kName{
-      "bsplinelib::parameter_spaces::ParameterSpace::ElevateDegree"};
-  DimensionBoundCheck(kName, dimension);
+  assert(tolerance > 0.0);
+  DimensionBoundCheck(BSPLINELIB_HERE(), dimension, true);
 
-  try {
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, kName, dimension);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, kName, dimension);
-  }
-#endif
   ElevationInformation_ const& bezier_information =
       DetermineElevationInformation(dimension, multiplicity);
   knot_vectors_[dimension]->IncreaseMultiplicities(multiplicity);
@@ -500,19 +476,9 @@ typename ParameterSpace<para_dim>::ElevationInformation_
 ParameterSpace<para_dim>::ReduceDegree(Dimension const& dimension,
                                        Multiplicity const& multiplicity,
                                        Tolerance const& tolerance) {
-#ifndef NDEBUG
-  Message const kName{
-      "bsplinelib::parameter_spaces::ParameterSpace::ReduceDegree"};
-  DimensionBoundCheck(kName, dimension);
+  assert(tolerance > 0.0);
+  DimensionBoundCheck(BSPLINELIB_HERE(), dimension, true);
 
-  try {
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, kName, dimension);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, kName, dimension);
-  }
-#endif
   Degree& degree = degrees_[dimension];
   Multiplicity const reduction{std::min(multiplicity.Get(), degree - 1)};
   knot_vectors_[dimension]->DecreaseMultiplicities(reduction);

@@ -24,6 +24,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include <string>
 #include <type_traits>
 
+#ifndef NDEBUG
+#define BSPLINELIB_HERE()                                                      \
+  ("\n (" + __PRETTY_FUNCTION__ + " - " + __FILE__ + ":" + __LINE__ + ") \n")
+#else
+#define BSPLINELIB_HERE() ("")
+#endif
+
 // Error handling such as 1.) tracing exceptions when compiled in debug mode
 // and 2.) providing a dependent false for static_asserts.
 //

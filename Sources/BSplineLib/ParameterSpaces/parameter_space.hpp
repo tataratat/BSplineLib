@@ -187,13 +187,51 @@ public:
   virtual KnotVectors_& GetKnotVectors() { return knot_vectors_; }
   virtual Degrees_& GetDegrees() { return degrees_; }
 
-  constexpr void DimensionBoundCheck(const std::string& message,
-                                     const int& dimension) const {
+  constexpr bool DimensionBoundCheck(const std::string& message,
+                                     const int& dimension,
+                                     const bool raise) const {
     if (dimension < 0 || dimension >= para_dim) {
-      throw OutOfRange(message + " - " + std::to_string(dimension)
-                       + " is out of bound (" + std::to_string(para_dim)
-                       + ").");
+      if (raise) {
+        throw OutOfRange(message + " - " + std::to_string(dimension)
+                         + " is out of bound (" + std::to_string(para_dim)
+                         + ").");
+      } else {
+        return false;
+      }
     }
+    return true;
+  }
+
+  constexpr bool KnotWithinBoundCheck(const std::string& message,
+                                      const int& dimension,
+                                      const Knot_& knot,
+                                      const bool raise) const {
+    if (knot_vectors_[dimension]->GetFront() > knot
+        || knot_vectors_[dimension]->GetBack() < knot) {
+      if (raise) {
+        throw DomainError(message + "Knot out of bounds.");
+      } else {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  constexpr bool KnotNotOnBoundCheck(const std::string& message,
+                                     const int& dimension,
+                                     const Knot_& knot,
+                                     const Tolerance& tolerance,
+                                     const bool raise) const {
+    if (knot_vectors_[dimension]->DoesParametricCoordinateEqualFrontOrBack(
+            knot,
+            tolerance)) {
+      if (raise) {
+        throw DomainError(message + "Knot is exactly on bound.");
+      } else {
+        return false;
+      }
+    }
+    return true;
   }
 
 protected:
@@ -222,10 +260,6 @@ private:
 #ifndef NDEBUG
   void
   ThrowIfBasisFunctionIndexIsInvalid(Index_ const& basis_function_index) const;
-  void ThrowIfFrontOrBackKnotIsToBeInsertedOrRemoved(
-      Dimension const& dimension,
-      ParametricCoordinate const& knot,
-      Tolerance const& tolerance) const;
 #endif
 };
 
