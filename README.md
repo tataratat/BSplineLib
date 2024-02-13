@@ -17,4 +17,5 @@ Due to aforementioned inconveniences in our applications, this project opted for
 - Direct contiguous buffer access for evaluation input and output
 - Less use of `NamedType`
 - Control points (VectorSpace) creation without copy, based on a contiguous memory view
-- Efficient tensor product using bezman's [RecursiveCombine](https://github.com/tataratat/bezman/blob/76ff2d9d6f29ea333b5f727a0ecee3d43e07e6e5/src/utils/algorithms/recursive_combine.hpp#L39))
+- Efficient tensor product using adapted version of bezman's [RecursiveCombine](https://github.com/tataratat/bezman/blob/76ff2d9d6f29ea333b5f727a0ecee3d43e07e6e5/src/utils/algorithms/recursive_combine.hpp#L39)
+- Tests implemented in `splinepy`
