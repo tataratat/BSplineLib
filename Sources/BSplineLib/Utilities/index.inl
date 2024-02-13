@@ -215,7 +215,7 @@ template<int size>
 constexpr Index<size> Index<size>::Last(const Length_& length) {
   Value_ value;
 
-  auto* v_iter = value.begin();
+  auto v_iter = value.begin();
   for (const int& len : length) {
     if (len != 0) {
       *v_iter = len - 1;
