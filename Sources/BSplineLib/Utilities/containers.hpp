@@ -97,9 +97,9 @@ GetFront(ContainerType const& container);
 template<typename ContainerType>
 constexpr typename ContainerType::value_type const&
 GetBack(ContainerType const& container);
-template<typename ContainerType, typename Name>
+template<typename ContainerType>
 constexpr typename ContainerType::value_type const&
-GetValue(ContainerType const& container, NamedType<Name, int> const& index);
+GetValue(ContainerType const& container, int const& index);
 
 template<typename ContainerTypeTo, typename ContainerTypeFrom>
 constexpr ContainerTypeTo TransformNamedTypes(ContainerTypeFrom const& from);
@@ -433,8 +433,9 @@ public:
   constexpr Data& operator=(const Data& rhs) {
     // size check is crucial, so runtime check
     if (size_ != rhs.size_) {
-      throw bsplinelib::utilities::error_handling::RuntimeError(
-          "Data::operator=(const Data&) - size mismatch between rhs");
+      Reallocate(rhs.size_);
+      // throw bsplinelib::utilities::error_handling::RuntimeError(
+      //     "Data::operator=(const Data&) - size mismatch between rhs");
     }
     std::copy_n(rhs.data(), rhs.size(), data_);
 

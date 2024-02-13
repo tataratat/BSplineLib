@@ -218,7 +218,7 @@ void Nurbs<para_dim>::InsertKnot(Dimension const& dimension,
   Message const kName{"bsplinelib::splines::Nurbs::InsertKnot"};
 
   try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, para_dim - 1);
+    Base_::parameter_space_->DimensionBoundCheck("", dimension);
     Base_::parameter_space_->ThrowIfParametricCoordinateIsOutsideScope(
         dimension,
         knot,
@@ -249,7 +249,7 @@ Multiplicity Nurbs<para_dim>::RemoveKnot(Dimension const& dimension,
   Message const kName{"bsplinelib::splines::Nurbs::RemoveKnot"};
 
   try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, para_dim - 1);
+    Base_::parameter_space_->DimensionBoundCheck("", dimension);
     ThrowIfToleranceIsNegative(tolerance_removal);
     ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
@@ -279,7 +279,7 @@ void Nurbs<para_dim>::ElevateDegree(Dimension const& dimension,
   Message const kName{"bsplinelib::splines::Nurbs::ElevateDegree"};
 
   try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, para_dim - 1);
+    Base_::parameter_space_->DimensionBoundCheck("", dimension);
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
     Throw(exception, kName);
@@ -301,7 +301,7 @@ bool Nurbs<para_dim>::ReduceDegree(Dimension const& dimension,
   Message const kName{"bsplinelib::splines::Nurbs::ReduceDegree"};
 
   try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, para_dim - 1);
+    Base_::parameter_space_->DimensionBoundCheck("", dimension);
     ThrowIfToleranceIsNegative(tolerance_removal);
     ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {

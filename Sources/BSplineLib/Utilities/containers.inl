@@ -37,13 +37,13 @@ GetBack(ContainerType const& container) {
 #endif
 }
 
-template<typename ContainerType, typename Name>
+template<typename ContainerType>
 constexpr typename ContainerType::value_type const&
-GetValue(ContainerType const& container, NamedType<Name, int> const& index) {
+GetValue(ContainerType const& container, int const& index) {
 #ifndef NDEBUG
-  return container.at(index.Get());
+  return container.at(index);
 #else
-  return container[index.Get()];
+  return container[index];
 #endif
 }
 

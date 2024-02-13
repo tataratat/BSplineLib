@@ -52,16 +52,6 @@ KnotVector::KnotVector(Knots_ knots, Tolerance const& tolerance)
 #endif
 }
 
-Knot const& KnotVector::operator[](Index const& index) const {
-#ifndef NDEBUG
-  try {
-    Index::ThrowIfNamedIntegerIsOutOfBounds(index, knots_.size() - 1);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, "bsplinelib::parameter_spaces::KnotVector::operator[]");
-  }
-#endif
-  return knots_[index.Get()];
-}
 Knot const& KnotVector::operator[](int const& index) const {
   return knots_[index];
 }
@@ -354,19 +344,18 @@ void KnotVector::ThrowIfTooSmallOrNotNonDecreasing(
     throw DomainError(
         "The knot vector has to contain at least 2 knots but only contains "
         + to_string(number_of_knots) + ".");
-  Index::ForEach(1, number_of_knots, [&](Index const& knot) {
-    Index::Type_ const& index = knot.Get();
-    Knot const &current_knot = knots_[index],
-               &previous_knot = knots_[index - 1];
+
+  for (int i{1}; i < number_of_knots; ++i) {
+    Knot const &current_knot = knots_[i], &previous_knot = knots_[i - 1];
+
     if ((current_knot + tolerance) < previous_knot)
       throw DomainError("The knot vector has to be a non-decreasing sequence "
                         "of real numbers but the knot "
-                        + to_string(current_knot) + " at index "
-                        + to_string(index)
+                        + to_string(current_knot) + " at index " + to_string(i)
                         + " is less than the "
                           "previous knot "
                         + to_string(previous_knot) + ".");
-  });
+  }
 }
 
 } // namespace bsplinelib::parameter_spaces

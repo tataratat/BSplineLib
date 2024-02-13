@@ -47,10 +47,12 @@ template<int para_dim>
 typename ParameterSpace<para_dim>::NumberOfBasisFunctions_
 ParameterSpace<para_dim>::GetNumberOfBasisFunctions() const {
   NumberOfBasisFunctions_ number_of_basis_functions;
-  Dimension::ForEach(0, para_dim, [&](Dimension const& dimension) {
-    number_of_basis_functions[dimension.Get()] =
-        GetNumberOfBasisFunctions(dimension);
-  });
+  int i{};
+  for (int& nobf : number_of_basis_functions) {
+    nobf = GetNumberOfBasisFunctions(i++);
+  }
+  assert(i == para_dim);
+
   return number_of_basis_functions;
 }
 
@@ -61,8 +63,7 @@ int ParameterSpace<para_dim>::GetTotalNumberOfBasisFunctions() const {
   return std::reduce(number_of_basis_functions.begin(),
                      number_of_basis_functions.end(),
                      Length{1},
-                     std::multiplies{})
-      .Get();
+                     std::multiplies{});
 }
 
 template<int para_dim>
@@ -106,18 +107,19 @@ ParameterSpace<para_dim>::FindFirstNonZeroBasisFunction(
           "FindFirstNonZeroBasisFunction");
   }
 #endif
-  IndexValue_ first_non_zero_basis_function_index_value;
-  Dimension::ForEach(0, para_dim, [&](Dimension const& dimension) {
-    Dimension::Type_ const& current_dimension = dimension.Get();
-    first_non_zero_basis_function_index_value[current_dimension] =
-        Index{knot_vectors_[current_dimension]->FindSpan(
-                  parametric_coordinate[current_dimension],
-                  tolerance)
-              - degrees_[current_dimension]};
-  });
-  return Index_{GetNumberOfBasisFunctions(),
-                first_non_zero_basis_function_index_value};
+  Index_ first_support;
+  first_support.GetLength() = std::move(GetNumberOfBasisFunctions());
+  first_support.GetInvalid() = false;
+  IndexValue_& first_index = first_support.GetValue();
+
+  for (int i{}; i < para_dim; ++i) {
+    first_index[i] =
+        knot_vectors_[i]->FindSpan(parametric_coordinate[i], tolerance)
+        - degrees_[i];
+  }
+  return first_support;
 }
+
 template<int para_dim>
 typename ParameterSpace<para_dim>::KnotSpans_
 ParameterSpace<para_dim>::FindKnotSpans(const Type_* parametric_coordinate,
@@ -134,21 +136,18 @@ typename ParameterSpace<para_dim>::BezierInformation_
 ParameterSpace<para_dim>::DetermineBezierExtractionKnots(
     Dimension const& dimension,
     Tolerance const& tolerance) const {
-  Dimension::Type_ const& dimension_value = dimension.Get();
 #ifndef NDEBUG
   Message const kName{"bsplinelib::parameter_spaces::ParameterSpace::"
                       "DetermineBezierExtractionKnots"};
 
+  DimensionBoundCheck(kName, dimension);
   try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, para_dim - 1);
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
-    Throw(exception, kName, dimension_value);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, kName, dimension_value);
+    Throw(exception, kName, dimension);
   }
 #endif
-  KnotVector const& knot_vector = *knot_vectors_[dimension_value];
+  KnotVector const& knot_vector = *knot_vectors_[dimension];
   Knots_ const& unique_knots = knot_vector.GetUniqueKnots(tolerance);
   typename Knots_::const_iterator const &first_interior_knot =
                                             (unique_knots.begin() + 1),
@@ -163,7 +162,7 @@ ParameterSpace<para_dim>::DetermineBezierExtractionKnots(
       [&](ParametricCoordinate const& interior_knot) {
         std::fill_n(
             std::back_inserter(bezier_extraction_knots),
-            degrees_[dimension_value]
+            degrees_[dimension]
                 - knot_vector.DetermineMultiplicity(interior_knot).Get(),
             interior_knot);
       });
@@ -409,32 +408,29 @@ ParameterSpace<para_dim>::InsertKnot(Dimension const& dimension,
                                      Knot_ knot,
                                      Multiplicity const& multiplicity,
                                      Tolerance const& tolerance) {
-  Dimension::Type_ const& dimension_value = dimension.Get();
 #ifndef NDEBUG
   Message const kName(
       "bsplinelib::parameter_spaces::ParameterSpace::InsertKnot");
 
+  DimensionBoundCheck(kName, dimension);
   try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, para_dim - 1);
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-    knot_vectors_[dimension_value]->ThrowIfParametricCoordinateIsOutsideScope(
+    knot_vectors_[dimension]->ThrowIfParametricCoordinateIsOutsideScope(
         knot,
         tolerance);
     ThrowIfFrontOrBackKnotIsToBeInsertedOrRemoved(dimension, knot, tolerance);
   } catch (DomainError const& exception) {
-    Throw(exception, kName, dimension_value);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, kName, dimension_value);
+    Throw(exception, kName, dimension);
   } catch (InvalidArgument const& exception) {
-    Throw(exception, kName, dimension_value);
+    Throw(exception, kName, dimension);
   }
 #endif
-  KnotVector& knot_vector = *knot_vectors_[dimension_value];
+  KnotVector& knot_vector = *knot_vectors_[dimension];
   // instead of (degree - current_multiplicity),
   // clip at (degree - current_multiplicity) + 1 is to allow C^-1
   Multiplicity const insertion{std::min(
       multiplicity.Get(),
-      degrees_[dimension_value]
+      degrees_[dimension]
           - knot_vector.DetermineMultiplicity(knot, tolerance).Get() + 1)};
   InsertionInformation_ const& insertion_information =
       DetermineInsertionInformation(dimension, knot, insertion, tolerance);
@@ -448,25 +444,24 @@ ParameterSpace<para_dim>::RemoveKnot(Dimension const& dimension,
                                      Knot_ const& knot,
                                      Multiplicity const& multiplicity,
                                      Tolerance const& tolerance) {
-  Dimension::Type_ const& dimension_value = dimension.Get();
 #ifndef NDEBUG
   Message const kName{
       "bsplinelib::parameter_spaces::ParameterSpace::RemoveKnot"};
+  DimensionBoundCheck(kName, dimension);
 
   try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, para_dim - 1);
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
     ThrowIfFrontOrBackKnotIsToBeInsertedOrRemoved(dimension, knot, tolerance);
   } catch (DomainError const& exception) {
-    Throw(exception, kName, dimension_value);
+    Throw(exception, kName, dimension);
   } catch (OutOfRange const& exception) {
-    Throw(exception, kName, dimension_value);
+    Throw(exception, kName, dimension);
   } catch (InvalidArgument const& exception) {
-    Throw(exception, kName, dimension_value);
+    Throw(exception, kName, dimension);
   }
 #endif
   if (Multiplicity const& removals =
-          knot_vectors_[dimension_value]->Remove(knot, multiplicity, tolerance);
+          knot_vectors_[dimension]->Remove(knot, multiplicity, tolerance);
       removals != Multiplicity{}) {
     return DetermineInsertionInformation(dimension, knot, removals, tolerance);
   } else {
@@ -480,24 +475,23 @@ typename ParameterSpace<para_dim>::ElevationInformation_
 ParameterSpace<para_dim>::ElevateDegree(Dimension const& dimension,
                                         Multiplicity const& multiplicity,
                                         Tolerance const& tolerance) {
-  Dimension::Type_ const& dimension_value = dimension.Get();
 #ifndef NDEBUG
   Message const kName{
       "bsplinelib::parameter_spaces::ParameterSpace::ElevateDegree"};
+  DimensionBoundCheck(kName, dimension);
 
   try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, para_dim - 1);
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
-    Throw(exception, kName, dimension_value);
+    Throw(exception, kName, dimension);
   } catch (OutOfRange const& exception) {
-    Throw(exception, kName, dimension_value);
+    Throw(exception, kName, dimension);
   }
 #endif
   ElevationInformation_ const& bezier_information =
       DetermineElevationInformation(dimension, multiplicity);
-  knot_vectors_[dimension_value]->IncreaseMultiplicities(multiplicity);
-  degrees_[dimension_value] += Degree{multiplicity.Get()};
+  knot_vectors_[dimension]->IncreaseMultiplicities(multiplicity);
+  degrees_[dimension] += Degree{multiplicity.Get()};
   return bezier_information;
 }
 
@@ -506,23 +500,22 @@ typename ParameterSpace<para_dim>::ElevationInformation_
 ParameterSpace<para_dim>::ReduceDegree(Dimension const& dimension,
                                        Multiplicity const& multiplicity,
                                        Tolerance const& tolerance) {
-  Dimension::Type_ const& dimension_value = dimension.Get();
 #ifndef NDEBUG
   Message const kName{
       "bsplinelib::parameter_spaces::ParameterSpace::ReduceDegree"};
+  DimensionBoundCheck(kName, dimension);
 
   try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, para_dim - 1);
     utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
   } catch (InvalidArgument const& exception) {
-    Throw(exception, kName, dimension_value);
+    Throw(exception, kName, dimension);
   } catch (OutOfRange const& exception) {
-    Throw(exception, kName, dimension_value);
+    Throw(exception, kName, dimension);
   }
 #endif
-  Degree& degree = degrees_[dimension_value];
+  Degree& degree = degrees_[dimension];
   Multiplicity const reduction{std::min(multiplicity.Get(), degree - 1)};
-  knot_vectors_[dimension_value]->DecreaseMultiplicities(reduction);
+  knot_vectors_[dimension]->DecreaseMultiplicities(reduction);
   degree -= reduction.Get();
   return DetermineElevationInformation(dimension, reduction);
 }
@@ -533,12 +526,10 @@ ParameterSpace<para_dim>::Write(Precision const& precision) const {
   using std::get, std::tuple_element_t, utilities::string_operations::Write;
 
   OutputInformation_ knot_vectors_degrees_and_maximum_basis_function_indices;
-  Dimension::ForEach(0, para_dim, [&](Dimension const& dimension) {
-    Dimension::Type_ const& current_dimension = dimension.Get();
-    get<0>(knot_vectors_degrees_and_maximum_basis_function_indices)
-        [current_dimension] =
-            knot_vectors_[current_dimension]->Write(precision);
-  });
+  for (int i{}; i < para_dim; ++i) {
+    get<0>(knot_vectors_degrees_and_maximum_basis_function_indices)[i] =
+        knot_vectors_[i]->Write(precision);
+  }
   get<1>(knot_vectors_degrees_and_maximum_basis_function_indices) =
       Write<tuple_element_t<1, OutputInformation_>>(degrees_, precision);
   get<2>(knot_vectors_degrees_and_maximum_basis_function_indices) =
@@ -553,7 +544,7 @@ void ParameterSpace<para_dim>::ThrowIfParametricCoordinateIsOutsideScope(
     Dimension const& dimension,
     ParametricCoordinate const& parametric_coordinate,
     Tolerance const& tolerance) const {
-  knot_vectors_[dimension.Get()]->ThrowIfParametricCoordinateIsOutsideScope(
+  knot_vectors_[dimension]->ThrowIfParametricCoordinateIsOutsideScope(
       parametric_coordinate,
       tolerance);
 }
@@ -562,34 +553,32 @@ void ParameterSpace<para_dim>::ThrowIfParametricCoordinateIsOutsideScope(
 template<int para_dim>
 void ParameterSpace<para_dim>::CopyKnotVectors(
     KnotVectors_ const& knot_vectors) {
-  Dimension::ForEach(0, para_dim, [&](Dimension const& dimension) {
-    Dimension::Type_ const& current_dimension = dimension.Get();
-    knot_vectors_[current_dimension] =
-        std::make_shared<KnotVector>(*knot_vectors[current_dimension]);
-  });
+  for (int i{}; i < para_dim; ++i) {
+    knot_vectors_[i] = std::make_shared<KnotVector>(*knot_vectors[i]);
+  }
 }
 
 template<int para_dim>
 int ParameterSpace<para_dim>::GetNumberOfNonZeroBasisFunctions(
     Dimension const& dimension) const {
-  return degrees_[dimension.Get()] + 1;
+  return degrees_[dimension] + 1;
 }
 
 template<int para_dim>
 typename ParameterSpace<para_dim>::NumberOfBasisFunctions_
 ParameterSpace<para_dim>::GetNumberOfNonZeroBasisFunctions() const {
   NumberOfBasisFunctions_ number_of_non_zero_basis_functions;
-  Dimension::ForEach(0, para_dim, [&](Dimension const& dimension) {
-    number_of_non_zero_basis_functions[dimension.Get()] =
-        Length{GetNumberOfNonZeroBasisFunctions(dimension)};
-  });
+  for (int i{}; i < para_dim; ++i) {
+    number_of_non_zero_basis_functions[i] = GetNumberOfNonZeroBasisFunctions(i);
+  }
+
   return number_of_non_zero_basis_functions;
 }
 
 template<int para_dim>
 Length ParameterSpace<para_dim>::GetNumberOfBasisFunctions(
     Dimension const& dimension) const {
-  return Length{knot_vectors_[dimension.Get()]->GetSize()
+  return Length{knot_vectors_[dimension]->GetSize()
                 - GetNumberOfNonZeroBasisFunctions(dimension)};
 }
 
@@ -601,8 +590,7 @@ ParameterSpace<para_dim>::DetermineInsertionInformation(
     ParametricCoordinate const& knot,
     Multiplicity const& multiplicity,
     Tolerance const& tolerance) const {
-  Dimension::Type_ const& dimension_value = dimension.Get();
-  KnotVector& knot_vector = *knot_vectors_[dimension_value];
+  KnotVector& knot_vector = *knot_vectors_[dimension];
   MultiplicityType_ const& multiplicity_value = multiplicity.Get();
   MultiplicityType_ const previous_multiplicity{
       knot_vector.DetermineMultiplicity(knot, tolerance).Get()};
@@ -610,28 +598,21 @@ ParameterSpace<para_dim>::DetermineInsertionInformation(
   InsertionCoefficients_ knot_ratios;
   knot_ratios.reserve(multiplicity_value);
   Index const end_knot{knot_span - previous_multiplicity};
-  Multiplicity::ForEach(
-      0,
-      multiplicity_value,
-      [&](Multiplicity const& insertion) {
-        KnotRatios_ current_knot_ratios;
-        MultiplicityType_ const remaining_mulitplicity{degrees_[dimension_value]
-                                                       - insertion.Get()};
-        current_knot_ratios.reserve(remaining_mulitplicity
-                                    - previous_multiplicity);
-        Index::ForEach(
-            knot_span - remaining_mulitplicity + 1,
-            end_knot.Get() + 1,
-            [&](Index const& current_knot) {
-              ParametricCoordinate const& lower_knot =
-                  knot_vector[current_knot];
-              current_knot_ratios.push_back(
-                  (knot - lower_knot)
-                  / (knot_vector[current_knot + Index{remaining_mulitplicity}]
-                     - lower_knot));
-            });
-        knot_ratios.push_back(current_knot_ratios);
-      });
+
+  // multiplicity loop
+  for (int i{}; i < multiplicity_value; ++i) {
+    KnotRatios_ current_knot_ratios;
+    MultiplicityType_ const remaining_mulitplicity{degrees_[dimension] - i};
+    current_knot_ratios.reserve(remaining_mulitplicity - previous_multiplicity);
+
+    for (int j{knot_span - remaining_mulitplicity + 1}; j < end_knot + 1; ++j) {
+      ParametricCoordinate const& lower_knot = knot_vector[j];
+      current_knot_ratios.push_back(
+          (knot - lower_knot)
+          / (knot_vector[j + remaining_mulitplicity] - lower_knot));
+    }
+    knot_ratios.push_back(current_knot_ratios);
+  }
 
   return InsertionInformation_{end_knot, knot_ratios};
 }
@@ -641,66 +622,36 @@ typename ParameterSpace<para_dim>::ElevationInformation_
 ParameterSpace<para_dim>::DetermineElevationInformation(
     Dimension const& dimension,
     Multiplicity const& multiplicity) const {
-  using IndexType = Index::Type_;
   using utilities::math_operations::ComputeBinomialCoefficient;
 
-  Degree const& degree = degrees_[dimension.Get()];
+  Degree const& degree = degrees_[dimension];
   MultiplicityType_ const& multiplicity_value = multiplicity.Get();
-  Index::Type_ const& maximum_bezier_coordinate = (degree + multiplicity_value);
+  const int maximum_bezier_coordinate = (degree + multiplicity_value);
   ElevationCoefficients_ bezier_coefficients;
   bezier_coefficients.reserve(maximum_bezier_coordinate - 1);
-  Index::ForEach(
-      1,
-      maximum_bezier_coordinate,
-      [&](Index const& bezier_coordinate) {
-        IndexType const &bezier_coordinate_value = bezier_coordinate.Get(),
-                        &current_bezier_coordinate_end{
-                            std::min(degree, bezier_coordinate_value) + 1};
-        // Capturing result by reference produces dangling references if maxima
-        // of the parameters are temporaries.
-        IndexType const current_bezier_coordinate_begin{
-            std::max(0, bezier_coordinate_value - multiplicity_value)};
-        BinomialRatios_ current_bezier_coefficients(
-            current_bezier_coordinate_end - current_bezier_coordinate_begin,
-            1.0
-                / ComputeBinomialCoefficient(maximum_bezier_coordinate,
-                                             bezier_coordinate_value));
-        Index::ForEach(
-            current_bezier_coordinate_begin,
-            current_bezier_coordinate_end,
-            [&](Index const& current_bezier_coordinate) {
-              IndexType const& current_bezier_coordinate_value =
-                  current_bezier_coordinate.Get();
-              current_bezier_coefficients[current_bezier_coordinate_value
-                                          - current_bezier_coordinate_begin] *=
-                  (ComputeBinomialCoefficient(degree,
-                                              current_bezier_coordinate_value)
-                   * ComputeBinomialCoefficient(
-                       multiplicity_value,
-                       bezier_coordinate_value
-                           - current_bezier_coordinate_value));
-            });
-        bezier_coefficients.push_back(current_bezier_coefficients);
-      });
+
+  for (int i{1}; i < maximum_bezier_coordinate; ++i) {
+    const int bezier_coordinate_begin{std::max(0, i - multiplicity_value)};
+    const int bezier_coordinate_end{std::min(degree, i) + 1};
+    // Capturing result by reference produces dangling references if maxima
+    // of the parameters are temporaries.
+
+    BinomialRatios_ current_bezier_coefficients(
+        bezier_coordinate_end - bezier_coordinate_begin,
+        1.0 / ComputeBinomialCoefficient(maximum_bezier_coordinate, i));
+
+    for (int j{bezier_coordinate_begin}; j < bezier_coordinate_end; ++j) {
+      current_bezier_coefficients[j - bezier_coordinate_begin] *=
+          (ComputeBinomialCoefficient(degree, j)
+           * ComputeBinomialCoefficient(multiplicity_value, i - j));
+    }
+    bezier_coefficients.push_back(current_bezier_coefficients);
+  }
+
   return ElevationInformation_{Index{degree}, bezier_coefficients};
 }
 
 #ifndef NDEBUG
-template<int para_dim>
-void ParameterSpace<para_dim>::ThrowIfBasisFunctionIndexIsInvalid(
-    Index_ const& basis_function_index) const {
-  Dimension::ForEach(0, para_dim, [&](Dimension const& dimension) {
-    try {
-      Index::ThrowIfNamedIntegerIsOutOfBounds(
-          basis_function_index[dimension],
-          GetNumberOfBasisFunctions(dimension).Get() - 1);
-    } catch (OutOfRange const& exception) {
-      throw OutOfRange("for dimension " + std::to_string(dimension.Get()) + ": "
-                       + exception.what());
-    }
-  });
-}
-
 template<int para_dim>
 void ParameterSpace<para_dim>::ThrowIfFrontOrBackKnotIsToBeInsertedOrRemoved(
     Dimension const& dimension,
@@ -708,11 +659,10 @@ void ParameterSpace<para_dim>::ThrowIfFrontOrBackKnotIsToBeInsertedOrRemoved(
     Tolerance const& tolerance) const {
   using std::to_string;
 
-  Dimension::Type_ const& dimension_value = dimension.Get();
-  if (knot_vectors_[dimension_value]->DoesParametricCoordinateEqualFrontOrBack(
+  if (knot_vectors_[dimension]->DoesParametricCoordinateEqualFrontOrBack(
           knot,
           tolerance))
-    throw DomainError("for dimension" + to_string(dimension_value)
+    throw DomainError("for dimension" + to_string(dimension)
                       + ": Cannot insert or remove the first or last "
                         "knot "
                       + to_string(knot)

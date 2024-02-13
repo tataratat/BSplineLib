@@ -74,7 +74,9 @@ public:
   using Value_ = Array_<Index_>;
 
   Index() = default;
-  explicit Index(Length_ length, Value_ value = Value_{}, bool invalid = false);
+  explicit Index(const Length_& length,
+                 const Value_& value = Value_{},
+                 const bool invalid = false);
   Index(Index const& other) = default;
   Index(Index&& other) noexcept = default;
   Index& operator=(Index const& rhs) = default;
@@ -83,36 +85,58 @@ public:
 
   Index& operator+=(Value_ const& value);
   Index& operator-=(Value_ const& value);
-  Index& operator++();
+  constexpr Index& operator++();
   Index& Increment(Dimension const& dimension);
-  Index& operator--();
+  constexpr Index& operator--();
   Index& Decrement(Dimension const& dimension);
   friend Index operator+<size>(Index const& lhs, Value_ const& rhs);
   friend Index operator-<size>(Index const& lhs, Value_ const& rhs);
   friend bool operator==<size>(Index const& lhs, Index const& rhs);
   friend bool operator!=<size>(Index const& lhs, Index const& rhs);
-  virtual Index_ const& operator[](Dimension const& dimension) const;
-  static Index First(Length_ length);
-  static Index Behind(Length_ length);
-  static Index Last(Length_ length);
-  static Index Before(Length_ length);
+  constexpr Index_ const& operator[](Dimension const& dimension) const;
+  constexpr static Index First(const Length_& length);
+  constexpr static Index Behind(const Length_& length);
+  constexpr static Index Last(const Length_& length);
+  constexpr static Index Before(const Length_& length);
 
-  int GetTotalNumberOfIndices() const;
-  Value_ GetIndex() const;
-  Index_ GetIndex1d() const;
+  constexpr int GetTotalNumberOfIndices() const;
+  constexpr Value_ GetIndex() const;
+  constexpr Index_ GetIndex1d() const;
 
   /// @brief Reference return of GetIndex() rename since everything is called
   /// Index here.
   /// @return
-  const Value_& MultiIndex() const { return value_; }
+  constexpr const Value_& MultiIndex() const { return value_; }
+
+  /// @brief  Invalid getter
+  /// @return
+  constexpr bool& GetInvalid() { return invalid_; }
+  constexpr const bool& GetInvalid() const { return invalid_; }
+  /// @brief  Length getter
+  /// @return
+  constexpr Length_& GetLength() { return length_; }
+  constexpr const Length_& GetLength() const { return length_; }
+  /// @brief Value Getter
+  /// @return
+  constexpr Value_& GetValue() { return value_; }
+  constexpr const Value_& GetValue() const { return value_; }
 
 protected:
   bool invalid_;
   Length_ length_;
   Value_ value_;
 
+  constexpr void DimensionBoundCheck(const std::string& message,
+                                     const int& dimension) {
+    if (dimension < 0 || dimension >= size) {
+      throw OutOfRange(message + " - " + std::to_string(dimension)
+                       + " is out of bound (" + std::to_string(size) + ").");
+    }
+  }
+
 private:
-  int DetermineStride(Length_ const& length, Dimension const& dimension) const;
+  constexpr int DetermineStride(Length_ const& length,
+                                Dimension const& dimension) const;
 
 #ifndef NDEBUG
   static void ThrowIfValueIsInvalid(Length_ const& length, Value_ const& value);

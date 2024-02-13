@@ -187,6 +187,15 @@ public:
   virtual KnotVectors_& GetKnotVectors() { return knot_vectors_; }
   virtual Degrees_& GetDegrees() { return degrees_; }
 
+  constexpr void DimensionBoundCheck(const std::string& message,
+                                     const int& dimension) const {
+    if (dimension < 0 || dimension >= para_dim) {
+      throw OutOfRange(message + " - " + std::to_string(dimension)
+                       + " is out of bound (" + std::to_string(para_dim)
+                       + ").");
+    }
+  }
+
 protected:
   KnotVectors_ knot_vectors_;
   Degrees_ degrees_;
@@ -290,7 +299,7 @@ constexpr void RecursiveCombine_(const Array<BasisValues, array_dim>& factors,
       // add index offset and get beginning of corresponding control point
       const auto& index_offset_multi_index = index_offset.MultiIndex();
       index += index_offset_multi_index;
-      const auto* coeff = &coeffs(index.GetIndex1d().Get(), 0);
+      const auto* coeff = &coeffs(index.GetIndex1d(), 0);
 
       // contribute to each dim
       result.Add(fac, coeff);

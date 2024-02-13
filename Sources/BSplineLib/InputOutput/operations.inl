@@ -32,14 +32,11 @@ template<typename Coordinate>
 String WriteCoordinate3d(Coordinate const& coordinate,
                          String const& delimiter) {
   String written{coordinate[0]};
-  Dimension::ForEach(1, 3, [&](Dimension const& dimension) {
-    Dimension::Type_ const& dimension_value = dimension.Get();
+  for (int i{1}; i < 3; ++i) {
     utilities::string_operations::Append(
         written,
         delimiter,
-        dimension_value < static_cast<Type>(coordinate.size())
-            ? coordinate[dimension_value]
-            : "0");
-  });
+        i < static_cast<Type>(coordinate.size()) ? coordinate[i] : "0");
+  }
   return written;
 }

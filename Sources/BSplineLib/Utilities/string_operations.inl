@@ -125,14 +125,13 @@ ContainerTypeTo Write(ContainerTypeFrom const& from,
     } else if constexpr (is_array<TypeFrom> || is_vector<TypeFrom>) {
       using TypeTo = typename ContainerTypeTo::value_type;
 
-      Index::ForEach(0, from_size, [&](Index const& container) {
-        Index::Type_ const& current_container = container.Get();
+      for (Index i{}; i < from_size; ++i) {
         if constexpr (is_container_vector) {
-          to.emplace_back(Write<TypeTo>(from[current_container], precision));
+          to.emplace_back(Write<TypeTo>(from[i], precision));
         } else {
-          to[container] = Write<TypeTo>(from[current_container], precision);
+          to[i] = Write<TypeTo>(from[i], precision);
         }
-      });
+      };
     } else {
       static_assert(is_false<TypeFrom>,
                     "Only NamedTypes and nested std::arrays or std::vectors "

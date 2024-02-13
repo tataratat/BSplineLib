@@ -98,7 +98,7 @@ Splines Read(String const& file_name) {
     int const& entry_type = ConvertToNumber<int>(line.substr(5, 3));
     if ((entry_type == 126) || (entry_type == 128)) {
       Index const start{
-          --ConvertToNumber<Index>(TrimCharacter(line.substr(8, 8), ' '))};
+          ConvertToNumber<Index>(TrimCharacter(line.substr(8, 8), ' ')) - 1};
       getline(file, line);
       splines_read.emplace_back(
           start,
@@ -311,44 +311,48 @@ SplineEntry CreateSpline(SplineDataInt const& spline_data_int,
   using KnotVector = typename KnotVectors::value_type::element_type;
   using std::make_shared;
 
+  auto iter_fill = [](auto& to, auto& iter, const auto offset) {
+    using ToType = typename std::remove_reference_t<decltype(to)>::value_type;
+    ToType typed_offset{offset};
+    for (auto& to_elem : to) {
+      to_elem = ToType{*(iter++) + typed_offset};
+    }
+  };
+
+  // iter_fill integers
   SplineDataInt::const_iterator spline_datum_int{spline_data_int.begin() + 1};
   typename ParameterSpace::NumberOfBasisFunctions_ number_of_coordinates;
-  Dimension::ForEach(0, para_dim, [&](Dimension const& dimension) {
-    number_of_coordinates[dimension.Get()] = Length{*(spline_datum_int++) + 1};
-  });
   typename ParameterSpace::Degrees_ degrees;
-  Dimension::ForEach(0, para_dim, [&](Dimension const& dimension) {
-    degrees[dimension.Get()] = Degree{*(spline_datum_int++)};
-  });
+
+  iter_fill(number_of_coordinates, spline_datum_int, 1);
+  iter_fill(degrees, spline_datum_int, 0);
+
+  // iter_fill doubles
   SplineDataDouble::const_iterator spline_datum_double{
       spline_data_double.begin() + knot_vector_start};
   KnotVectors knot_vectors;
-  Dimension::ForEach(0, para_dim, [&](Dimension const& dimension) {
-    Dimension::Type_ const& current_dimension = dimension.Get();
-    typename ParameterSpace::Knots_ knots{};
-    Index::ForEach(
-        0,
-        number_of_coordinates[current_dimension].Get()
-            + degrees[current_dimension] + 1,
-        [&](Index const&) { knots.emplace_back(*(spline_datum_double++)); });
-    knot_vectors[current_dimension] = make_shared<KnotVector>(knots);
-  });
+  for (int i{}; i < para_dim; ++i) {
+    auto& knot_vector = knot_vectors[i];
+    knot_vector = make_shared<KnotVector>();
+    Vector<double>& knots = knot_vector->GetKnots();
+    knots.resize(number_of_coordinates[i] + degrees[i] + 1);
+    iter_fill(knots, spline_datum_double, 0.0);
+  }
+
+  // create para space
   SharedPointer<ParameterSpace> parameter_space{
       make_shared<ParameterSpace>(std::move(knot_vectors), std::move(degrees))};
+
+  // now vector space
   int const& total_number_of_coordinates =
       parameter_space->GetTotalNumberOfBasisFunctions();
   typename WeightedVectorSpace::Weights_ weights(total_number_of_coordinates);
-  typename WeightedVectorSpace::Weights_::value_type* w_ptr = weights.begin();
-  for (int i{}; i < weights.size(); ++i) {
-    *w_ptr++ = *(spline_datum_double++);
-  }
+  iter_fill(weights, spline_datum_double, 0.0);
 
   // always 3D!
   typename VectorSpace::Coordinates_ coordinates(total_number_of_coordinates,
                                                  3);
-  for (auto& c : coordinates) {
-    c = *(spline_datum_double++);
-  }
+  iter_fill(coordinates, spline_datum_double, 0.0);
 
   if (*(spline_datum_int + 2) == 1) {
     return make_shared<BSpline>(
@@ -434,11 +438,10 @@ void WriteSpline(SplineType const& spline,
            number_of_basis_functions : get<2>(parameter_space))
     Append(parameter_data_section_contribution,
            delimiter,
-           to_string(
-               ConvertToNumber<typename SplineType::ParameterSpace_::
-                                   NumberOfBasisFunctions_::value_type::Type_>(
-                   number_of_basis_functions)
-               - 1));
+           to_string(ConvertToNumber<typename SplineType::ParameterSpace_::
+                                         NumberOfBasisFunctions_::value_type>(
+                         number_of_basis_functions)
+                     - 1));
   Append(parameter_data_section_contribution,
          delimiter,
          get<1>(parameter_space));
@@ -448,9 +451,9 @@ void WriteSpline(SplineType const& spline,
   Append(parameter_data_section_contribution,
          delimiter,
          is_rational ? "0" : "1");
-  Dimension::ForEach(0, para_dim, [&](Dimension const&) {
+  for (int i{}; i < para_dim; ++i) {
     Append(parameter_data_section_contribution, delimiter, "0");
-  });
+  }
   KnotVectors const& knot_vectors = get<0>(parameter_space);
   Append(parameter_data_section_contribution, delimiter, knot_vectors);
   VectorSpace const& vector_space = get<1>(spline_written);
@@ -472,14 +475,13 @@ void WriteSpline(SplineType const& spline,
                     delimiter,
                     operations::WriteCoordinate3d(coordinate, ","));
            });
-  Dimension::ForEach(0, para_dim, [&](Dimension const& dimension) {
-    typename KnotVectors::value_type const& knot_vector =
-        knot_vectors[dimension.Get()];
+  for (int i{}; i < para_dim; ++i) {
+    typename KnotVectors::value_type const& knot_vector = knot_vectors[i];
     Append(parameter_data_section_contribution, delimiter, knot_vector[0]);
     Append(parameter_data_section_contribution,
            delimiter,
            utilities::containers::GetBack(knot_vector));
-  });
+  };
 }
 
 String ConvertToHollerith(String const& raw_string) {

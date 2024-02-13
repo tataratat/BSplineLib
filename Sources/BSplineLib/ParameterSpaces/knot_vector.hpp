@@ -61,7 +61,6 @@ public:
   KnotVector& operator=(KnotVector&& rhs) noexcept = default;
   virtual ~KnotVector() = default;
 
-  virtual Knot_ const& operator[](Index const& index) const;
   virtual Knot_ const& operator[](int const& index) const;
 
   virtual int GetSize() const;
