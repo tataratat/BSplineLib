@@ -240,7 +240,7 @@ constexpr Index<size> Index<size>::Before(const Length_& length) {
 
 template<int size>
 constexpr int Index<size>::GetTotalNumberOfIndices() const {
-  return DetermineStride(length_, Dimension{size});
+  return DetermineStride(length_, size);
 }
 
 template<int size>
@@ -269,18 +269,6 @@ constexpr int Index<size>::DetermineStride(Length_ const& length,
   }
 
   return stride;
-  // typename Length_::const_iterator const& begin = length.begin();
-  // return std::transform_reduce(begin,
-  //                              begin + dimension.Get(),
-  //                              1,
-  //                              std::multiplies{},
-  //                              [](Length const& length) {
-  //                                if (length == Length{}) {
-  //                                  return 1;
-  //                                } else {
-  //                                  return length;
-  //                                }
-  //                              });
 }
 
 #ifndef NDEBUG
