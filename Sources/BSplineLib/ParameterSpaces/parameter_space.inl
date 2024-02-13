@@ -132,7 +132,7 @@ ParameterSpace<para_dim>::DetermineBezierExtractionKnots(
     Tolerance const& tolerance) const {
 
   assert(tolerance > 0.0);
-  DimensionBoundCheck(BSPLINELIB_HERE(), dimension, true);
+  DimensionBoundCheck(BSPLINELIB_FUNC(), dimension, true);
 
   KnotVector const& knot_vector = *knot_vectors_[dimension];
   Knots_ const& unique_knots = knot_vector.GetUniqueKnots(tolerance);
@@ -398,11 +398,11 @@ ParameterSpace<para_dim>::InsertKnot(Dimension const& dimension,
   assert(tolerance > 0.0);
 
   // runtime checks
-  DimensionBoundCheck(BSPLINELIB_HERE(), dimension, true);
-  KnotWithinBoundCheck(BSPLINELIB_HERE(), dimension, knot, true);
+  DimensionBoundCheck(BSPLINELIB_FUNC(), dimension, true);
+  KnotWithinBoundCheck(BSPLINELIB_FUNC(), dimension, knot, true);
 
   // if it is on bound, early exit
-  if (!KnotNotOnBoundCheck(BSPLINELIB_HERE(),
+  if (!KnotNotOnBoundCheck(BSPLINELIB_FUNC(),
                            dimension,
                            knot,
                            tolerance,
@@ -434,11 +434,11 @@ ParameterSpace<para_dim>::RemoveKnot(Dimension const& dimension,
   assert(tolerance > 0.0);
 
   // runtime checks
-  DimensionBoundCheck(BSPLINELIB_HERE(), dimension, true);
-  KnotWithinBoundCheck(BSPLINELIB_HERE(), dimension, knot, true);
+  DimensionBoundCheck(BSPLINELIB_FUNC(), dimension, true);
+  KnotWithinBoundCheck(BSPLINELIB_FUNC(), dimension, knot, true);
 
   // if it is on bound, early exit
-  if (!KnotNotOnBoundCheck(BSPLINELIB_HERE(),
+  if (!KnotNotOnBoundCheck(BSPLINELIB_FUNC(),
                            dimension,
                            knot,
                            tolerance,
@@ -462,7 +462,7 @@ ParameterSpace<para_dim>::ElevateDegree(Dimension const& dimension,
                                         Multiplicity const& multiplicity,
                                         Tolerance const& tolerance) {
   assert(tolerance > 0.0);
-  DimensionBoundCheck(BSPLINELIB_HERE(), dimension, true);
+  DimensionBoundCheck(BSPLINELIB_FUNC(), dimension, true);
 
   ElevationInformation_ const& bezier_information =
       DetermineElevationInformation(dimension, multiplicity);
@@ -477,7 +477,7 @@ ParameterSpace<para_dim>::ReduceDegree(Dimension const& dimension,
                                        Multiplicity const& multiplicity,
                                        Tolerance const& tolerance) {
   assert(tolerance > 0.0);
-  DimensionBoundCheck(BSPLINELIB_HERE(), dimension, true);
+  DimensionBoundCheck(BSPLINELIB_FUNC(), dimension, true);
 
   Degree& degree = degrees_[dimension];
   Multiplicity const reduction{std::min(multiplicity.Get(), degree - 1)};
@@ -616,22 +616,3 @@ ParameterSpace<para_dim>::DetermineElevationInformation(
 
   return ElevationInformation_{Index{degree}, bezier_coefficients};
 }
-
-#ifndef NDEBUG
-template<int para_dim>
-void ParameterSpace<para_dim>::ThrowIfFrontOrBackKnotIsToBeInsertedOrRemoved(
-    Dimension const& dimension,
-    ParametricCoordinate const& knot,
-    Tolerance const& tolerance) const {
-  using std::to_string;
-
-  if (knot_vectors_[dimension]->DoesParametricCoordinateEqualFrontOrBack(
-          knot,
-          tolerance))
-    throw DomainError("for dimension" + to_string(dimension)
-                      + ": Cannot insert or remove the first or last "
-                        "knot "
-                      + to_string(knot)
-                      + " as only clamped knot vectors are allowed.");
-}
-#endif

@@ -142,23 +142,9 @@ void BSpline<para_dim>::InsertKnot(Dimension const& dimension,
                                    Tolerance const& tolerance) const {
   using utilities::containers::Add, utilities::containers::Multiply;
 
+  // bound checks are all done in parametric space
   ParameterSpace_& parameter_space = *Base_::parameter_space_;
-#ifndef NDEBUG
-  Message const kName{"bsplinelib::splines::BSpline::InsertKnot"};
 
-  try {
-    parameter_space.DimensionBoundCheck("", dimension); // catched here - no msg
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-    parameter_space.ThrowIfParametricCoordinateIsOutsideScope(dimension,
-                                                              knot,
-                                                              tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, kName, dimension);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, kName, dimension);
-  }
-
-#endif
   VectorSpace_& vector_space = *vector_space_;
   IndexLength_ number_of_coordinates{
       parameter_space.GetNumberOfBasisFunctions()};
@@ -227,24 +213,9 @@ Multiplicity BSpline<para_dim>::RemoveKnot(Dimension const& dimension,
   using utilities::containers::Divide, utilities::containers::Multiply,
       utilities::containers::Subtract;
 
-#ifndef NDEBUG
-  using utilities::numeric_operations::ThrowIfToleranceIsNegative;
-
-  Message const kName{"bsplinelib::splines::BSpline::RemoveKnot"};
-
-  try {
-    Base_::parameter_space_->DimensionBoundCheck(
-        "",
-        dimension); // catched here - no msg
-    ThrowIfToleranceIsNegative(tolerance_removal);
-    ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, kName, dimension);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, kName, dimension);
-  }
-#endif
+  // bound checks are all done in parametric space
   ParameterSpace_& parameter_space = *Base_::parameter_space_;
+
   ParameterSpace_ parameter_space_backup{parameter_space};
   IndexLength_ number_of_coordinates{
       parameter_space.GetNumberOfBasisFunctions()};
@@ -321,20 +292,7 @@ void BSpline<para_dim>::ElevateDegree(Dimension const& dimension,
   using utilities::containers::AddAndAssignToFirst,
       utilities::containers::GetBack, utilities::containers::Multiply;
 
-#ifndef NDEBUG
-  Message const kName{"bsplinelib::splines::BSpline::ElevateDegree"};
-
-  try {
-    Base_::parameter_space_->DimensionBoundCheck(
-        "",
-        dimension); // catched here - no msg
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, kName, dimension);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, kName, dimension);
-  }
-#endif
+  // bound checks are all done in parametric space
   ParameterSpace_& parameter_space = *Base_::parameter_space_;
   VectorSpace_& vector_space = *vector_space_;
   auto const& [number_of_segments, knots_inserted] =
@@ -427,23 +385,7 @@ bool BSpline<para_dim>::ReduceDegree(Dimension const& dimension,
       utilities::containers::Multiply,
       utilities::containers::SubtractAndAssignToFirst;
 
-#ifndef NDEBUG
-  using utilities::numeric_operations::ThrowIfToleranceIsNegative;
-
-  Message const kName{"bsplinelib::splines::BSpline::ReduceDegree"};
-
-  try {
-    Base_::parameter_space_->DimensionBoundCheck(
-        "",
-        dimension); // catched here - no msg
-    ThrowIfToleranceIsNegative(tolerance_reduction);
-    ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, kName, dimension);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, kName, dimension);
-  }
-#endif
+  // bound checks are all done in parametric space
   ParameterSpace_& parameter_space = *Base_::parameter_space_;
   ParameterSpace_ parameter_space_backup{parameter_space};
   VectorSpace_& vector_space = *vector_space_;

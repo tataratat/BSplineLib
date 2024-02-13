@@ -24,11 +24,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #include <string>
 #include <type_traits>
 
-#ifndef NDEBUG
-#define BSPLINELIB_HERE()                                                      \
-  ("\n (" + __PRETTY_FUNCTION__ + " - " + __FILE__ + ":" + __LINE__ + ") \n")
+#ifdef _MSC_VER
+#define BSPLINELIB_FUNCTION_NAME __FUNCSIG__
 #else
-#define BSPLINELIB_HERE() ("")
+#define BSPLINELIB_FUNCTION_NAME __PRETTY_FUNCTION__
+#endif
+
+#ifndef NDEBUG
+#define BSPLINELIB_FUNC() (std::string{BSPLINELIB_FUNCTION_NAME})
+#else
+#define BSPLINELIB_FUNC() ("")
 #endif
 
 // Error handling such as 1.) tracing exceptions when compiled in debug mode
