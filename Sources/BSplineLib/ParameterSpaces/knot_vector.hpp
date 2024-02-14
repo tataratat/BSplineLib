@@ -150,6 +150,10 @@ public:
   virtual OutputInformation_
   Write(Precision const& precision = kPrecision) const;
 
+  /// @brief string representation of knot vector. mainly for __repr__
+  /// @return
+  virtual std::string StringRepresentation() const;
+
 #ifndef NDEBUG
   virtual void ThrowIfParametricCoordinateIsOutsideScope(
       Knot_ const& parametric_coordinate,

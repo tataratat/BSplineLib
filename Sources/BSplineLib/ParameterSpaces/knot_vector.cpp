@@ -169,10 +169,7 @@ KnotSpan KnotVector::FindSpan(Knot const& parametric_coordinate,
   }
 #endif
   ConstIterator_ const &knots_begin = knots_.begin(), &knots_end = knots_.end();
-  auto is_less = [&](Knot const& knot,
-                     Knot const& parametric_coordinate_value) {
-    return (knot < parametric_coordinate_value);
-  };
+
   return KnotSpan{static_cast<int>(
       std::distance(
           knots_begin,
@@ -189,10 +186,6 @@ KnotSpan KnotVector::FindEffectiveSpan(Knot const& parametric_coordinate,
   // TODO need out of scope check
 
   ConstIterator_ const &knots_begin = knots_.begin(), &knots_end = knots_.end();
-  auto is_less = [&](Knot const& knot,
-                     Knot const& parametric_coordinate_value) {
-    return (knot < parametric_coordinate_value);
-  };
 
   return KnotSpan{static_cast<int>(
       std::distance(
@@ -200,14 +193,8 @@ KnotSpan KnotVector::FindEffectiveSpan(Knot const& parametric_coordinate,
           DoesParametricCoordinateEqualLastSupport(parametric_coordinate,
                                                    degree,
                                                    tolerance)
-              ? std::lower_bound(knots_begin,
-                                 knots_end,
-                                 parametric_coordinate,
-                                 is_less)
-              : std::upper_bound(knots_begin,
-                                 knots_end,
-                                 parametric_coordinate,
-                                 is_less))
+              ? std::lower_bound(knots_begin, knots_end, parametric_coordinate)
+              : std::upper_bound(knots_begin, knots_end, parametric_coordinate))
       - 1)};
 }
 
@@ -372,6 +359,24 @@ typename KnotVector::OutputInformation_
 KnotVector::Write(Precision const& precision) const {
   return utilities::string_operations::Write<OutputInformation_>(knots_,
                                                                  precision);
+}
+
+std::string KnotVector::StringRepresentation() const {
+  std::string s{"KnotVector ["};
+  const int size = GetSize();
+  // reserve enough space
+  s.reserve(size * 3 + 20);
+  int i{}, j{size - 1};
+  for (const auto& k : knots_) {
+    s.append(std::to_string(k));
+    if (i != j) {
+      s.append(", ");
+    }
+    ++i;
+  }
+  s.append("]");
+
+  return s;
 }
 
 #ifndef NDEBUG
