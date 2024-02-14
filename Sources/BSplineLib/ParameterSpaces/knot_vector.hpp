@@ -78,6 +78,10 @@ public:
   virtual bool
   DoesParametricCoordinateEqualBack(Knot_ const& parametric_coordinate,
                                     Knot_ const& tolerance = kEpsilon) const;
+  virtual bool DoesParametricCoordinateEqualLastSupport(
+      Knot_ const& parametric_coordinate,
+      const int& degree,
+      Knot_ const& tolerance = kEpsilon) const;
   virtual bool DoesParametricCoordinateEqualFrontOrBack(
       Knot_ const& parametric_coordinate,
       Tolerance const& tolerance = kEpsilon) const;
@@ -89,6 +93,15 @@ public:
   virtual int FindSpan_(Knot_ const& parametric_coordinate) const {
     return FindSpan(parametric_coordinate).Get();
   }
+
+  /// @brief this considers unclamped knot vectors. it requires degree info
+  /// @param parametric_coordinate
+  /// @param tolerance
+  /// @return
+  virtual KnotSpan
+  FindEffectiveSpan(Knot_ const& parametric_coordinate,
+                    const int& degree,
+                    Tolerance const& tolerance = kEpsilon) const;
 
   /// @brief determines multiplicity of given single knot.
   /// @param knot

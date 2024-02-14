@@ -108,7 +108,9 @@ ParameterSpace<para_dim>::FindFirstNonZeroBasisFunction(
 
   for (int i{}; i < para_dim; ++i) {
     first_index[i] =
-        knot_vectors_[i]->FindSpan(parametric_coordinate[i], tolerance)
+        knot_vectors_[i]->FindEffectiveSpan(parametric_coordinate[i],
+                                            degrees_[i],
+                                            tolerance)
         - degrees_[i];
   }
   return first_support;
@@ -188,7 +190,10 @@ ParameterSpace<para_dim>::EvaluateBasisValuesPerDimension(
     const auto& this_knot_vector = *knot_vectors_[i];
     const auto& this_knots = this_knot_vector.GetKnots();
     const int this_zero_degree_support =
-        this_knot_vector.FindSpan(this_dim_parametric_coordinate, tolerance)
+        this_knot_vector
+            .FindEffectiveSpan(this_dim_parametric_coordinate,
+                               this_dim_degree,
+                               tolerance)
             .Get();
 
     // this dim's output
@@ -261,7 +266,10 @@ ParameterSpace<para_dim>::EvaluateBasisDerivativeValuesPerDimension(
     const auto& this_knot_vector = *knot_vectors_[i];
     const auto& this_knots = this_knot_vector.GetKnots();
     const int this_zero_degree_support =
-        this_knot_vector.FindSpan(this_dim_parametric_coordinate, tolerance)
+        this_knot_vector
+            .FindEffectiveSpan(this_dim_parametric_coordinate,
+                               this_dim_degree,
+                               tolerance)
             .Get();
 
     // temporary ones that we need for second special case
