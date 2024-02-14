@@ -73,7 +73,7 @@ public:
 /// given knot vectors and degrees.
 /// @tparam para_dim
 template<int para_dim>
-class ParameterSpace : ParameterSpaceBase {
+class ParameterSpace : public ParameterSpaceBase {
 private:
   using StringArray_ = StringArray<para_dim>;
 
