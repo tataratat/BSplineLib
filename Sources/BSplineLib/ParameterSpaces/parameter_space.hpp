@@ -61,7 +61,8 @@ public:
   virtual int ParaDim() const = 0;
   virtual int GetDegree(const int dim) const = 0;
   virtual SharedPointer<KnotVector>& GetKnotVetor(const int dim) = 0;
-  virtual const SharedPointer<KnotVector>& GetKnotVetor(const int dim) const = 0;
+  virtual const SharedPointer<KnotVector>&
+  GetKnotVetor(const int dim) const = 0;
   virtual SharedPointer<KnotVector>* KnotVectorsBegin() = 0;
   virtual const SharedPointer<KnotVector>* KnotVectorsBegin() const = 0;
   virtual SharedPointer<KnotVector>* KnotVectorsEnd() = 0;
