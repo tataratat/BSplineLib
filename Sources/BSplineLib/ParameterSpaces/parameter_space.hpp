@@ -37,15 +37,44 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace bsplinelib::parameter_spaces {
 
+/// @brief base for runtime interface
+class ParameterSpaceBase {
+public:
+  ParameterSpaceBase() = default;
+  virtual ~ParameterSpaceBase() = default;
+
+  /// @brief short cut to bound check, so one can decide when to check
+  /// @param dim
+  /// @param raise
+  /// @return
+  bool DimensionBoundCheck(const int dim, bool raise) {
+    if (dim < 0 || dim >= ParaDim()) {
+      if (raise) {
+        throw OutOfRange(
+            "BSplineLib::ParameterSpaceBase - dimension out of range.");
+      }
+      return false;
+    }
+    return true;
+  }
+
+  virtual int ParaDim() const = 0;
+  virtual int GetDegree(const int dim) const = 0;
+  virtual SharedPointer<KnotVector> GetKnotVetor(const int dim) = 0;
+  virtual const SharedPointer<KnotVector> GetKnotVetor(const int dim) const = 0;
+};
+
 /// @brief ParameterSpaces provide the B-spline basis functions corresponding to
 /// given knot vectors and degrees.
 /// @tparam para_dim
 template<int para_dim>
-class ParameterSpace {
+class ParameterSpace : ParameterSpaceBase {
 private:
   using StringArray_ = StringArray<para_dim>;
 
 public:
+  static constexpr const int kParaDim = para_dim;
+
   using BinomialRatios_ = Vector<BinomialRatio>;
   using Degrees_ = Array<Degree, para_dim>;
   using Derivative_ = Array<Derivative, para_dim>;
@@ -91,7 +120,17 @@ public:
   ParameterSpace(ParameterSpace&& other) noexcept = default;
   ParameterSpace& operator=(ParameterSpace const& rhs);
   ParameterSpace& operator=(ParameterSpace&& rhs) noexcept = default;
-  virtual ~ParameterSpace() = default;
+
+  virtual int ParaDim() const { return para_dim; }
+
+  virtual int GetDegree(const int dim) const { return degrees_[dim]; }
+
+  virtual SharedPointer<KnotVector> GetKnotVetor(const int dim) {
+    return knot_vectors_[dim];
+  }
+  virtual const SharedPointer<KnotVector> GetKnotVetor(const int dim) const {
+    return knot_vectors_[dim];
+  }
 
   virtual Index_ First() const;
   virtual Index_ Behind() const;
