@@ -381,7 +381,7 @@ public:
     size_ = sub_total * shape0;
   }
 
-  /// @brief default. use SetData() and SetShape<false>
+  /// @brief default. use SetData() and SetShape
   constexpr Data() = default;
 
   /// @brief basic array ctor
@@ -433,9 +433,8 @@ public:
   constexpr Data& operator=(const Data& rhs) {
     // size check is crucial, so runtime check
     if (size_ != rhs.size_) {
-      Reallocate(rhs.size_);
-      // throw bsplinelib::utilities::error_handling::RuntimeError(
-      //     "Data::operator=(const Data&) - size mismatch between rhs");
+      throw bsplinelib::utilities::error_handling::RuntimeError(
+          "Data::operator=(const Data&) - size mismatch between rhs");
     }
     std::copy_n(rhs.data(), rhs.size(), data_);
 
