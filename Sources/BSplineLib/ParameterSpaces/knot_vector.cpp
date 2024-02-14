@@ -63,10 +63,28 @@ Knot const& KnotVector::GetFront() const { return knots_[0]; }
 Knot const& KnotVector::GetBack() const { return knots_[knots_.size() - 1]; }
 
 void KnotVector::UpdateKnot(const int id, Knot const& knot) {
-  if (knots_[id - 1] > knot || knots_[id + 1] < knot) {
+  bool good{true};
+
+  // first knot checks lower bound
+  if (id == 0) {
+    if (knots_[id + 1] < knot) {
+      good = false;
+    }
+    // last knot checks upper bound
+  } else if (id == static_cast<int>(knots_.size() - 1)) {
+    if (knots_[id - 1] > knot) {
+      good = false;
+    }
+    // otherwise, both
+  } else if (knots_[id - 1] > knot || knots_[id + 1] < knot) {
+    good = false;
+  }
+
+  if (!good) {
     throw RuntimeError(
         "KnotVector::UpdateKnot - updated knot must be non-decreasing.");
   }
+
   knots_[id] = knot;
 }
 
@@ -98,6 +116,17 @@ bool KnotVector::DoesParametricCoordinateEqualBack(
   }
 #endif
   return std::abs(static_cast<Knot>(parametric_coordinate) - GetBack())
+         < tolerance;
+}
+
+bool KnotVector::DoesParametricCoordinateEqualLastSupport(
+    Knot const& parametric_coordinate,
+    const int& degree,
+    Tolerance const& tolerance) const {
+  assert(tolerance);
+
+  return std::abs(static_cast<Knot>(parametric_coordinate)
+                  - knots_[knots_.size() - 1 - degree])
          < tolerance;
 }
 
@@ -148,6 +177,29 @@ KnotSpan KnotVector::FindSpan(Knot const& parametric_coordinate,
       std::distance(
           knots_begin,
           DoesParametricCoordinateEqualBack(parametric_coordinate, tolerance)
+              ? std::lower_bound(knots_begin, knots_end, parametric_coordinate)
+              : std::upper_bound(knots_begin, knots_end, parametric_coordinate))
+      - 1)};
+}
+
+KnotSpan KnotVector::FindEffectiveSpan(Knot const& parametric_coordinate,
+                                       const int& degree,
+                                       Tolerance const& tolerance) const {
+  assert(tolerance > 0.0);
+  // TODO need out of scope check
+
+  ConstIterator_ const &knots_begin = knots_.begin(), &knots_end = knots_.end();
+  auto is_less = [&](Knot const& knot,
+                     Knot const& parametric_coordinate_value) {
+    return (knot < parametric_coordinate_value);
+  };
+
+  return KnotSpan{static_cast<int>(
+      std::distance(
+          knots_begin,
+          DoesParametricCoordinateEqualLastSupport(parametric_coordinate,
+                                                   degree,
+                                                   tolerance)
               ? std::lower_bound(knots_begin,
                                  knots_end,
                                  parametric_coordinate,
