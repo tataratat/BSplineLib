@@ -239,6 +239,27 @@ constexpr Index<size> Index<size>::Before(const Length_& length) {
 }
 
 template<int size>
+constexpr int Index<size>::GetIndex1d(const Length_& length,
+                                      const Value_& value) {
+  auto stride = [&length](const int& dim) {
+    int s{1};
+    for (int i{}; i < dim; ++i) {
+      const int len = length[i];
+      if (len != 0) {
+        s *= len;
+      }
+    }
+    return s;
+  };
+
+  int id{};
+  for (int i{}; i < size; ++i) {
+    id += value[i] * stride(i);
+  }
+  return id;
+}
+
+template<int size>
 constexpr int Index<size>::GetTotalNumberOfIndices() const {
   return DetermineStride(length_, size);
 }

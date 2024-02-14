@@ -171,9 +171,8 @@ void BSpline<para_dim>::InsertKnot(Dimension const& dimension,
       if (current_coefficients.empty()) {
         vector_space.ReallocateInsert(
             coordinate.GetIndex1d(),
-            vector_space[Index_{previous_number_of_coordinates,
-                                coordinate_value}
-                             .GetIndex1d()
+            vector_space[Index_::GetIndex1d(previous_number_of_coordinates,
+                                            coordinate_value)
                          + slice_coordinate.GetIndex1d()]);
         continue;
       }
@@ -182,9 +181,9 @@ void BSpline<para_dim>::InsertKnot(Dimension const& dimension,
           current_coefficients.rbegin()};
       vector_space.ReallocateInsert(
           insertion_position,
-          Add(Multiply(vector_space[Index_{previous_number_of_coordinates,
-                                           coordinate_value}
-                                        .GetIndex1d()
+          Add(Multiply(vector_space[Index_::GetIndex1d(
+                                        previous_number_of_coordinates,
+                                        coordinate_value)
                                     + slice_coordinate.GetIndex1d()],
                        *coefficient),
               Multiply(

@@ -98,6 +98,7 @@ public:
   constexpr static Index Behind(const Length_& length);
   constexpr static Index Last(const Length_& length);
   constexpr static Index Before(const Length_& length);
+  constexpr static int GetIndex1d(const Length_& length, const Value_& value);
 
   constexpr int GetTotalNumberOfIndices() const;
   constexpr Value_ GetIndex() const;
