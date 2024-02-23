@@ -142,24 +142,9 @@ void BSpline<para_dim>::InsertKnot(Dimension const& dimension,
                                    Tolerance const& tolerance) const {
   using utilities::containers::Add, utilities::containers::Multiply;
 
+  // bound checks are all done in parametric space
   ParameterSpace_& parameter_space = *Base_::parameter_space_;
-  Dimension::Type_ const& dimension_value = dimension.Get();
-#ifndef NDEBUG
-  Message const kName{"bsplinelib::splines::BSpline::InsertKnot"};
 
-  try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, para_dim - 1);
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-    parameter_space.ThrowIfParametricCoordinateIsOutsideScope(dimension,
-                                                              knot,
-                                                              tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, kName, dimension_value);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, kName, dimension_value);
-  }
-
-#endif
   VectorSpace_& vector_space = *vector_space_;
   IndexLength_ number_of_coordinates{
       parameter_space.GetNumberOfBasisFunctions()};
@@ -169,26 +154,25 @@ void BSpline<para_dim>::InsertKnot(Dimension const& dimension,
   // from structured bindings
   for (KnotRatios_ const& current_coefficients : coefficients) {
     IndexLength_ number_of_coordinates_in_slice{number_of_coordinates};
-    number_of_coordinates_in_slice[dimension_value] = Length{};
+    number_of_coordinates_in_slice[dimension] = Length{};
     IndexLength_ const previous_number_of_coordinates{number_of_coordinates};
-    ++number_of_coordinates[dimension_value];
+    ++number_of_coordinates[dimension];
     for (Index_ slice_coordinate{Index_::First(number_of_coordinates_in_slice)};
          slice_coordinate != Index_::Behind(number_of_coordinates_in_slice);
          ++slice_coordinate) {
       constexpr KnotRatio_ const k1_0{1.0};
 
       IndexValue_ coordinate_value{slice_coordinate.GetIndex()};
-      coordinate_value[dimension_value] = start_value;
+      coordinate_value[dimension] = start_value;
       Index_ coordinate{number_of_coordinates, coordinate_value};
       Index const insertion_position = coordinate.GetIndex1d();
 
       // C^0 to C^-1 insertion, second case does not apply (insert repetition)
       if (current_coefficients.empty()) {
         vector_space.ReallocateInsert(
-            coordinate.GetIndex1d().Get(),
-            vector_space[Index_{previous_number_of_coordinates,
-                                coordinate_value}
-                             .GetIndex1d()
+            coordinate.GetIndex1d(),
+            vector_space[Index_::GetIndex1d(previous_number_of_coordinates,
+                                            coordinate_value)
                          + slice_coordinate.GetIndex1d()]);
         continue;
       }
@@ -196,10 +180,10 @@ void BSpline<para_dim>::InsertKnot(Dimension const& dimension,
       typename KnotRatios_::const_reverse_iterator coefficient{
           current_coefficients.rbegin()};
       vector_space.ReallocateInsert(
-          insertion_position.Get(),
-          Add(Multiply(vector_space[Index_{previous_number_of_coordinates,
-                                           coordinate_value}
-                                        .GetIndex1d()
+          insertion_position,
+          Add(Multiply(vector_space[Index_::GetIndex1d(
+                                        previous_number_of_coordinates,
+                                        coordinate_value)
                                     + slice_coordinate.GetIndex1d()],
                        *coefficient),
               Multiply(
@@ -209,7 +193,7 @@ void BSpline<para_dim>::InsertKnot(Dimension const& dimension,
       for (; coefficient < current_coefficients.rend(); ++coefficient) {
         Index const& replacement_position = coordinate.GetIndex1d();
         vector_space.Replace(
-            replacement_position.Get(),
+            replacement_position,
             Add(Multiply(vector_space[replacement_position], *coefficient),
                 Multiply(
                     vector_space[coordinate.Decrement(dimension).GetIndex1d()],
@@ -228,23 +212,9 @@ Multiplicity BSpline<para_dim>::RemoveKnot(Dimension const& dimension,
   using utilities::containers::Divide, utilities::containers::Multiply,
       utilities::containers::Subtract;
 
-  Dimension::Type_ const& dimension_value = dimension.Get();
-#ifndef NDEBUG
-  using utilities::numeric_operations::ThrowIfToleranceIsNegative;
-
-  Message const kName{"bsplinelib::splines::BSpline::RemoveKnot"};
-
-  try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, para_dim - 1);
-    ThrowIfToleranceIsNegative(tolerance_removal);
-    ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, kName, dimension_value);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, kName, dimension_value);
-  }
-#endif
+  // bound checks are all done in parametric space
   ParameterSpace_& parameter_space = *Base_::parameter_space_;
+
   ParameterSpace_ parameter_space_backup{parameter_space};
   IndexLength_ number_of_coordinates{
       parameter_space.GetNumberOfBasisFunctions()};
@@ -256,18 +226,18 @@ Multiplicity BSpline<para_dim>::RemoveKnot(Dimension const& dimension,
     VectorSpace_ const vector_space_backup{vector_space};
     KnotRatios_ const& current_coefficients = coefficients[removal.Get() - 1];
     IndexLength_ number_of_coordinates_in_slice{number_of_coordinates};
-    number_of_coordinates_in_slice[dimension_value] = Length{};
+    number_of_coordinates_in_slice[dimension] = Length{};
     IndexLength_ const previous_number_of_coordinates{number_of_coordinates};
-    --number_of_coordinates[dimension_value];
+    --number_of_coordinates[dimension];
     for (Index_ slice_coordinate{Index_::Last(number_of_coordinates_in_slice)};
          slice_coordinate != Index_::Before(number_of_coordinates_in_slice);
          --slice_coordinate) {
       constexpr KnotRatio_ const k1_0{1.0};
 
       IndexValue_ coordinate_value{slice_coordinate.GetIndex()};
-      coordinate_value[dimension_value] =
+      coordinate_value[dimension] =
           (start_value
-           - Index{static_cast<Index::Type_>(current_coefficients.size())});
+           - Index{static_cast<Index>(current_coefficients.size())});
       Index_ coordinate{previous_number_of_coordinates, coordinate_value};
       Index coordinate_index{coordinate.GetIndex1d()}, lower_coordinate_index;
       typename KnotRatios_::const_iterator coefficient{
@@ -278,7 +248,7 @@ Multiplicity BSpline<para_dim>::RemoveKnot(Dimension const& dimension,
         lower_coordinate_index = coordinate_index;
         coordinate_index = coordinate.Increment(dimension).GetIndex1d();
         vector_space.Replace(
-            coordinate_index.Get(),
+            coordinate_index,
             Divide(Subtract(vector_space[coordinate_index],
                             Multiply(vector_space[lower_coordinate_index],
                                      k1_0 - current_coefficient)),
@@ -297,7 +267,7 @@ Multiplicity BSpline<para_dim>::RemoveKnot(Dimension const& dimension,
                                .GetIndex1d()
                            + slice_coordinate.GetIndex1d() + Index{1}])
           <= tolerance_removal) {
-        vector_space.Erase(coordinate_index.Get());
+        vector_space.Erase(coordinate_index);
       } else {
         Multiplicity const& successful_removals = (multiplicity - removal);
         parameter_space_backup.RemoveKnot(dimension,
@@ -321,19 +291,7 @@ void BSpline<para_dim>::ElevateDegree(Dimension const& dimension,
   using utilities::containers::AddAndAssignToFirst,
       utilities::containers::GetBack, utilities::containers::Multiply;
 
-  Dimension::Type_ const& dimension_value = dimension.Get();
-#ifndef NDEBUG
-  Message const kName{"bsplinelib::splines::BSpline::ElevateDegree"};
-
-  try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, para_dim - 1);
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, kName, dimension_value);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, kName, dimension_value);
-  }
-#endif
+  // bound checks are all done in parametric space
   ParameterSpace_& parameter_space = *Base_::parameter_space_;
   VectorSpace_& vector_space = *vector_space_;
   auto const& [number_of_segments, knots_inserted] =
@@ -343,29 +301,29 @@ void BSpline<para_dim>::ElevateDegree(Dimension const& dimension,
   auto const& [last_segment_coordinate, coefficients] =
       parameter_space.ElevateDegree(dimension, multiplicity);
   IndexLength_ number_of_coordinates_in_slice{number_of_coordinates};
-  number_of_coordinates_in_slice[dimension_value] = Length{};
+  number_of_coordinates_in_slice[dimension] = Length{};
   for (int segment{}; segment < number_of_segments; ++segment) {
     Index const maximum_interior_coordinate{
         static_cast<int>(coefficients.size()) - 1};
     Index interior_coordinate{maximum_interior_coordinate},
-        last_coordinate{((segment + 1) * last_segment_coordinate.Get())
+        last_coordinate{((segment + 1) * last_segment_coordinate)
                         + (segment * multiplicity.Get())};
     for (; interior_coordinate >= (last_segment_coordinate - Index{1});
          --interior_coordinate) {
       BinomialRatios_ const& current_coefficients =
-          coefficients[interior_coordinate.Get()];
+          coefficients[interior_coordinate];
       IndexLength_ const previous_number_of_coordinates{number_of_coordinates};
-      ++number_of_coordinates[dimension_value];
+      ++number_of_coordinates[dimension];
       for (Index_ slice_coordinate{
                Index_::First(number_of_coordinates_in_slice)};
            slice_coordinate != Index_::Behind(number_of_coordinates_in_slice);
            ++slice_coordinate) {
         IndexValue_ coordinate_value{slice_coordinate.GetIndex()};
-        coordinate_value[dimension_value] = last_coordinate;
+        coordinate_value[dimension] = last_coordinate;
         Index_ current_coordinate{number_of_coordinates, coordinate_value};
         Index const& insertion_position = current_coordinate.GetIndex1d();
         IndexValue_ current_last_coordinate_value{coordinate_value};
-        current_last_coordinate_value[dimension_value] +=
+        current_last_coordinate_value[dimension] +=
             (maximum_interior_coordinate - interior_coordinate);
         Coordinate_ coordinate{
             Multiply(vector_space[Index_{previous_number_of_coordinates,
@@ -383,19 +341,19 @@ void BSpline<para_dim>::ElevateDegree(Dimension const& dimension,
                                             .GetIndex1d()],
                            coefficient));
             });
-        vector_space.ReallocateInsert(insertion_position.Get(), coordinate);
+        vector_space.ReallocateInsert(insertion_position, coordinate);
       }
     }
     for (; interior_coordinate >= Index{}; --interior_coordinate) {
       BinomialRatios_ const& current_coefficients =
-          coefficients[interior_coordinate.Get()];
+          coefficients[interior_coordinate];
       --last_coordinate;
       for (Index_ slice_coordinate{
                Index_::First(number_of_coordinates_in_slice)};
            slice_coordinate != Index_::Behind(number_of_coordinates_in_slice);
            ++slice_coordinate) {
         IndexValue_ coordinate_value{slice_coordinate.GetIndex()};
-        coordinate_value[dimension_value] = last_coordinate;
+        coordinate_value[dimension] = last_coordinate;
         Index_ current_coordinate{number_of_coordinates, coordinate_value};
         Index const& replacement_position = current_coordinate.GetIndex1d();
         Coordinate_ coordinate{Multiply(vector_space[replacement_position],
@@ -410,7 +368,7 @@ void BSpline<para_dim>::ElevateDegree(Dimension const& dimension,
                                             .GetIndex1d()],
                            coefficient));
             });
-        vector_space.Replace(replacement_position.Get(), coordinate);
+        vector_space.Replace(replacement_position, coordinate);
       }
     }
   }
@@ -426,22 +384,7 @@ bool BSpline<para_dim>::ReduceDegree(Dimension const& dimension,
       utilities::containers::Multiply,
       utilities::containers::SubtractAndAssignToFirst;
 
-  Dimension::Type_ const& dimension_value = dimension.Get();
-#ifndef NDEBUG
-  using utilities::numeric_operations::ThrowIfToleranceIsNegative;
-
-  Message const kName{"bsplinelib::splines::BSpline::ReduceDegree"};
-
-  try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, para_dim - 1);
-    ThrowIfToleranceIsNegative(tolerance_reduction);
-    ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, kName, dimension_value);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, kName, dimension_value);
-  }
-#endif
+  // bound checks are all done in parametric space
   ParameterSpace_& parameter_space = *Base_::parameter_space_;
   ParameterSpace_ parameter_space_backup{parameter_space};
   VectorSpace_& vector_space = *vector_space_;
@@ -454,20 +397,20 @@ bool BSpline<para_dim>::ReduceDegree(Dimension const& dimension,
       parameter_space.ReduceDegree(dimension, multiplicity);
   Degree const& elevatetd_degree = (coefficients.size() + 1);
   IndexLength_ number_of_coordinates_in_slice{number_of_coordinates};
-  number_of_coordinates_in_slice[dimension_value] = Length{};
+  number_of_coordinates_in_slice[dimension] = Length{};
   for (int segment{number_of_segments - 1}; segment >= 0; --segment) {
     Index interior_coordinate{},
         coordinate_index{1 + (segment * elevatetd_degree)};
     for (; interior_coordinate < (last_segment_coordinate - Index{1});
          ++interior_coordinate) {
       BinomialRatios_ const& current_coefficients =
-          coefficients[interior_coordinate.Get()];
+          coefficients[interior_coordinate];
       for (Index_ slice_coordinate{
                Index_::Last(number_of_coordinates_in_slice)};
            slice_coordinate != Index_::Before(number_of_coordinates_in_slice);
            --slice_coordinate) {
         IndexValue_ coordinate_value{slice_coordinate.GetIndex()};
-        coordinate_value[dimension_value] = coordinate_index;
+        coordinate_value[dimension] = coordinate_index;
         Index_ current_coordinate{number_of_coordinates, coordinate_value};
         Index const& replacement_position = current_coordinate.GetIndex1d();
         Coordinate_ coordinate{vector_space[replacement_position]};
@@ -482,7 +425,7 @@ bool BSpline<para_dim>::ReduceDegree(Dimension const& dimension,
                            coefficient));
             });
         vector_space.Replace(
-            replacement_position.Get(),
+            replacement_position,
             utilities::containers::Divide(coordinate,
                                           GetBack(current_coefficients)));
       }
@@ -492,20 +435,20 @@ bool BSpline<para_dim>::ReduceDegree(Dimension const& dimension,
     for (; interior_coordinate <= maximum_interior_coordinate;
          ++interior_coordinate) {
       BinomialRatios_ const& current_coefficients =
-          coefficients[interior_coordinate.Get()];
+          coefficients[interior_coordinate];
       IndexLength_ const previous_number_of_coordinates{number_of_coordinates};
-      --number_of_coordinates[dimension_value];
+      --number_of_coordinates[dimension];
       for (Index_ slice_coordinate{
                Index_::Last(number_of_coordinates_in_slice)};
            slice_coordinate != Index_::Before(number_of_coordinates_in_slice);
            --slice_coordinate) {
         IndexValue_ coordinate_value{slice_coordinate.GetIndex()};
-        coordinate_value[dimension_value] = coordinate_index;
+        coordinate_value[dimension] = coordinate_index;
         Index_ current_coordinate{previous_number_of_coordinates,
                                   coordinate_value};
         Index const& erasure_position = current_coordinate.GetIndex1d();
         IndexValue_ current_last_coordinate_value{coordinate_value};
-        current_last_coordinate_value[dimension_value] +=
+        current_last_coordinate_value[dimension] +=
             (maximum_interior_coordinate - interior_coordinate);
         Coordinate_ coordinate{vector_space[erasure_position]};
         for_each(
@@ -528,7 +471,7 @@ bool BSpline<para_dim>::ReduceDegree(Dimension const& dimension,
                                  .GetIndex1d()
                              + slice_coordinate.GetIndex1d() + Index{1}])
             <= tolerance_reduction) {
-          vector_space.Erase(erasure_position.Get());
+          vector_space.Erase(erasure_position);
         } else {
           parameter_space = parameter_space_backup;
           vector_space = vector_space_backup;

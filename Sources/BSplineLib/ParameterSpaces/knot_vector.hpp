@@ -61,7 +61,6 @@ public:
   KnotVector& operator=(KnotVector&& rhs) noexcept = default;
   virtual ~KnotVector() = default;
 
-  virtual Knot_ const& operator[](Index const& index) const;
   virtual Knot_ const& operator[](int const& index) const;
 
   virtual int GetSize() const;
@@ -79,6 +78,10 @@ public:
   virtual bool
   DoesParametricCoordinateEqualBack(Knot_ const& parametric_coordinate,
                                     Knot_ const& tolerance = kEpsilon) const;
+  virtual bool DoesParametricCoordinateEqualLastSupport(
+      Knot_ const& parametric_coordinate,
+      const int& degree,
+      Knot_ const& tolerance = kEpsilon) const;
   virtual bool DoesParametricCoordinateEqualFrontOrBack(
       Knot_ const& parametric_coordinate,
       Tolerance const& tolerance = kEpsilon) const;
@@ -90,6 +93,15 @@ public:
   virtual int FindSpan_(Knot_ const& parametric_coordinate) const {
     return FindSpan(parametric_coordinate).Get();
   }
+
+  /// @brief this considers unclamped knot vectors. it requires degree info
+  /// @param parametric_coordinate
+  /// @param tolerance
+  /// @return
+  virtual KnotSpan
+  FindEffectiveSpan(Knot_ const& parametric_coordinate,
+                    const int& degree,
+                    Tolerance const& tolerance = kEpsilon) const;
 
   /// @brief determines multiplicity of given single knot.
   /// @param knot
@@ -137,6 +149,10 @@ public:
 
   virtual OutputInformation_
   Write(Precision const& precision = kPrecision) const;
+
+  /// @brief string representation of knot vector. mainly for __repr__
+  /// @return
+  virtual std::string StringRepresentation() const;
 
 #ifndef NDEBUG
   virtual void ThrowIfParametricCoordinateIsOutsideScope(

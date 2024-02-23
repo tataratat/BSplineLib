@@ -18,7 +18,12 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 template<int size>
-Index<size>::Index(Length_ length, Value_ value, bool invalid) {
+Index<size>::Index(const Length_& length,
+                   const Value_& value,
+                   const bool invalid)
+    : invalid_{invalid},
+      length_{length},
+      value_{value} {
 
 #ifndef NDEBUG
   try {
@@ -27,10 +32,6 @@ Index<size>::Index(Length_ length, Value_ value, bool invalid) {
     Throw(exception, "bsplinelib::utilities::Index::Index");
   }
 #endif
-
-  length_ = std::move(length);
-  value_ = std::move(value);
-  invalid_ = std::move(invalid);
 }
 
 template<int size>
@@ -68,10 +69,10 @@ Index<size>& Index<size>::operator-=(Value_ const& value) {
 }
 
 template<int size>
-Index<size>& Index<size>::operator++() {
-  for (Dimension::Type_ dimension{}; dimension < size; ++dimension) {
-    Length::Type_ const& length = length_[dimension].Get();
-    Index_::Type_& value = value_[dimension].Get();
+constexpr Index<size>& Index<size>::operator++() {
+  for (Dimension dimension{}; dimension < size; ++dimension) {
+    Length const& length = length_[dimension];
+    Index_& value = value_[dimension];
     if (length == 0) {
       continue;
     } else if (value == (length - 1)) {
@@ -89,20 +90,12 @@ Index<size>& Index<size>::operator++() {
 
 template<int size>
 Index<size>& Index<size>::Increment(Dimension const& dimension) {
-  Dimension::Type_ const& dimension_value = dimension.Get();
 #ifndef NDEBUG
   Message const kName{"bsplinelib::utilities::Index::Increment"};
-
-  try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, size - 1);
-  } catch (DomainError const& exception) {
-    Throw(exception, kName, dimension_value);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, kName, dimension_value);
-  }
+  DimensionBoundCheck(kName, dimension);
 #endif
-  Length::Type_ const& length = length_[dimension_value].Get();
-  Index_::Type_& value = value_[dimension_value].Get();
+  Length const& length = length_[dimension];
+  Index_& value = value_[dimension];
   if (length != 0) {
     if (value == (length - 1)) {
       value = 0;
@@ -114,14 +107,14 @@ Index<size>& Index<size>::Increment(Dimension const& dimension) {
 }
 
 template<int size>
-Index<size>& Index<size>::operator--() {
+constexpr Index<size>& Index<size>::operator--() {
   if (value_ == Value_{}) { // Invalidate the index if it is decremented from
                             // the zero index.
     invalid_ = true;
   } else {
-    for (Dimension::Type_ dimension{}; dimension < size; ++dimension) {
-      Length::Type_ const& length = length_[dimension].Get();
-      Index_::Type_& value = value_[dimension].Get();
+    for (Dimension dimension{}; dimension < size; ++dimension) {
+      int const& length = length_[dimension];
+      int& value = value_[dimension];
       if (length == 0) {
         continue;
       } else if (value == 0) {
@@ -137,20 +130,12 @@ Index<size>& Index<size>::operator--() {
 
 template<int size>
 Index<size>& Index<size>::Decrement(Dimension const& dimension) {
-  Dimension::Type_ const& dimension_value = dimension.Get();
 #ifndef NDEBUG
   Message const kName{"bsplinelib::utilities::Index::Decrement"};
-
-  try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, size - 1);
-  } catch (DomainError const& exception) {
-    Throw(exception, kName, dimension_value);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, kName, dimension_value);
-  }
+  DimensionBoundCheck(kName, dimension);
 #endif
-  Length::Type_ const& length = length_[dimension_value].Get();
-  Index_::Type_& value = value_[dimension_value].Get();
+  int const& length = length_[dimension];
+  int& value = value_[dimension];
   if (length != 0) {
     if (value == 0) {
       value = (length - 1);
@@ -213,111 +198,109 @@ bool operator!=(Index<size> const& lhs, Index<size> const& rhs) {
 }
 
 template<int size>
-bsplinelib::Index const&
+constexpr bsplinelib::Index const&
 Index<size>::operator[](Dimension const& dimension) const {
-  Dimension::Type_ const& dimension_value = dimension.Get();
 #ifndef NDEBUG
-  Message const kName{"bsplinelib::utilities::Index::operator[]"};
-
-  try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, size - 1);
-  } catch (DomainError const& exception) {
-    Throw(exception, kName, dimension_value);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, kName, dimension_value);
-  }
+  DimensionBoundCheck("bsplinelib::utilities::Index::operator[]", dimension);
 #endif
-  return value_[dimension_value];
+  return value_[dimension];
 }
 
 template<int size>
-Index<size> Index<size>::First(Length_ length) {
-  return Index{std::move(length)};
+constexpr Index<size> Index<size>::First(const Length_& length) {
+  return Index{length};
 }
 
 template<int size>
-Index<size> Index<size>::Last(Length_ length) {
+constexpr Index<size> Index<size>::Last(const Length_& length) {
   Value_ value;
-  std::transform(length.begin(),
-                 length.end(),
-                 value.begin(),
-                 [](Length const& length_for_dimension) {
-                   Index_::Type_ const& length = length_for_dimension.Get();
-                   if (length == 0) {
-                     return Index_{};
-                   } else {
-                     return Index_{length - 1};
-                   }
-                 });
-  return Index{
-      std::move(length),
-      std::move(value),
+
+  auto v_iter = value.begin();
+  for (const int& len : length) {
+    if (len != 0) {
+      *v_iter = len - 1;
+    } else {
+      *v_iter = 0;
+    }
+    ++v_iter;
+  }
+
+  return Index{length, value};
+}
+
+template<int size>
+constexpr Index<size> Index<size>::Behind(const Length_& length) {
+  return ++Last(length);
+}
+
+template<int size>
+constexpr Index<size> Index<size>::Before(const Length_& length) {
+  return --First(length);
+}
+
+template<int size>
+constexpr int Index<size>::GetIndex1d(const Length_& length,
+                                      const Value_& value) {
+  auto stride = [&length](const int& dim) {
+    int s{1};
+    for (int i{}; i < dim; ++i) {
+      const int len = length[i];
+      if (len != 0) {
+        s *= len;
+      }
+    }
+    return s;
   };
+
+  int id{};
+  for (int i{}; i < size; ++i) {
+    id += value[i] * stride(i);
+  }
+  return id;
 }
 
 template<int size>
-Index<size> Index<size>::Behind(Length_ length) {
-  return ++Last(std::move(length));
+constexpr int Index<size>::GetTotalNumberOfIndices() const {
+  return DetermineStride(length_, size);
 }
 
 template<int size>
-Index<size> Index<size>::Before(Length_ length) {
-  return --First(std::move(length));
-}
-
-template<int size>
-int Index<size>::GetTotalNumberOfIndices() const {
-  return DetermineStride(length_, Dimension{size});
-}
-
-template<int size>
-typename Index<size>::Value_ Index<size>::GetIndex() const {
+constexpr typename Index<size>::Value_ Index<size>::GetIndex() const {
   return value_;
 }
 
 template<int size>
-bsplinelib::Index Index<size>::GetIndex1d() const {
+constexpr bsplinelib::Index Index<size>::GetIndex1d() const {
   Index_ index_1d{};
-  Dimension::ForEach(0, size, [&](Dimension const& dimension) {
-    index_1d += (value_[dimension.Get()] * DetermineStride(length_, dimension));
-  });
+  for (int i{}; i < size; ++i) {
+    index_1d += (value_[i] * DetermineStride(length_, i));
+  };
   return index_1d;
 }
 
 template<int size>
-int Index<size>::DetermineStride(Length_ const& length,
-                                 Dimension const& dimension) const {
-  typename Length_::const_iterator const& begin = length.begin();
-  return std::transform_reduce(begin,
-                               begin + dimension.Get(),
-                               1,
-                               std::multiplies{},
-                               [](Length const& length) {
-                                 if (length == Length{}) {
-                                   return 1;
-                                 } else {
-                                   return length.Get();
-                                 }
-                               });
+constexpr int Index<size>::DetermineStride(Length_ const& length,
+                                           Dimension const& dimension) const {
+  int stride{1};
+  for (int i{}; i < dimension; ++i) {
+    const int& len = length[i];
+    if (len != 0) {
+      stride *= len;
+    }
+  }
+
+  return stride;
 }
 
 #ifndef NDEBUG
 template<int size>
 void Index<size>::ThrowIfValueIsInvalid(Length_ const& length,
                                         Value_ const& value) {
-  Dimension::ForEach(0, size, [&](Dimension const& dimension) {
-    Dimension::Type_ const& current_dimension = dimension.Get();
-    Message const dimension_string{"for dimension "
-                                   + std::to_string(current_dimension) + ": "};
-    try {
-      Index_::ThrowIfNamedIntegerIsOutOfBounds(
-          value[current_dimension],
-          std::max(0, length[current_dimension].Get() - 1));
-    } catch (DomainError const& exception) {
-      throw DomainError(dimension_string + exception.what());
-    } catch (OutOfRange const& exception) {
-      throw OutOfRange(dimension_string + exception.what());
+  for (int i{}; i < size; ++i) {
+    Message const dimension_string{"for dimension " + std::to_string(i) + ": "};
+    if (value[i] < 0 || value[i] > std::max(0, length[i] - 1)) {
+      throw OutOfRange(dimension_string);
     }
-  });
+  }
 }
 #endif

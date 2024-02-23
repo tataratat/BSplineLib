@@ -37,15 +37,49 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace bsplinelib::parameter_spaces {
 
+/// @brief base for runtime interface
+class ParameterSpaceBase {
+public:
+  ParameterSpaceBase() = default;
+  virtual ~ParameterSpaceBase() = default;
+
+  /// @brief short cut to bound check, so one can decide when to check
+  /// @param dim
+  /// @param raise
+  /// @return
+  bool DimensionBoundCheck(const int dim, bool raise) {
+    if (dim < 0 || dim >= ParaDim()) {
+      if (raise) {
+        throw OutOfRange(
+            "BSplineLib::ParameterSpaceBase - dimension out of range.");
+      }
+      return false;
+    }
+    return true;
+  }
+
+  virtual int ParaDim() const = 0;
+  virtual int GetDegree(const int dim) const = 0;
+  virtual SharedPointer<KnotVector>& GetKnotVector(const int dim) = 0;
+  virtual const SharedPointer<KnotVector>&
+  GetKnotVector(const int dim) const = 0;
+  virtual SharedPointer<KnotVector>* KnotVectorsBegin() = 0;
+  virtual const SharedPointer<KnotVector>* KnotVectorsBegin() const = 0;
+  virtual SharedPointer<KnotVector>* KnotVectorsEnd() = 0;
+  virtual const SharedPointer<KnotVector>* KnotVectorsEnd() const = 0;
+};
+
 /// @brief ParameterSpaces provide the B-spline basis functions corresponding to
 /// given knot vectors and degrees.
 /// @tparam para_dim
 template<int para_dim>
-class ParameterSpace {
+class ParameterSpace : public ParameterSpaceBase {
 private:
   using StringArray_ = StringArray<para_dim>;
 
 public:
+  static constexpr const int kParaDim = para_dim;
+
   using BinomialRatios_ = Vector<BinomialRatio>;
   using Degrees_ = Array<Degree, para_dim>;
   using Derivative_ = Array<Derivative, para_dim>;
@@ -91,7 +125,30 @@ public:
   ParameterSpace(ParameterSpace&& other) noexcept = default;
   ParameterSpace& operator=(ParameterSpace const& rhs);
   ParameterSpace& operator=(ParameterSpace&& rhs) noexcept = default;
-  virtual ~ParameterSpace() = default;
+
+  virtual int ParaDim() const { return para_dim; }
+
+  virtual int GetDegree(const int dim) const { return degrees_[dim]; }
+
+  virtual SharedPointer<KnotVector>& GetKnotVector(const int dim) {
+    return knot_vectors_[dim];
+  }
+  virtual const SharedPointer<KnotVector>& GetKnotVector(const int dim) const {
+    return knot_vectors_[dim];
+  }
+
+  virtual SharedPointer<KnotVector>* KnotVectorsBegin() {
+    return &(*knot_vectors_.begin());
+  }
+  virtual const SharedPointer<KnotVector>* KnotVectorsBegin() const {
+    return &(*knot_vectors_.begin());
+  }
+  virtual SharedPointer<KnotVector>* KnotVectorsEnd() {
+    return &(*knot_vectors_.end());
+  }
+  virtual const SharedPointer<KnotVector>* KnotVectorsEnd() const {
+    return &(*knot_vectors_.end());
+  }
 
   virtual Index_ First() const;
   virtual Index_ Behind() const;
@@ -187,6 +244,53 @@ public:
   virtual KnotVectors_& GetKnotVectors() { return knot_vectors_; }
   virtual Degrees_& GetDegrees() { return degrees_; }
 
+  constexpr bool DimensionBoundCheck(const std::string& message,
+                                     const int& dimension,
+                                     const bool raise) const {
+    if (dimension < 0 || dimension >= para_dim) {
+      if (raise) {
+        throw OutOfRange(message + " - " + std::to_string(dimension)
+                         + " is out of bound (" + std::to_string(para_dim)
+                         + ").");
+      } else {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  constexpr bool KnotWithinBoundCheck(const std::string& message,
+                                      const int& dimension,
+                                      const Knot_& knot,
+                                      const bool raise) const {
+    if (knot_vectors_[dimension]->GetFront() > knot
+        || knot_vectors_[dimension]->GetBack() < knot) {
+      if (raise) {
+        throw DomainError(message + "Knot out of bounds.");
+      } else {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  constexpr bool KnotNotOnBoundCheck(const std::string& message,
+                                     const int& dimension,
+                                     const Knot_& knot,
+                                     const Tolerance& tolerance,
+                                     const bool raise) const {
+    if (knot_vectors_[dimension]->DoesParametricCoordinateEqualFrontOrBack(
+            knot,
+            tolerance)) {
+      if (raise) {
+        throw DomainError(message + "Knot is exactly on bound.");
+      } else {
+        return false;
+      }
+    }
+    return true;
+  }
+
 protected:
   KnotVectors_ knot_vectors_;
   Degrees_ degrees_;
@@ -213,10 +317,6 @@ private:
 #ifndef NDEBUG
   void
   ThrowIfBasisFunctionIndexIsInvalid(Index_ const& basis_function_index) const;
-  void ThrowIfFrontOrBackKnotIsToBeInsertedOrRemoved(
-      Dimension const& dimension,
-      ParametricCoordinate const& knot,
-      Tolerance const& tolerance) const;
 #endif
 };
 
@@ -290,7 +390,7 @@ constexpr void RecursiveCombine_(const Array<BasisValues, array_dim>& factors,
       // add index offset and get beginning of corresponding control point
       const auto& index_offset_multi_index = index_offset.MultiIndex();
       index += index_offset_multi_index;
-      const auto* coeff = &coeffs(index.GetIndex1d().Get(), 0);
+      const auto* coeff = &coeffs(index.GetIndex1d(), 0);
 
       // contribute to each dim
       result.Add(fac, coeff);

@@ -97,9 +97,9 @@ GetFront(ContainerType const& container);
 template<typename ContainerType>
 constexpr typename ContainerType::value_type const&
 GetBack(ContainerType const& container);
-template<typename ContainerType, typename Name>
+template<typename ContainerType>
 constexpr typename ContainerType::value_type const&
-GetValue(ContainerType const& container, NamedType<Name, int> const& index);
+GetValue(ContainerType const& container, int const& index);
 
 template<typename ContainerTypeTo, typename ContainerTypeFrom>
 constexpr ContainerTypeTo TransformNamedTypes(ContainerTypeFrom const& from);
@@ -381,7 +381,7 @@ public:
     size_ = sub_total * shape0;
   }
 
-  /// @brief default. use SetData() and SetShape<false>
+  /// @brief default. use SetData() and SetShape
   constexpr Data() = default;
 
   /// @brief basic array ctor

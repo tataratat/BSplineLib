@@ -228,9 +228,12 @@ constexpr bool const is_named_type<NamedType<Name, Type>>{true};
 namespace bsplinelib {
 
 // utilities
-using Dimension = utilities::NamedType<struct DimensionName, int>;
-using Index = utilities::NamedType<struct IndexName, int>;
-using Length = utilities::NamedType<struct LengthName, int>;
+// using Dimension = utilities::NamedType<struct DimensionName, int>;
+// using Index = utilities::NamedType<struct IndexName, int>;
+// using Length = utilities::NamedType<struct LengthName, int>;
+using Dimension = int;
+using Index = int;
+using Length = int;
 using Precision = utilities::NamedType<struct PrecisionName, int>;
 
 // parameter spaces

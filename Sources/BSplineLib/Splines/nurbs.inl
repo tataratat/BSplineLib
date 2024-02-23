@@ -214,24 +214,7 @@ void Nurbs<para_dim>::InsertKnot(Dimension const& dimension,
                                  Knot_ knot,
                                  Multiplicity const& multiplicity,
                                  Tolerance const& tolerance) const {
-#ifndef NDEBUG
-  Message const kName{"bsplinelib::splines::Nurbs::InsertKnot"};
-
-  try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, para_dim - 1);
-    Base_::parameter_space_->ThrowIfParametricCoordinateIsOutsideScope(
-        dimension,
-        knot,
-        tolerance);
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (DomainError const& exception) {
-    Throw(exception, kName);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, kName);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, kName);
-  }
-#endif
+  // bound checks in parameter space
   homogeneous_b_spline_->InsertKnot(dimension, knot, multiplicity, tolerance);
 }
 
@@ -243,25 +226,11 @@ Multiplicity Nurbs<para_dim>::RemoveKnot(Dimension const& dimension,
                                          Tolerance const& tolerance) const {
   using std::get;
 
-#ifndef NDEBUG
-  using utilities::numeric_operations::ThrowIfToleranceIsNegative;
-
-  Message const kName{"bsplinelib::splines::Nurbs::RemoveKnot"};
-
-  try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, para_dim - 1);
-    ThrowIfToleranceIsNegative(tolerance_removal);
-    ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, kName);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, kName);
-  }
-#endif
   auto const& [maximum_distance_from_origin, minimum_weight] =
       weighted_vector_space_
           ->DetermineMaximumDistanceFromOriginAndMinimumWeight();
   // See NURBS book Eq. (5.30).
+  // bound checks in parameter space
   return homogeneous_b_spline_->RemoveKnot(
       dimension,
       knot,
@@ -275,18 +244,7 @@ template<int para_dim>
 void Nurbs<para_dim>::ElevateDegree(Dimension const& dimension,
                                     Multiplicity const& multiplicity,
                                     Tolerance const& tolerance) const {
-#ifndef NDEBUG
-  Message const kName{"bsplinelib::splines::Nurbs::ElevateDegree"};
-
-  try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, para_dim - 1);
-    utilities::numeric_operations::ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, kName);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, kName);
-  }
-#endif
+  // bound checks in parameter space
   homogeneous_b_spline_->ElevateDegree(dimension, multiplicity, tolerance);
 }
 
@@ -295,21 +253,7 @@ bool Nurbs<para_dim>::ReduceDegree(Dimension const& dimension,
                                    Tolerance const& tolerance_removal,
                                    Multiplicity const& multiplicity,
                                    Tolerance const& tolerance) const {
-#ifndef NDEBUG
-  using utilities::numeric_operations::ThrowIfToleranceIsNegative;
-
-  Message const kName{"bsplinelib::splines::Nurbs::ReduceDegree"};
-
-  try {
-    Dimension::ThrowIfNamedIntegerIsOutOfBounds(dimension, para_dim - 1);
-    ThrowIfToleranceIsNegative(tolerance_removal);
-    ThrowIfToleranceIsNegative(tolerance);
-  } catch (InvalidArgument const& exception) {
-    Throw(exception, kName);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, kName);
-  }
-#endif
+  // bound checks in parameter space
   return homogeneous_b_spline_->ReduceDegree(dimension,
                                              tolerance_removal,
                                              multiplicity,

@@ -52,16 +52,6 @@ KnotVector::KnotVector(Knots_ knots, Tolerance const& tolerance)
 #endif
 }
 
-Knot const& KnotVector::operator[](Index const& index) const {
-#ifndef NDEBUG
-  try {
-    Index::ThrowIfNamedIntegerIsOutOfBounds(index, knots_.size() - 1);
-  } catch (OutOfRange const& exception) {
-    Throw(exception, "bsplinelib::parameter_spaces::KnotVector::operator[]");
-  }
-#endif
-  return knots_[index.Get()];
-}
 Knot const& KnotVector::operator[](int const& index) const {
   return knots_[index];
 }
@@ -73,10 +63,28 @@ Knot const& KnotVector::GetFront() const { return knots_[0]; }
 Knot const& KnotVector::GetBack() const { return knots_[knots_.size() - 1]; }
 
 void KnotVector::UpdateKnot(const int id, Knot const& knot) {
-  if (knots_[id - 1] > knot || knots_[id + 1] < knot) {
+  bool good{true};
+
+  // first knot checks lower bound
+  if (id == 0) {
+    if (knots_[id + 1] < knot) {
+      good = false;
+    }
+    // last knot checks upper bound
+  } else if (id == static_cast<int>(knots_.size() - 1)) {
+    if (knots_[id - 1] > knot) {
+      good = false;
+    }
+    // otherwise, both
+  } else if (knots_[id - 1] > knot || knots_[id + 1] < knot) {
+    good = false;
+  }
+
+  if (!good) {
     throw RuntimeError(
         "KnotVector::UpdateKnot - updated knot must be non-decreasing.");
   }
+
   knots_[id] = knot;
 }
 
@@ -108,6 +116,17 @@ bool KnotVector::DoesParametricCoordinateEqualBack(
   }
 #endif
   return std::abs(static_cast<Knot>(parametric_coordinate) - GetBack())
+         < tolerance;
+}
+
+bool KnotVector::DoesParametricCoordinateEqualLastSupport(
+    Knot const& parametric_coordinate,
+    const int& degree,
+    Tolerance const& tolerance) const {
+  assert(tolerance);
+
+  return std::abs(static_cast<Knot>(parametric_coordinate)
+                  - knots_[knots_.size() - 1 - degree])
          < tolerance;
 }
 
@@ -150,22 +169,32 @@ KnotSpan KnotVector::FindSpan(Knot const& parametric_coordinate,
   }
 #endif
   ConstIterator_ const &knots_begin = knots_.begin(), &knots_end = knots_.end();
-  auto is_less = [&](Knot const& knot,
-                     Knot const& parametric_coordinate_value) {
-    return (knot < parametric_coordinate_value);
-  };
+
   return KnotSpan{static_cast<int>(
       std::distance(
           knots_begin,
           DoesParametricCoordinateEqualBack(parametric_coordinate, tolerance)
-              ? std::lower_bound(knots_begin,
-                                 knots_end,
-                                 parametric_coordinate,
-                                 is_less)
-              : std::upper_bound(knots_begin,
-                                 knots_end,
-                                 parametric_coordinate,
-                                 is_less))
+              ? std::lower_bound(knots_begin, knots_end, parametric_coordinate)
+              : std::upper_bound(knots_begin, knots_end, parametric_coordinate))
+      - 1)};
+}
+
+KnotSpan KnotVector::FindEffectiveSpan(Knot const& parametric_coordinate,
+                                       const int& degree,
+                                       Tolerance const& tolerance) const {
+  assert(tolerance > 0.0);
+  // TODO need out of scope check
+
+  ConstIterator_ const &knots_begin = knots_.begin(), &knots_end = knots_.end();
+
+  return KnotSpan{static_cast<int>(
+      std::distance(
+          knots_begin,
+          DoesParametricCoordinateEqualLastSupport(parametric_coordinate,
+                                                   degree,
+                                                   tolerance)
+              ? std::lower_bound(knots_begin, knots_end, parametric_coordinate)
+              : std::upper_bound(knots_begin, knots_end, parametric_coordinate))
       - 1)};
 }
 
@@ -332,6 +361,24 @@ KnotVector::Write(Precision const& precision) const {
                                                                  precision);
 }
 
+std::string KnotVector::StringRepresentation() const {
+  std::string s{"KnotVector ["};
+  const int size = GetSize();
+  // reserve enough space
+  s.reserve(size * 3 + 20);
+  int i{}, j{size - 1};
+  for (const auto& k : knots_) {
+    s.append(std::to_string(k));
+    if (i != j) {
+      s.append(", ");
+    }
+    ++i;
+  }
+  s.append("]");
+
+  return s;
+}
+
 #ifndef NDEBUG
 void KnotVector::ThrowIfParametricCoordinateIsOutsideScope(
     Knot const& parametric_coordinate,
@@ -354,19 +401,18 @@ void KnotVector::ThrowIfTooSmallOrNotNonDecreasing(
     throw DomainError(
         "The knot vector has to contain at least 2 knots but only contains "
         + to_string(number_of_knots) + ".");
-  Index::ForEach(1, number_of_knots, [&](Index const& knot) {
-    Index::Type_ const& index = knot.Get();
-    Knot const &current_knot = knots_[index],
-               &previous_knot = knots_[index - 1];
+
+  for (int i{1}; i < number_of_knots; ++i) {
+    Knot const &current_knot = knots_[i], &previous_knot = knots_[i - 1];
+
     if ((current_knot + tolerance) < previous_knot)
       throw DomainError("The knot vector has to be a non-decreasing sequence "
                         "of real numbers but the knot "
-                        + to_string(current_knot) + " at index "
-                        + to_string(index)
+                        + to_string(current_knot) + " at index " + to_string(i)
                         + " is less than the "
                           "previous knot "
                         + to_string(previous_knot) + ".");
-  });
+  }
 }
 
 } // namespace bsplinelib::parameter_spaces
