@@ -179,11 +179,13 @@ void BSpline<para_dim>::InsertKnot(Dimension const& dimension,
       Index const insertion_position = coordinate.GetIndex1d();
       // C^0 to C^-1 insertion, second case does not apply (insert repetition)
       if (current_coefficients.empty()) {
+        // we need to pass copy to this
         vector_space.StaticInsert(
-            coordinate.GetIndex1d(),
+            insertion_position,
             vector_space[Index_::GetIndex1d(previous_number_of_coordinates,
                                             coordinate_value)
-                         + slice_coordinate.GetIndex1d()],
+                         + slice_coordinate.GetIndex1d()]
+                .Copy(),
             n_total_original_coords + ignore_from++);
         continue;
       }

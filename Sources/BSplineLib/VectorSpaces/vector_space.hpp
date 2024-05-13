@@ -139,6 +139,7 @@ public:
   /// be lost. Specify ignore_elements_from to hint number of coordinates to
   /// keep. This value is used for runtime size check and reduce unnecessary
   /// copies. Use with AppendEmptyCoordinates
+  /// Make sure coordinate is not partial view of the coordinate_. If so, copy!
   ///
   /// @param coordinate_index
   /// @param coordinate

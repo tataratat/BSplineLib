@@ -23,13 +23,15 @@ namespace bsplinelib::vector_spaces {
 
 void VectorSpace::AppendEmptyCoordinates(const int n) {
   const auto& shape = coordinates_.Shape();
-  const auto& n_coord = shape[0];
-  const auto& dim = shape[1];
+  const auto n_coord = shape[0];
+  const auto dim = shape[1];
 
   Coordinates_ new_coordinates(n_coord + n, dim);
 
   // copy all the elements
-  std::copy_n(coordinates_.begin(), n_coord * dim, new_coordinates.begin());
+  std::copy_n(coordinates_.begin(),
+              coordinates_.size(),
+              new_coordinates.begin());
 
   // move assign new coords as coords
   coordinates_ = std::move(new_coordinates);
@@ -41,8 +43,8 @@ void VectorSpace::StaticInsert(int const& coordinate_index,
 
   // size info
   const auto& shape = coordinates_.Shape();
-  const auto& n_coord = shape[0];
-  const auto& dim = shape[1];
+  const auto n_coord = shape[0];
+  const auto dim = shape[1];
 
   // runtime index checks
   // first, wrap id
@@ -70,13 +72,18 @@ void VectorSpace::StaticInsert(int const& coordinate_index,
   if (ignore_elements_from > coordinate_index) {
     // shift one coordinate
     // copy contents after index first, but backwards to avoid overlap
+    // just make sure coordinate is not partial view of the coordinate_. if so,
+    // copy!
+    auto* source_end = &coordinates_(ignore_elements_from, 0);
     std::copy_backward(&coordinates_(coordinate_index, 0),
-                       &coordinates_(ignore_elements_from, 0),
-                       coordinates_.begin() + ((ignore_elements_from + 1) * dim));
+                       source_end,
+                       source_end + dim);
   }
 
   // copy at index
-  std::copy_n(coordinate.begin(), dim, &coordinates_(coordinate_index, 0));
+  std::copy_n(coordinate.begin(),
+              coordinate.size(),
+              &coordinates_(coordinate_index, 0));
 }
 
 void VectorSpace::Replace(int const& coordinate_index,

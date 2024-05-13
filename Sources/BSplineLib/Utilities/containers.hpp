@@ -561,6 +561,15 @@ public:
     return *this;
   }
 
+  /// @brief this[i] = a[i]
+  /// @param a
+  /// @return
+  constexpr Data Copy() const {
+    assert(data_);
+
+    return Data(*this);
+  }
+
   /// @brief copies from a and this will own the data
   /// @param a
   /// @return
