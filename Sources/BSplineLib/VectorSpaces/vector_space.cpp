@@ -21,6 +21,64 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace bsplinelib::vector_spaces {
 
+void VectorSpace::AppendEmptyCoordinates(const int n) {
+  const auto& shape = coordinates_.Shape();
+  const auto& n_coord = shape[0];
+  const auto& dim = shape[1];
+
+  Coordinates_ new_coordinates(n_coord + n, dim);
+
+  // copy all the elements
+  std::copy_n(coordinates_.begin(), n_coord * dim, new_coordinates.begin());
+
+  // move assign new coords as coords
+  coordinates_ = std::move(new_coordinates);
+}
+
+void VectorSpace::StaticInsert(int const& coordinate_index,
+                               const Coordinate_& coordinate,
+                               int ignore_elements_from) {
+
+  // size info
+  const auto& shape = coordinates_.Shape();
+  const auto& n_coord = shape[0];
+  const auto& dim = shape[1];
+
+  // runtime index checks
+  // first, wrap id
+  if (ignore_elements_from < 0) {
+    ignore_elements_from += n_coord;
+  }
+
+  // check validity
+  if (ignore_elements_from < 0 || !(ignore_elements_from < n_coord)) {
+    throw DomainError("bsplinelib::vector_spaces::VectorSpace::StaticInsert - "
+                      "Can't statically insert a coordinate at "
+                      + std::to_string(coordinate_index) + "while keeping "
+                      + std::to_string(ignore_elements_from) + " elements.");
+  }
+  if (!(coordinate_index < n_coord)) {
+    throw OutOfRange("bsplinelib::vector_spaces::VectorSpace::StaticInsert - "
+                     "insertion index "
+                     + std::to_string(coordinate_index) + " out of range ("
+                     + std::to_string(n_coord) + ").");
+  }
+
+  assert(dim == coordinate.size());
+
+  // if inserting index is bigger than ignoring elements, we don't need to copy
+  if (ignore_elements_from > coordinate_index) {
+    // shift one coordinate
+    // copy contents after index first, but backwards to avoid overlap
+    std::copy_backward(&coordinates_(coordinate_index, 0),
+                       &coordinates_(ignore_elements_from, 0),
+                       coordinates_.begin() + ((ignore_elements_from + 1) * dim));
+  }
+
+  // copy at index
+  std::copy_n(coordinate.begin(), dim, &coordinates_(coordinate_index, 0));
+}
+
 void VectorSpace::Replace(int const& coordinate_index,
                           const Coordinate_& coordinate) {
   std::copy_n(coordinate.begin(),

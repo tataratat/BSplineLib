@@ -21,6 +21,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #define SOURCES_SPLINES_B_SPLINE_HPP_
 
 #include <algorithm>
+#include <iostream>
 #include <iterator>
 #include <utility>
 
