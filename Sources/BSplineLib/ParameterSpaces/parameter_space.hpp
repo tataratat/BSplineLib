@@ -296,8 +296,6 @@ protected:
   Degrees_ degrees_;
 
 private:
-  using MultiplicityType_ = Multiplicity::Type_;
-
   void CopyKnotVectors(KnotVectors_ const& knot_vectors);
 
   // Number of non-zero basis functions is equal to p+1 - see NURBS book P2.2.

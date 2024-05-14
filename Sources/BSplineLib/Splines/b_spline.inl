@@ -234,11 +234,11 @@ Multiplicity BSpline<para_dim>::RemoveKnot(Dimension const& dimension,
       parameter_space.GetNumberOfBasisFunctions()};
   auto const& [start_value, coefficients] =
       parameter_space.RemoveKnot(dimension, knot, multiplicity, tolerance);
-  Multiplicity::Type_ const& removals = coefficients.size();
+  Multiplicity const& removals = coefficients.size();
   for (Multiplicity removal{removals}; removal > Multiplicity{}; --removal) {
     VectorSpace_& vector_space = *vector_space_;
     VectorSpace_ const vector_space_backup{vector_space};
-    KnotRatios_ const& current_coefficients = coefficients[removal.Get() - 1];
+    KnotRatios_ const& current_coefficients = coefficients[removal - 1];
     IndexLength_ number_of_coordinates_in_slice{number_of_coordinates};
     number_of_coordinates_in_slice[dimension] = Length{};
     IndexLength_ const previous_number_of_coordinates{number_of_coordinates};
@@ -333,7 +333,7 @@ void BSpline<para_dim>::ElevateDegree(Dimension const& dimension,
   for (int segment{}; segment < number_of_segments; ++segment) {
     int interior_coordinate{maximum_interior_coordinate},
         last_coordinate{((segment + 1) * last_segment_coordinate)
-                        + (segment * multiplicity.Get())};
+                        + (segment * multiplicity)};
     for (; interior_coordinate >= (last_segment_coordinate - 1);
          --interior_coordinate) {
       BinomialRatios_ const& current_coefficients =
