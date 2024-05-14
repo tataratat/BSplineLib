@@ -308,21 +308,33 @@ void BSpline<para_dim>::ElevateDegree(Dimension const& dimension,
   // bound checks are all done in parametric space
   ParameterSpace_& parameter_space = *Base_::parameter_space_;
   VectorSpace_& vector_space = *vector_space_;
+
+  // collect values before updating parameter_space
   auto const& [number_of_segments, knots_inserted] =
       MakeBezier(dimension, tolerance);
   IndexLength_ number_of_coordinates{
       parameter_space.GetNumberOfBasisFunctions()};
+  const int n_total_original_coords =
+      parameter_space.GetTotalNumberOfBasisFunctions();
+  const int n_coords_per_slice =
+      n_total_original_coords / number_of_coordinates[dimension];
+
+  // update parameter space and prepare loops
   auto const& [last_segment_coordinate, coefficients] =
       parameter_space.ElevateDegree(dimension, multiplicity);
   IndexLength_ number_of_coordinates_in_slice{number_of_coordinates};
   number_of_coordinates_in_slice[dimension] = Length{};
+  Index const maximum_interior_coordinate{
+      static_cast<int>(coefficients.size() - 1)};
+  int ignore_from{};
+  vector_space.AppendEmptyCoordinates(
+      (n_coords_per_slice * multiplicity) * number_of_segments
+      * (maximum_interior_coordinate - (last_segment_coordinate - 1) + 1));
   for (int segment{}; segment < number_of_segments; ++segment) {
-    Index const maximum_interior_coordinate{
-        static_cast<int>(coefficients.size()) - 1};
-    Index interior_coordinate{maximum_interior_coordinate},
+    int interior_coordinate{maximum_interior_coordinate},
         last_coordinate{((segment + 1) * last_segment_coordinate)
                         + (segment * multiplicity.Get())};
-    for (; interior_coordinate >= (last_segment_coordinate - Index{1});
+    for (; interior_coordinate >= (last_segment_coordinate - 1);
          --interior_coordinate) {
       BinomialRatios_ const& current_coefficients =
           coefficients[interior_coordinate];
@@ -355,9 +367,12 @@ void BSpline<para_dim>::ElevateDegree(Dimension const& dimension,
                                             .GetIndex1d()],
                            coefficient));
             });
-        vector_space.ReallocateInsert(insertion_position, coordinate);
+        vector_space.StaticInsert(insertion_position,
+                                  coordinate,
+                                  n_total_original_coords + ignore_from++);
       }
     }
+
     for (; interior_coordinate >= Index{}; --interior_coordinate) {
       BinomialRatios_ const& current_coefficients =
           coefficients[interior_coordinate];
