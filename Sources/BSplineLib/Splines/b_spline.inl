@@ -159,8 +159,7 @@ void BSpline<para_dim>::InsertKnot(Dimension const& dimension,
       parameter_space.InsertKnot(dimension, knot, multiplicity, tolerance);
   // TODO(all): use std::for_each once clang supports capturing of variables
   // from structured bindings
-  const int n_new_points =
-      coefficients.size() * (n_coords_per_slice * multiplicity);
+  const int n_new_points = coefficients.size() * n_coords_per_slice;
   vector_space.AppendEmptyCoordinates(n_new_points);
   int ignore_from{};
   for (KnotRatios_ const& current_coefficients : coefficients) {
@@ -328,7 +327,7 @@ void BSpline<para_dim>::ElevateDegree(Dimension const& dimension,
       static_cast<int>(coefficients.size() - 1)};
   int ignore_from{};
   vector_space.AppendEmptyCoordinates(
-      (n_coords_per_slice * multiplicity) * number_of_segments
+      n_coords_per_slice * number_of_segments
       * (maximum_interior_coordinate - (last_segment_coordinate - 1) + 1));
   for (int segment{}; segment < number_of_segments; ++segment) {
     int interior_coordinate{maximum_interior_coordinate},
