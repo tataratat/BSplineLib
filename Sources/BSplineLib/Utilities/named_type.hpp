@@ -143,22 +143,22 @@ public:
   constexpr NamedType& operator-=(NamedType const& rhs);
   constexpr NamedType& operator++();
   constexpr NamedType& operator--();
-  friend constexpr NamedType operator+<Name, Type>(NamedType const& lhs,
-                                                   NamedType const& rhs);
-  friend constexpr NamedType operator-<Name, Type>(NamedType const& lhs,
-                                                   NamedType const& rhs);
-  friend constexpr NamedType operator*<Name, Type>(NamedType const& lhs,
-                                                   NamedType const& rhs);
-  friend constexpr NamedType operator*<Name, Type>(Type_ const& lhs,
-                                                   NamedType const& rhs);
-  friend constexpr NamedType operator*<Name, Type>(NamedType const& lhs,
-                                                   Type_ const& rhs);
-  friend constexpr NamedType operator/<Name, Type>(NamedType const& dividend,
-                                                   NamedType const& divisor);
-  friend constexpr NamedType operator/<Name, Type>(Type_ const& dividend,
-                                                   NamedType const& divisor);
-  friend constexpr NamedType operator/<Name, Type>(NamedType const& dividend,
-                                                   Type_ const& divisor);
+  friend constexpr NamedType operator+ <Name, Type>(NamedType const& lhs,
+                                                    NamedType const& rhs);
+  friend constexpr NamedType operator- <Name, Type>(NamedType const& lhs,
+                                                    NamedType const& rhs);
+  friend constexpr NamedType operator* <Name, Type>(NamedType const& lhs,
+                                                    NamedType const& rhs);
+  friend constexpr NamedType operator* <Name, Type>(Type_ const& lhs,
+                                                    NamedType const& rhs);
+  friend constexpr NamedType operator* <Name, Type>(NamedType const& lhs,
+                                                    Type_ const& rhs);
+  friend constexpr NamedType operator/ <Name, Type>(NamedType const& dividend,
+                                                    NamedType const& divisor);
+  friend constexpr NamedType operator/ <Name, Type>(Type_ const& dividend,
+                                                    NamedType const& divisor);
+  friend constexpr NamedType operator/ <Name, Type>(NamedType const& dividend,
+                                                    Type_ const& divisor);
   // Comparison based on given tolerance.
   friend constexpr bool IsEqual<Name, Type>(NamedType const& lhs,
                                             NamedType const& rhs,
@@ -176,14 +176,14 @@ public:
                                               NamedType const& rhs,
                                               Type_ const& tolerance);
   // Comparison based on numeric_operations::GetEpsilon<Type>().
-  friend constexpr bool operator==<Name, Type>(NamedType const& lhs,
-                                               NamedType const& rhs);
-  friend constexpr bool operator!=<Name, Type>(NamedType const& lhs,
-                                               NamedType const& rhs);
-  friend constexpr bool operator<=<Name, Type>(NamedType const& lhs,
-                                               NamedType const& rhs);
-  friend constexpr bool operator>=<Name, Type>(NamedType const& lhs,
-                                               NamedType const& rhs);
+  friend constexpr bool operator== <Name, Type>(NamedType const& lhs,
+                                                NamedType const& rhs);
+  friend constexpr bool operator!= <Name, Type>(NamedType const& lhs,
+                                                NamedType const& rhs);
+  friend constexpr bool operator<= <Name, Type>(NamedType const& lhs,
+                                                NamedType const& rhs);
+  friend constexpr bool operator>= <Name, Type>(NamedType const& lhs,
+                                                NamedType const& rhs);
   friend constexpr bool operator< <Name, Type>(NamedType const& lhs,
                                                NamedType const& rhs);
   friend constexpr bool operator><Name, Type>(NamedType const& lhs,

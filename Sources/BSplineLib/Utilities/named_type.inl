@@ -28,9 +28,9 @@ constexpr NamedType<Name, Type>::NamedType(Type_ value)
     value_ >= Type_{}
         ? void()
         : throw DomainError(
-            "Negative named integer (" + std::to_string(value_)
-            + ") "
-              "encountered, but named integers must not be negative.");
+              "Negative named integer (" + std::to_string(value_)
+              + ") "
+                "encountered, but named integers must not be negative.");
   }
 #endif
 }

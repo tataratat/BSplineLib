@@ -89,10 +89,10 @@ public:
   Index& Increment(Dimension const& dimension);
   constexpr Index& operator--();
   Index& Decrement(Dimension const& dimension);
-  friend Index operator+<size>(Index const& lhs, Value_ const& rhs);
-  friend Index operator-<size>(Index const& lhs, Value_ const& rhs);
-  friend bool operator==<size>(Index const& lhs, Index const& rhs);
-  friend bool operator!=<size>(Index const& lhs, Index const& rhs);
+  friend Index operator+ <size>(Index const& lhs, Value_ const& rhs);
+  friend Index operator- <size>(Index const& lhs, Value_ const& rhs);
+  friend bool operator== <size>(Index const& lhs, Index const& rhs);
+  friend bool operator!= <size>(Index const& lhs, Index const& rhs);
   constexpr Index_ const& operator[](Dimension const& dimension) const;
   constexpr static Index First(const Length_& length);
   constexpr static Index Behind(const Length_& length);
