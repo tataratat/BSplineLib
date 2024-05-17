@@ -243,7 +243,7 @@ using IntType__ = int;
 using Degree = IntType__;
 using Derivative = IntType__;
 using KnotSpan = utilities::NamedType<struct KnotSpanName, int>;
-using Multiplicity = utilities::NamedType<struct MultiplicityName, int>;
+using Multiplicity = IntType__;
 using ParametricCoordinate = RealType__;
 //    utilities::NamedType<struct ParametricCoordinateName, double>;
 

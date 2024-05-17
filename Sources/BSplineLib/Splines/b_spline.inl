@@ -144,14 +144,24 @@ void BSpline<para_dim>::InsertKnot(Dimension const& dimension,
 
   // bound checks are all done in parametric space
   ParameterSpace_& parameter_space = *Base_::parameter_space_;
-
   VectorSpace_& vector_space = *vector_space_;
+
+  // collect values before updating parameter_space
+  const int n_original_coord = vector_space.GetNumberOfCoordinates();
   IndexLength_ number_of_coordinates{
       parameter_space.GetNumberOfBasisFunctions()};
+  const int n_total_original_coords =
+      parameter_space.GetTotalNumberOfBasisFunctions();
+  const int n_coords_per_slice =
+      n_total_original_coords / number_of_coordinates[dimension];
+
   auto const& [start_value, coefficients] =
       parameter_space.InsertKnot(dimension, knot, multiplicity, tolerance);
   // TODO(all): use std::for_each once clang supports capturing of variables
   // from structured bindings
+  const int n_new_points = coefficients.size() * n_coords_per_slice;
+  vector_space.AppendEmptyCoordinates(n_new_points);
+  int ignore_from{};
   for (KnotRatios_ const& current_coefficients : coefficients) {
     IndexLength_ number_of_coordinates_in_slice{number_of_coordinates};
     number_of_coordinates_in_slice[dimension] = Length{};
@@ -166,20 +176,22 @@ void BSpline<para_dim>::InsertKnot(Dimension const& dimension,
       coordinate_value[dimension] = start_value;
       Index_ coordinate{number_of_coordinates, coordinate_value};
       Index const insertion_position = coordinate.GetIndex1d();
-
       // C^0 to C^-1 insertion, second case does not apply (insert repetition)
       if (current_coefficients.empty()) {
-        vector_space.ReallocateInsert(
-            coordinate.GetIndex1d(),
+        // we need to pass copy to this
+        vector_space.StaticInsert(
+            insertion_position,
             vector_space[Index_::GetIndex1d(previous_number_of_coordinates,
                                             coordinate_value)
-                         + slice_coordinate.GetIndex1d()]);
+                         + slice_coordinate.GetIndex1d()]
+                .Copy(),
+            n_total_original_coords + ignore_from++);
         continue;
       }
 
       typename KnotRatios_::const_reverse_iterator coefficient{
           current_coefficients.rbegin()};
-      vector_space.ReallocateInsert(
+      vector_space.StaticInsert(
           insertion_position,
           Add(Multiply(vector_space[Index_::GetIndex1d(
                                         previous_number_of_coordinates,
@@ -188,7 +200,8 @@ void BSpline<para_dim>::InsertKnot(Dimension const& dimension,
                        *coefficient),
               Multiply(
                   vector_space[coordinate.Decrement(dimension).GetIndex1d()],
-                  k1_0 - *coefficient)));
+                  k1_0 - *coefficient)),
+          n_total_original_coords + ignore_from++);
       ++coefficient;
       for (; coefficient < current_coefficients.rend(); ++coefficient) {
         Index const& replacement_position = coordinate.GetIndex1d();
@@ -220,11 +233,11 @@ Multiplicity BSpline<para_dim>::RemoveKnot(Dimension const& dimension,
       parameter_space.GetNumberOfBasisFunctions()};
   auto const& [start_value, coefficients] =
       parameter_space.RemoveKnot(dimension, knot, multiplicity, tolerance);
-  Multiplicity::Type_ const& removals = coefficients.size();
+  Multiplicity const& removals = coefficients.size();
   for (Multiplicity removal{removals}; removal > Multiplicity{}; --removal) {
     VectorSpace_& vector_space = *vector_space_;
     VectorSpace_ const vector_space_backup{vector_space};
-    KnotRatios_ const& current_coefficients = coefficients[removal.Get() - 1];
+    KnotRatios_ const& current_coefficients = coefficients[removal - 1];
     IndexLength_ number_of_coordinates_in_slice{number_of_coordinates};
     number_of_coordinates_in_slice[dimension] = Length{};
     IndexLength_ const previous_number_of_coordinates{number_of_coordinates};
@@ -294,21 +307,33 @@ void BSpline<para_dim>::ElevateDegree(Dimension const& dimension,
   // bound checks are all done in parametric space
   ParameterSpace_& parameter_space = *Base_::parameter_space_;
   VectorSpace_& vector_space = *vector_space_;
+
+  // collect values before updating parameter_space
   auto const& [number_of_segments, knots_inserted] =
       MakeBezier(dimension, tolerance);
   IndexLength_ number_of_coordinates{
       parameter_space.GetNumberOfBasisFunctions()};
+  const int n_total_original_coords =
+      parameter_space.GetTotalNumberOfBasisFunctions();
+  const int n_coords_per_slice =
+      n_total_original_coords / number_of_coordinates[dimension];
+
+  // update parameter space and prepare loops
   auto const& [last_segment_coordinate, coefficients] =
       parameter_space.ElevateDegree(dimension, multiplicity);
   IndexLength_ number_of_coordinates_in_slice{number_of_coordinates};
   number_of_coordinates_in_slice[dimension] = Length{};
+  Index const maximum_interior_coordinate{
+      static_cast<int>(coefficients.size() - 1)};
+  int ignore_from{};
+  vector_space.AppendEmptyCoordinates(
+      n_coords_per_slice * number_of_segments
+      * (maximum_interior_coordinate - (last_segment_coordinate - 1) + 1));
   for (int segment{}; segment < number_of_segments; ++segment) {
-    Index const maximum_interior_coordinate{
-        static_cast<int>(coefficients.size()) - 1};
-    Index interior_coordinate{maximum_interior_coordinate},
+    int interior_coordinate{maximum_interior_coordinate},
         last_coordinate{((segment + 1) * last_segment_coordinate)
-                        + (segment * multiplicity.Get())};
-    for (; interior_coordinate >= (last_segment_coordinate - Index{1});
+                        + (segment * multiplicity)};
+    for (; interior_coordinate >= (last_segment_coordinate - 1);
          --interior_coordinate) {
       BinomialRatios_ const& current_coefficients =
           coefficients[interior_coordinate];
@@ -341,9 +366,12 @@ void BSpline<para_dim>::ElevateDegree(Dimension const& dimension,
                                             .GetIndex1d()],
                            coefficient));
             });
-        vector_space.ReallocateInsert(insertion_position, coordinate);
+        vector_space.StaticInsert(insertion_position,
+                                  coordinate,
+                                  n_total_original_coords + ignore_from++);
       }
     }
+
     for (; interior_coordinate >= Index{}; --interior_coordinate) {
       BinomialRatios_ const& current_coefficients =
           coefficients[interior_coordinate];

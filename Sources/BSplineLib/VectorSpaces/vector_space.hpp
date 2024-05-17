@@ -22,6 +22,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include <algorithm>
 #include <functional>
+#include <iostream>
 #include <utility>
 
 #include "BSplineLib/Utilities/containers.hpp"
@@ -123,6 +124,30 @@ public:
   /// @brief shape[0] of coordinates array
   /// @return
   virtual int GetNumberOfCoordinates() const { return coordinates_.Shape()[0]; }
+
+  /// @brief Appends empty (not initialized) coordinates. Similar use case as
+  /// vector::reserve(), instead, it will change the size right away. You can
+  /// use in combination with Insert() to replace ReallocateInsert()
+  /// @param n
+  virtual void AppendEmptyCoordinates(const int n);
+
+  /// @brief Similar use case as vector::reserve() then vector::insert(),
+  /// instead we work only with size (without the concept of capacity).
+  ///
+  /// Inserts a coordinate at given index. Static, in a sense that this
+  /// won't reallocate space. That means, values of at least one coordinate will
+  /// be lost. Specify ignore_elements_from to hint number of coordinates to
+  /// keep. This value is used for runtime size check and reduce unnecessary
+  /// copies. Use with AppendEmptyCoordinates
+  /// Make sure coordinate is not partial view of the coordinate_. If so, copy!
+  ///
+  /// @param coordinate_index
+  /// @param coordinate
+  /// @param ignore_elements_from takes python style negative indexing. However,
+  /// up to one cycle.
+  virtual void StaticInsert(int const& coordinate_index,
+                            const Coordinate_& coordinate,
+                            int ignore_elements_from = -1);
 
   /// @brief Replace coordinate value
   /// @param coordinate_index

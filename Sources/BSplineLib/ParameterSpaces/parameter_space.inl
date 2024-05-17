@@ -145,16 +145,15 @@ ParameterSpace<para_dim>::DetermineBezierExtractionKnots(
   int const& number_of_interior_knots = (last_knot - first_interior_knot);
   Knots_ bezier_extraction_knots;
   bezier_extraction_knots.reserve(number_of_interior_knots);
-  std::for_each(
-      first_interior_knot,
-      last_knot,
-      [&](ParametricCoordinate const& interior_knot) {
-        std::fill_n(
-            std::back_inserter(bezier_extraction_knots),
-            degrees_[dimension]
-                - knot_vector.DetermineMultiplicity(interior_knot).Get(),
-            interior_knot);
-      });
+  std::for_each(first_interior_knot,
+                last_knot,
+                [&](ParametricCoordinate const& interior_knot) {
+                  std::fill_n(
+                      std::back_inserter(bezier_extraction_knots),
+                      degrees_[dimension]
+                          - knot_vector.DetermineMultiplicity(interior_knot),
+                      interior_knot);
+                });
   return BezierInformation_{number_of_interior_knots + 1,
                             bezier_extraction_knots};
 }
@@ -421,10 +420,10 @@ ParameterSpace<para_dim>::InsertKnot(Dimension const& dimension,
   KnotVector& knot_vector = *knot_vectors_[dimension];
   // instead of (degree - current_multiplicity),
   // clip at (degree - current_multiplicity) + 1 is to allow C^-1
-  Multiplicity const insertion{std::min(
-      multiplicity.Get(),
-      degrees_[dimension]
-          - knot_vector.DetermineMultiplicity(knot, tolerance).Get() + 1)};
+  Multiplicity const insertion{
+      std::min(multiplicity,
+               degrees_[dimension]
+                   - knot_vector.DetermineMultiplicity(knot, tolerance) + 1)};
   InsertionInformation_ const& insertion_information =
       DetermineInsertionInformation(dimension, knot, insertion, tolerance);
   knot_vector.Insert(std::move(knot), insertion, tolerance);
@@ -475,7 +474,7 @@ ParameterSpace<para_dim>::ElevateDegree(Dimension const& dimension,
   ElevationInformation_ const& bezier_information =
       DetermineElevationInformation(dimension, multiplicity);
   knot_vectors_[dimension]->IncreaseMultiplicities(multiplicity);
-  degrees_[dimension] += Degree{multiplicity.Get()};
+  degrees_[dimension] += multiplicity;
   return bezier_information;
 }
 
@@ -488,9 +487,9 @@ ParameterSpace<para_dim>::ReduceDegree(Dimension const& dimension,
   DimensionBoundCheck(BSPLINELIB_FUNC(), dimension, true);
 
   Degree& degree = degrees_[dimension];
-  Multiplicity const reduction{std::min(multiplicity.Get(), degree - 1)};
+  Multiplicity const reduction{std::min(multiplicity, degree - 1)};
   knot_vectors_[dimension]->DecreaseMultiplicities(reduction);
-  degree -= reduction.Get();
+  degree -= reduction;
   return DetermineElevationInformation(dimension, reduction);
 }
 
@@ -565,18 +564,17 @@ ParameterSpace<para_dim>::DetermineInsertionInformation(
     Multiplicity const& multiplicity,
     Tolerance const& tolerance) const {
   KnotVector& knot_vector = *knot_vectors_[dimension];
-  MultiplicityType_ const& multiplicity_value = multiplicity.Get();
-  MultiplicityType_ const previous_multiplicity{
-      knot_vector.DetermineMultiplicity(knot, tolerance).Get()};
+  Multiplicity const previous_multiplicity{
+      knot_vector.DetermineMultiplicity(knot, tolerance)};
   KnotSpan::Type_ const knot_span{knot_vector.FindSpan(knot, tolerance).Get()};
   InsertionCoefficients_ knot_ratios;
-  knot_ratios.reserve(multiplicity_value);
+  knot_ratios.reserve(multiplicity);
   Index const end_knot{knot_span - previous_multiplicity};
 
   // multiplicity loop
-  for (int i{}; i < multiplicity_value; ++i) {
+  for (int i{}; i < multiplicity; ++i) {
     KnotRatios_ current_knot_ratios;
-    MultiplicityType_ const remaining_mulitplicity{degrees_[dimension] - i};
+    Multiplicity const remaining_mulitplicity{degrees_[dimension] - i};
     current_knot_ratios.reserve(remaining_mulitplicity - previous_multiplicity);
 
     for (int j{knot_span - remaining_mulitplicity + 1}; j < end_knot + 1; ++j) {
@@ -599,13 +597,12 @@ ParameterSpace<para_dim>::DetermineElevationInformation(
   using utilities::math_operations::ComputeBinomialCoefficient;
 
   Degree const& degree = degrees_[dimension];
-  MultiplicityType_ const& multiplicity_value = multiplicity.Get();
-  const int maximum_bezier_coordinate = (degree + multiplicity_value);
+  const int maximum_bezier_coordinate = (degree + multiplicity);
   ElevationCoefficients_ bezier_coefficients;
   bezier_coefficients.reserve(maximum_bezier_coordinate - 1);
 
   for (int i{1}; i < maximum_bezier_coordinate; ++i) {
-    const int bezier_coordinate_begin{std::max(0, i - multiplicity_value)};
+    const int bezier_coordinate_begin{std::max(0, i - multiplicity)};
     const int bezier_coordinate_end{std::min(degree, i) + 1};
     // Capturing result by reference produces dangling references if maxima
     // of the parameters are temporaries.
@@ -617,7 +614,7 @@ ParameterSpace<para_dim>::DetermineElevationInformation(
     for (int j{bezier_coordinate_begin}; j < bezier_coordinate_end; ++j) {
       current_bezier_coefficients[j - bezier_coordinate_begin] *=
           (ComputeBinomialCoefficient(degree, j)
-           * ComputeBinomialCoefficient(multiplicity_value, i - j));
+           * ComputeBinomialCoefficient(multiplicity, i - j));
     }
     bezier_coefficients.push_back(current_bezier_coefficients);
   }

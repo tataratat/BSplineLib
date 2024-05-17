@@ -306,7 +306,7 @@ void KnotVector::Insert(Knot knot,
   }
 #endif
   knots_.insert(knots_.begin() + FindSpan(knot, tolerance).Get() + 1,
-                multiplicity.Get(),
+                multiplicity,
                 std::move(knot));
 }
 
@@ -325,8 +325,8 @@ Multiplicity KnotVector::Remove(Knot const& knot,
     Throw(exception, kName);
   }
 #endif
-  if (Multiplicity::Type_ const number_of_removals{
-          std::min(multiplicity, DetermineMultiplicity(knot, tolerance)).Get()};
+  if (Multiplicity const number_of_removals{
+          std::min(multiplicity, DetermineMultiplicity(knot, tolerance))};
       number_of_removals != 0) {
     KnotSpan const& knot_span = FindSpan(knot, tolerance);
     if (DoesParametricCoordinateEqualBack(knot, tolerance)) {
@@ -336,7 +336,7 @@ Multiplicity KnotVector::Remove(Knot const& knot,
       ConstIterator_ const& first_knot = (knots_.begin() + knot_span.Get());
       knots_.erase(first_knot - (number_of_removals - 1), first_knot + 1);
     }
-    return Multiplicity{number_of_removals};
+    return number_of_removals;
   } else {
     return Multiplicity{};
   }
